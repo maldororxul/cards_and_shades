@@ -113,8 +113,19 @@ class GameViewModel : ViewModel() {
 
     fun claimRewardsAndExit(isPlayerWin: Boolean) {
         if (isPlayerWin) {
-            UserProfile.gold.value += 50
             currentLevel?.let { level ->
+                // 1. Начисляем золото, прописанное в наградах уровня
+                UserProfile.gold.value += level.rewardGold
+
+                // 2. Выдаем призовую ККИ-карту в коллекцию (если она указана)
+                level.rewardCardName?.let { cardName ->
+                    CardCatalog.createCardInstance(cardName)?.let { prizeCard ->
+                        UserProfile.collection.add(prizeCard)
+                    }
+                }
+                UserProfile.collection.notifyChanges()
+
+                // 3. Рассчитываем прогресс открытия следующих глав
                 if (level.id == UserProfile.maxUnlockedLevel.value) {
                     UserProfile.maxUnlockedLevel.value = level.id + 1
                 }

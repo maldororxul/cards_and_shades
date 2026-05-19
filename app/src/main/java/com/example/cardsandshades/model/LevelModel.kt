@@ -7,6 +7,7 @@ data class LevelModel(
     val opponentMaxHp: Int,
     val opponentStartMana: Int,
     val difficultyDescription: String,
-    // ИСПРАВЛЕНИЕ: Шаблон колоды босса (список имён карт)
-    val opponentDeckPreset: List<String>
+    val opponentDeckPreset: List<String>,
+    val rewardGold: Int,
+    val rewardCardName: String?
 )

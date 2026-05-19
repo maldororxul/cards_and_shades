@@ -24,6 +24,8 @@ fun GameOverOverlay(
     isGameOver: Boolean,
     winnerName: String?,
     playerName: String?,
+    rewardGold: Int,
+    rewardCardName: String?,
     onExitClick: (Boolean) -> Unit
 ) {
     AnimatedVisibility(visible = isGameOver, enter = fadeIn(), exit = fadeOut()) {
@@ -31,6 +33,7 @@ fun GameOverOverlay(
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text("Битва Завершена!", color = Color.White, fontSize = 28.sp, fontWeight = FontWeight.Black)
                 Spacer(modifier = Modifier.height(8.dp))
+
                 val isPlayerWin = winnerName == playerName
                 Text(
                     text = if (isPlayerWin) "ВЫ ПОБЕДИЛИ! 🎉" else "ВЫ ПРОИГРАЛИ 💀",
@@ -38,13 +41,26 @@ fun GameOverOverlay(
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold
                 )
+
+                // ВИЗУАЛИЗАЦИЯ НАГРАДЫ ИГРОКА
+                if (isPlayerWin) {
+                    Spacer(modifier = Modifier.height(24.dp))
+                    Text("Ваша награда за победу:", color = Color.Gray, fontSize = 14.sp)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("🪙 +$rewardGold Золотых монет", color = Color.Yellow, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+
+                    rewardCardName?.let { cardName ->
+                        Text("🃏 Карта: [$cardName] добавлена в коллекцию!", color = Color(0xFF00E676), fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                    }
+                }
+
                 Spacer(modifier = Modifier.height(32.dp))
                 Button(
                     onClick = { onExitClick(isPlayerWin) },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF388E3C)),
                     modifier = Modifier.width(200.dp)
                 ) {
-                    Text("Выйти")
+                    Text("Забрать лут и выйти")
                 }
             }
         }

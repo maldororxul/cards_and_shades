@@ -177,9 +177,12 @@ fun GameScreen(
                 isGameOver = state.isGameOver,
                 winnerName = state.winnerName,
                 playerName = state.player.name,
+                // ПЕРЕДАЕМ ДАННЫЕ НАГРАДЫ ТЕКУЩЕГО УРОВНЯ В ВЕРСТКУ
+                rewardGold = viewModel.currentLevel?.rewardGold ?: 50,
+                rewardCardName = viewModel.currentLevel?.rewardCardName,
                 onExitClick = { isPlayerWin ->
                     viewModel.claimRewardsAndExit(isPlayerWin)
-                    UserProfile.save(context)
+                    com.example.cardsandshades.model.UserProfile.save(context)
                     onBackToMenu()
                 }
             )
