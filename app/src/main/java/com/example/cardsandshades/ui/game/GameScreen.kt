@@ -227,37 +227,44 @@ fun GameScreen(
                                                     shape = RoundedCornerShape(8.dp)
                                                 )
                                                 .pointerInput(playerCard.id) {
-                                                    // СТРЕЛКА: Карта сама отслеживает движение пальца наружу
-                                                    detectDragGestures(
-                                                        onDragStart = {
-                                                            if (state.currentTurn == Turn.PLAYER) {
-                                                                selectedCardForAttack = playerCard
-                                                                startArrowOffset = cardOffset
-                                                                currentArrowOffset = cardOffset
-                                                                isDrawingArrow = true
-                                                                battleLog = "🎯 Наведение атаки из ${playerCard.name}..."
-                                                            }
-                                                        },
-                                                        onDrag = { change, dragAmount ->
-                                                            if (isDrawingArrow) {
-                                                                change.consume()
-                                                                currentArrowOffset = Offset(
-                                                                    currentArrowOffset.x + dragAmount.x,
-                                                                    currentArrowOffset.y + dragAmount.y
-                                                                )
-                                                            }
-                                                        },
-                                                        onDragEnd = {
-                                                            // Атака сбросится, если палец отпустили не над целью
-                                                            isDrawingArrow = false
-                                                        },
-                                                        onDragCancel = {
-                                                            isDrawingArrow = false
+                                                    // НИЗКОУРОВНЕВЫЙ ТРЕКИНГ СТРЕЛКИ (БЕЗ ЗАДЕРЖЕК КЛИКА)
+                                                    androidx.compose.foundation.gestures.awaitEachGesture {
+                                                        val down = awaitFirstDown(requireUnconsumed = false)
+
+                                                        if (state.currentTurn == Turn.PLAYER) {
+                                                            selectedCardForAttack = playerCard
+                                                            startArrowOffset = cardOffset
+                                                            currentArrowOffset = cardOffset
+                                                            isDrawingArrow = true
+                                                            battleLog = "🎯 Наведение атаки из ${playerCard.name}..."
                                                         }
-                                                    )
+
+                                                        var finalFingerPosition = cardOffset
+
+                                                        drag(down.id) { change ->
+                                                            change.consume()
+                                                            // positionInWindow() дает точную глобальную точку на экране
+                                                            finalFingerPosition = change.positionInWindow()
+                                                            currentArrowOffset = finalFingerPosition
+                                                        }
+
+                                                        // ЛОГИКА ДРОПА АТАКИ ПРИ ОТПУСКАНИИ ПАЛЬЦА
+                                                        isDrawingArrow = false
+
+                                                        // 1. Проверяем, попали ли в лицо врага (координаты HP врага)
+                                                        // Для простоты ККИ механики: если палец в верхней трети экрана — это атака в лицо
+                                                        if (finalFingerPosition.y < 300f && state.opponent.board.isEmpty()) {
+                                                            viewModel.attackEnemyHero(playerCard)
+                                                            battleLog = "💥 Вы атаковали героя врага на ${playerCard.currentAttack} урона!"
+                                                            selectedCardForAttack = null
+                                                        }
+                                                        // 2. Обычный сброс стрелки (кликовая атака по врагу из старой логики также продолжит работать)
+                                                        else {
+                                                            battleLog = "🎯 Стрелка сброшена. Вы можете нажать на карту врага для атаки."
+                                                        }
+                                                    }
                                                 },
                                             onClick = {
-                                                // Обычный клик для отмены
                                                 if (state.currentTurn == Turn.PLAYER && isSelected) {
                                                     selectedCardForAttack = null
                                                     isDrawingArrow = false
