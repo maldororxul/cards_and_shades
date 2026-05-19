@@ -168,12 +168,6 @@ class GameViewModel : ViewModel() {
         val state = _gameState.value ?: return
         if (state.isAnimating || state.currentTurn != Turn.PLAYER) return
 
-        // ВАЛИДАЦИЯ: Проверяем, спит ли карта и нет ли на поле врага Танков (Провокаторов)
-        if (!com.example.cardsandshades.engine.GameEngine.canAttackTarget(state, attacker, target)) {
-            // Если атака запрещена правилами ККИ, прерываем выполнение
-            return
-        }
-
         viewModelScope.launch {
             _gameState.update { it?.copy(isAnimating = true) }
 
@@ -181,7 +175,7 @@ class GameViewModel : ViewModel() {
             updateCardAnimation(attacker.id, isAttacking = true)
             delay(200)
 
-            // 2. Встречный удар: фиксация урона, тряска и вылет цифр
+            // 2. Встречный удар: Делегируем чистый расчет урона в GameEngine для работы Стрелков
             _gameState.update { currentState ->
                 currentState?.let { s ->
                     val pBoard = s.player.board.map { it.copy() }.toMutableList()
@@ -191,36 +185,30 @@ class GameViewModel : ViewModel() {
                     val tCard = oBoard.find { it.id == target.id }
 
                     if (aCard != null && tCard != null) {
-                        // ФИКСАЦИЯ ОГРАНИЧЕНИЯ: Карта тратит свой лимит атаки на этот ход!
-                        aCard.hasAttackedThisTurn = true
-
-                        tCard.lastDamageTaken = aCard.currentAttack
-                        aCard.lastDamageTaken = tCard.currentAttack
-
                         tCard.isTakingDamage = true
                         aCard.isTakingDamage = true
 
-                        tCard.currentHealth -= aCard.currentAttack
-                        aCard.currentHealth -= tCard.currentAttack
+                        // ИСПРАВЛЕНИЕ: Вызываем ООП-метод движка, чтобы применилось свойство Стрелка (без ответки)
+                        com.example.cardsandshades.engine.GameEngine.calculateCombat(s, aCard, tCard)
                     }
                     s.copy(player = s.player.copy(board = pBoard), opponent = s.opponent.copy(board = oBoard))
                 }
             }
             updateCardAnimation(attacker.id, isAttacking = false)
-            delay(300)
+            delay(500) // Даем время рассмотреть цифры урона перед их исчезновением
 
-            // 3. Анимация смерти (падения)
+            // 3. Анимация смерти (падения) И СБРОС ТРЯСКИ ДЛЯ ВЫЖИВШИХ
             _gameState.update { currentState ->
                 currentState?.let { s ->
                     val pBoard = s.player.board.map { it.copy() }.toMutableList()
                     val oBoard = s.opponent.board.map { it.copy() }.toMutableList()
 
                     pBoard.find { it.id == attacker.id }?.let {
-                        it.isTakingDamage = false
+                        it.isTakingDamage = false // ИСПРАВЛЕНИЕ: Сбрасываем флаг, убирая цифру урона
                         if (it.currentHealth <= 0) it.isDying = true
                     }
                     oBoard.find { it.id == target.id }?.let {
-                        it.isTakingDamage = false
+                        it.isTakingDamage = false // ИСПРАВЛЕНИЕ: Сбрасываем флаг, убирая цифру урона
                         if (it.currentHealth <= 0) it.isDying = true
                     }
                     s.copy(player = s.player.copy(board = pBoard), opponent = s.opponent.copy(board = oBoard))
@@ -231,7 +219,7 @@ class GameViewModel : ViewModel() {
                     _gameState.value?.opponent?.board?.any { it.isDying } == true
             if (hasDeaths) delay(400)
 
-            // 4. Окончательное удаление карт со стола (Исправлено: добавлено .board)
+            // 4. Окончательное удаление карт со стола
             _gameState.update { currentState ->
                 currentState?.let { s ->
                     val pBoard = s.player.board.filter { it.currentHealth > 0 }.toMutableList()
@@ -251,7 +239,6 @@ class GameViewModel : ViewModel() {
             }
         }
     }
-
 
     // Вспомогательный метод переключения флагов
     private fun updateCardAnimation(cardId: String, isAttacking: Boolean = false) {
@@ -357,45 +344,51 @@ class GameViewModel : ViewModel() {
             delay(500)
 
             // ФАЗА ИИ 2: Атака с пошаговой визуализацией
+            // ФАЗА ИИ 2: Атака со строгими правилами ККИ и пошаговой визуализацией
             val state = _gameState.value
             if (state != null && !state.isGameOver) {
                 val attackerCards = state.opponent.board.toList()
 
                 for (attacker in attackerCards) {
-                    // 1. Проверяем, живо ли еще атакующее существо ИИ
+                    // 1. Проверяем, живо ли еще существо ИИ на столе
                     val activeAttacker = _gameState.value?.opponent?.board?.find { it.id == attacker.id } ?: continue
 
-                    // 2. Проверяем базовую готовность существа к бою (не спит ли оно)
+                    // 2. Проверяем, может ли вообще эта карта ходить (не спит ли)
                     val canAIAttack = com.example.cardsandshades.engine.GameEngine.canAttackHero(_gameState.value!!, activeAttacker)
                     if (!canAIAttack) continue
 
-                    // ИСПРАВЛЕНИЕ: Переносим чтение стола игрока ВНУТРЬ цикла, прямо перед выбором цели!
-                    // Теперь ИИ всегда видит актуальный и живой стол игрока.
+                    // Динамически считываем живой стол игрока на текущий шаг цикла
                     val currentGameState = _gameState.value ?: continue
                     val playerBoard = currentGameState.player.board
-                    val hasTargets = playerBoard.isNotEmpty()
-                    val tauntTargets = playerBoard.filter { it.hasTaunt }
+
+                    // ИСПРАВЛЕНИЕ БАГА: ИИ ищет цели строго через ККИ-валидатор движка GameEngine
+                    // Это гарантирует, что ИИ никогда не выберет заблокированную Провокацией карту!
+                    val validEnemyCards = playerBoard.filter { enemyCard ->
+                        com.example.cardsandshades.engine.GameEngine.canAttackTarget(currentGameState, activeAttacker, enemyCard)
+                    }
 
                     // Включаем стрелку прицеливания для ИИ
                     opponentAttackerId = activeAttacker.id
 
-                    if (tauntTargets.isNotEmpty()) {
-                        // Атакуем только живых Танков
-                        val target = tauntTargets.random()
-                        opponentTargetId = target.id
-                        isOpponentTargetingHero = false
-                    } else if (hasTargets) {
-                        // Танков нет, но есть обычные живые существа — атакуем только их
-                        val target = playerBoard.random()
+                    if (validEnemyCards.isNotEmpty()) {
+                        // Если есть легальные цели среди существ (включая Танков, их движок подсунет первыми) — бьем случайное из них
+                        val target = validEnemyCards.random()
                         opponentTargetId = target.id
                         isOpponentTargetingHero = false
                     } else {
-                        // Стол полностью пуст — бьем в лицо
-                        opponentTargetId = null
-                        isOpponentTargetingHero = true
+                        // Если легальных существ для атаки нет, проверяем, можно ли ударить в лицо
+                        val canStrikeHero = com.example.cardsandshades.engine.GameEngine.canAttackHero(currentGameState, activeAttacker)
+                        if (canStrikeHero && playerBoard.isEmpty()) {
+                            opponentTargetId = null
+                            isOpponentTargetingHero = true
+                        } else {
+                            // Если стол не пуст, но атаковать никого нельзя (например, все закрыто маскировкой или баг флагов) — пропускаем эту карту
+                            opponentAttackerId = null
+                            continue
+                        }
                     }
 
-                    delay(1000) // Игрок видит стрелку
+                    delay(1000) // Игрок видит стрелку ИИ
 
                     // Анимация рывка существа ИИ вперед
                     updateCardAnimation(activeAttacker.id, isAttacking = true)
@@ -413,17 +406,16 @@ class GameViewModel : ViewModel() {
                                 if (!isOpponentTargetingHero) {
                                     val nextTarget = pBoard.find { it.id == opponentTargetId }
                                     if (nextTarget != null) {
-                                        // Передаем актуальные живые копии карт в движок
-                                        com.example.cardsandshades.engine.GameEngine.calculateCombat(s, nextAttacker, nextTarget)
-
                                         nextTarget.isTakingDamage = true
                                         nextAttacker.isTakingDamage = true
+
+                                        // Вызываем ООП-расчет движка
+                                        com.example.cardsandshades.engine.GameEngine.calculateCombat(s, nextAttacker, nextTarget)
                                     }
                                 } else {
                                     nextAttacker.hasAttackedThisTurn = true
                                     playerHeroDamageValue = nextAttacker.currentAttack
                                     playerHeroTakingDamage = true
-
                                     val updatedPlayerModel = s.player.copy(currentHp = s.player.currentHp - nextAttacker.currentAttack)
                                     return@update s.copy(player = updatedPlayerModel)
                                 }
@@ -438,7 +430,7 @@ class GameViewModel : ViewModel() {
                     opponentTargetId = null
                     isOpponentTargetingHero = false
 
-                    delay(500) // Даем рассмотреть урон
+                    delay(500) // Даем рассмотреть цифры урона
                     playerHeroTakingDamage = false
 
                     // Анимация смерти для погибших существ
@@ -477,7 +469,7 @@ class GameViewModel : ViewModel() {
                             }
                         }
                     }
-                    delay(400) // Пауза перед ходом следующего существа ИИ
+                    delay(400)
                 }
             }
 
