@@ -116,16 +116,23 @@ fun GameScreen(
                             if (selectedCardForAttack?.id == id) startArrowOffset = offset
                         },
                         onCardClick = { card, offset ->
-                            if (state.currentTurn == Turn.PLAYER) {
+                            // ИСПРАВЛЕНИЕ: Вся ККИ-валидация теперь здесь, где есть доступ к state и Turn
+                            if (state.currentTurn == Turn.PLAYER && !state.isAnimating) {
+                                val canAttack = com.example.cardsandshades.engine.GameEngine.canAttackHero(state, card)
+
                                 if (selectedCardForAttack?.id == card.id) {
+                                    // Отмена выделения работает всегда
                                     selectedCardForAttack = null
                                     isDrawingArrow = false
-                                } else {
+                                } else if (canAttack) {
+                                    // Выделяем карту и строим стрелку, только если она не спит и не атаковала
                                     selectedCardForAttack = card
                                     startArrowOffset = offset
                                     currentArrowOffset = offset
                                     isDrawingArrow = true
                                     battleLog = "🎯 Выбрана ${card.name}. Нажмите на карту врага или его HP!"
+                                } else {
+                                    battleLog = "❌ ${card.name} не может атаковать! Существо спит или уже ходило в этот ход."
                                 }
                             }
                         }

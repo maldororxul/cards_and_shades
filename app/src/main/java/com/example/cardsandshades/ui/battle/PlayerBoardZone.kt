@@ -65,21 +65,7 @@ fun PlayerBoardZone(
                                 color = if (isSelected) Color.Green else Color(0xFF4CAF50),
                                 shape = RoundedCornerShape(8.dp)
                             ),
-                        onClick = { card, offset ->
-                            if (state.currentTurn == Turn.PLAYER && !state.isAnimating) {
-                                // ПРОВЕРКА: Разрешаем выбрать карту для атаки только если она готова к бою
-                                val canAttack = com.example.cardsandshades.engine.GameEngine.canAttackHero(state, card)
-
-                                if (selectedCard?.id == card.id) {
-                                    onCardClick(card, offset) // Отмена выделения работает всегда
-                                } else if (canAttack) {
-                                    onCardClick(card, offset) // Выделяем карту, только если она готова бить
-                                } else {
-                                    // Оповещение игрока через систему логов (логика прокинется в верхний стейт)
-                                    // Карта либо спит, либо уже атаковала
-                                }
-                            }
-                        }
+                        onClick = { onCardClick(playerCard, cardOffset) }
                     )
                 }
             }

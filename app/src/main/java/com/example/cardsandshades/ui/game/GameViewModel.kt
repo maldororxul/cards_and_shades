@@ -321,30 +321,59 @@ class GameViewModel : ViewModel() {
             // ФАЗА ИИ 2: Атака с пошаговой визуализацией
             val state = _gameState.value
             if (state != null && !state.isGameOver) {
+                // ИИ берет копию своего стола для перебора
                 val attackerCards = state.opponent.board.toList()
 
                 for (attacker in attackerCards) {
-                    // Проверяем, живо ли еще атакующее существо ИИ
+                    // 1. ПРОВЕРКА: Живо ли еще существо ИИ на столе?
                     val activeAttacker = _gameState.value?.opponent?.board?.find { it.id == attacker.id } ?: continue
-                    val hasTargets = _gameState.value?.player?.board?.isNotEmpty() == true
 
-                    // 1. ИИ включает стрелку прицеливания
+                    // 2. ОГРАНИЧЕНИЕ ИИ: Проверяем, может ли эта карта атаковать (не спит ли она и не ходила ли уже)
+                    // Передаем null, чтобы просто проверить базовую готовность существа к бою
+                    val canAIAttack = com.example.cardsandshades.engine.GameEngine.canAttackHero(_gameState.value!!, activeAttacker)
+                    if (!canAIAttack) continue // Если карта ИИ спит (только выложена), она пропускает фазу атаки
+
+                    // Ищем доступные цели на столе игрока
+                    val playerBoard = _gameState.value?.player?.board ?: emptyList()
+                    val hasTargets = playerBoard.isNotEmpty()
+
+                    // 3. ОГРАНИЧЕНИЕ ИИ: Правило Провокации (Танков)
+                    // Если у игрока есть танки, ИИ обязан выбрать цель только среди них
+                    val tauntTargets = playerBoard.filter { it.hasTaunt }
+                    val validTargets = if (tauntTargets.isNotEmpty()) tauntTargets else playerBoard
+
+                    // Включаем стрелку прицеливания для ИИ
                     opponentAttackerId = activeAttacker.id
-                    if (hasTargets) {
-                        val target = _gameState.value?.player?.board?.random()
-                        opponentTargetId = target?.id
+
+                    if (tauntTargets.isNotEmpty()) {
+                        // Если есть танки, ИИ берет случайного танка
+                        val target = validTargets.random()
+                        opponentTargetId = target.id
                         isOpponentTargetingHero = false
+                    } else if (hasTargets) {
+                        // Если танков нет, но есть обычные существа, ИИ с шансом 50/50 бьет лицо или существо
+                        val attackHeroChoice = (0..1).random() == 0
+                        if (attackHeroChoice) {
+                            opponentTargetId = null
+                            isOpponentTargetingHero = true
+                        } else {
+                            val target = validTargets.random()
+                            opponentTargetId = target.id
+                            isOpponentTargetingHero = false
+                        }
                     } else {
+                        // Если у игрока вообще пустой стол — ИИ целится строго в лицо
                         opponentTargetId = null
                         isOpponentTargetingHero = true
                     }
-                    delay(1000) // Игрок видит стрелку
 
-                    // 2. Анимация рывка существа ИИ вперед
+                    delay(1000) // Игрок видит, куда наводится стрелка ИИ
+
+                    // Анимация рывка существа ИИ вперед
                     updateCardAnimation(activeAttacker.id, isAttacking = true)
                     delay(200)
 
-                    // 3. Встречный удар: фиксация урона, тряска и вылет цифр
+                    // Встречный удар: фиксация урона, тряска и вылет цифр
                     _gameState.update { currentState ->
                         currentState?.let { s ->
                             val pBoard = s.player.board.map { it.copy() }.toMutableList()
@@ -353,23 +382,21 @@ class GameViewModel : ViewModel() {
                             val nextAttacker = oBoard.find { it.id == activeAttacker.id }
 
                             if (nextAttacker != null) {
-                                if (hasTargets) {
+                                if (!isOpponentTargetingHero) {
                                     val nextTarget = pBoard.find { it.id == opponentTargetId }
                                     if (nextTarget != null) {
-                                        nextTarget.lastDamageTaken = nextAttacker.currentAttack
-                                        nextAttacker.lastDamageTaken = nextTarget.currentAttack
+                                        // Применяем математику боя: проставляем флаг hasAttackedThisTurn внутри calculateCombat
+                                        GameEngine.calculateCombat(s, nextAttacker, nextTarget)
 
                                         nextTarget.isTakingDamage = true
                                         nextAttacker.isTakingDamage = true
-
-                                        nextTarget.currentHealth -= nextAttacker.currentAttack
-                                        nextAttacker.currentHealth -= nextTarget.currentAttack
                                     }
                                 } else {
-                                    // Анимация удара ИИ в лицо игрока
+                                    // Атака в лицо игрока: списываем HP и блокируем повторную атаку этой карты ИИ
+                                    nextAttacker.hasAttackedThisTurn = true
                                     playerHeroDamageValue = nextAttacker.currentAttack
                                     playerHeroTakingDamage = true
-                                    // Атака в лицо игрока (меняем только здоровье игрока)
+
                                     val updatedPlayerModel = s.player.copy(currentHp = s.player.currentHp - nextAttacker.currentAttack)
                                     return@update s.copy(player = updatedPlayerModel)
                                 }
@@ -377,15 +404,17 @@ class GameViewModel : ViewModel() {
                             s.copy(player = s.player.copy(board = pBoard), opponent = s.opponent.copy(board = oBoard))
                         }
                     }
+
+                    // Выключаем анимации текущей атаки
                     updateCardAnimation(activeAttacker.id, isAttacking = false)
                     opponentAttackerId = null
                     opponentTargetId = null
                     isOpponentTargetingHero = false
 
-                    delay(500) // Даем рассмотреть урон по лицу игрока
+                    delay(500) // Даем рассмотреть урон
                     playerHeroTakingDamage = false
 
-                    // 4. Анимация смерти для погибших существ
+                    // Анимация смерти для погибших существ
                     _gameState.update { currentState ->
                         currentState?.let { s ->
                             val pBoard = s.player.board.map { it.copy() }.toMutableList()
@@ -407,7 +436,7 @@ class GameViewModel : ViewModel() {
                             _gameState.value?.opponent?.board?.any { it.isDying } == true
                     if (hasDeaths) delay(400)
 
-                    // 5. Окончательное удаление погибших существ со стола
+                    // Окончательное удаление погибших существ со стола
                     _gameState.update { currentState ->
                         currentState?.let { s ->
                             val pBoard = s.player.board.filter { it.currentHealth > 0 }.toMutableList()
@@ -421,7 +450,7 @@ class GameViewModel : ViewModel() {
                             }
                         }
                     }
-                    delay(400) // Пауза перед атакой следующего существа ИИ
+                    delay(400) // Маленькая пауза перед ходом следующего существа ИИ
                 }
             }
 
