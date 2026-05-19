@@ -1,4 +1,4 @@
-package com.example.cardsandshades.ui.components
+package com.example.cardsandshades.ui.game
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -18,10 +18,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.cardsandshades.model.CardModel
+import com.example.cardsandshades.model.UserProfile
+import com.example.cardsandshades.ui.components.CardComponent
 
 @Composable
 fun GameScreen(
     viewModel: GameViewModel,
+    onBackToMenu: Any,
     modifier: Modifier = Modifier
 ) {
     val gameState by viewModel.gameState.collectAsState()
@@ -224,7 +227,16 @@ fun GameScreen(
                         fontSize = 20.sp
                     )
                     Spacer(modifier = Modifier.height(24.dp))
-                    Button(onClick = { viewModel.startNewGame() }) {
+                    Button(onClick = {
+                        // За победу начисляем 50 золота
+                        if (state.winnerName == state.player.name) {
+                            UserProfile.gold.value += 50
+                        }
+                        // Здесь мы прокинем лямбду для выхода в главное меню
+                    }) { Text("В меню кампании") }
+                    Button(onClick = { viewModel.startNewGame(
+                        level = TODO()
+                    ) }) {
                         Text("Играть снова")
                     }
                 }

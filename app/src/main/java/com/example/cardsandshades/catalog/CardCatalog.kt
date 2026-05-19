@@ -63,6 +63,46 @@ object CardCatalog {
         deck.shuffle()
         return deck
     }
+
+    // Открытие пака по математической модели вероятностей
+    fun openBooster(): List<CardModel> {
+        val booster = mutableListOf<CardModel>()
+
+        // Генерируем первые 4 карты по стандартным шансам
+        repeat(4) {
+            booster.add(generateRandomCardByRarity())
+        }
+
+        // 5-я карта: гарантированно Rare, Epic или Legendary (защита от неудач)
+        booster.add(generateGuaranteedRareOrHigher())
+
+        return booster
+    }
+
+    private fun generateRandomCardByRarity(): CardModel {
+        val roll = (1..100).random()
+        val targetRarity = when {
+            roll <= 2 -> Rarity.LEGENDARY // 2%
+            roll <= 10 -> Rarity.EPIC     // 8%
+            roll <= 30 -> Rarity.RARE     // 20%
+            else -> Rarity.COMMON         // 70%
+        }
+
+        val filteredTemplates = templates.filter { it.rarity == targetRarity }
+        val template = if (filteredTemplates.isNotEmpty()) filteredTemplates.random() else templates.random()
+        return createCardInstance(template.name)!!
+    }
+
+    private fun generateGuaranteedRareOrHigher(): CardModel {
+        val roll = (1..100).random()
+        val targetRarity = when {
+            roll <= 5 -> Rarity.LEGENDARY  // 5%
+            roll <= 25 -> Rarity.EPIC      // 20%
+            else -> Rarity.RARE            // 75%
+        }
+        val filteredTemplates = templates.filter { it.rarity == targetRarity }
+        return createCardInstance(filteredTemplates.random().name)!!
+    }
 }
 
 // Вспомогательный класс для описания шаблонов в каталоге

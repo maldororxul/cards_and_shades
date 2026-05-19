@@ -1,4 +1,4 @@
-package com.example.cardsandshades.ui.components
+package com.example.cardsandshades.ui.game
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
