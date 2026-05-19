@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.cardsandshades.model.CardModel
 import com.example.cardsandshades.ui.components.CardComponent
+import com.example.cardsandshades.ui.components.DragAndDropContainer
 import com.example.cardsandshades.ui.components.DragTarget
 
 @Composable
@@ -122,8 +123,12 @@ fun GameScreen(
                         if (state.player.board.isEmpty()) {
                             Text("Перетащите карту сюда, чтобы разыграть", color = Color.Gray)
                         } else {
-                            LazyRow(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
-                                items(state.player.board) { playerCard ->
+                            LazyRow(
+                                horizontalArrangement = Arrangement.Center,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                // Добавляем обязательный уникальный ключ для сохранения инстанса Compose
+                                items(state.player.board, key = { it.id }) { playerCard ->
                                     val isSelected = selectedCardForAttack == playerCard
                                     CardComponent(
                                         card = playerCard,
@@ -168,7 +173,11 @@ fun GameScreen(
 
                     // РУКА ИГРОКА (ДРАГ-ТАГЕТЫ)
                     Text("Ваша рука (Зажмите карту для перетаскивания, долгий тап - осмотр):", color = Color.Gray, fontSize = 11.sp)
-                    LazyRow(modifier = Modifier.fillMaxWidth().height(160.dp), horizontalArrangement = Arrangement.Start) {
+                    LazyRow(
+                        modifier = Modifier.fillMaxWidth().height(160.dp),
+                        horizontalArrangement = Arrangement.Start
+                    ) {
+                        // Привязываем key = { it.id }, чтобы DragTarget не сбрасывал стейт при скролле руки
                         items(state.player.hand, key = { it.id }) { card ->
                             DragTarget(card = card, modifier = Modifier.padding(4.dp)) {
                                 CardComponent(card = card)

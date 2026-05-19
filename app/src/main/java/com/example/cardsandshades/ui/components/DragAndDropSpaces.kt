@@ -4,31 +4,23 @@ import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.compositionLocalOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInWindow
+import androidx.compose.ui.unit.IntSize
 import com.example.cardsandshades.model.CardModel
 
-// Глобальное состояние перетаскивания
 internal val LocalDragTargetInfo = compositionLocalOf { DragTargetInfo() }
 
 internal class DragTargetInfo {
     var isDragging: Boolean by mutableStateOf(false)
-    var dragPosition: Offset by mutableStateOf(Offset.Zero)
-    var dragOffset: Offset by mutableStateOf(Offset.Zero)
+    var dragPosition by mutableStateOf(Offset.Zero) // Глобальная позиция пальца на экране
     var draggableCard: CardModel? by mutableStateOf(null)
-    var dataToDrop: Any? by mutableStateOf(null)
 }
 
 @Composable
@@ -40,16 +32,17 @@ fun DragAndDropContainer(
     CompositionLocalProvider(LocalDragTargetInfo provides state) {
         Box(modifier = modifier.fillMaxSize()) {
             content()
-            if (state.isDragging && state.draggableCard != null) {
-                var targetSize by remember { mutableStateOf(androidx.compose.ui.unit.IntSize.Zero) }
 
+            // Летающий оверлей карты (рисуется поверх всего экрана)
+            if (state.isDragging && state.draggableCard != null) {
+                var targetSize by remember { mutableStateOf(IntSize.Zero) }
                 Box(
                     modifier = Modifier
                         .graphicsLayer {
-                            val offset = state.dragPosition + state.dragOffset
-                            translationX = offset.x - targetSize.width / 2
-                            translationY = offset.y - targetSize.height / 2
-                            scaleX = 0.9f // Слегка уменьшаем карту при таске
+                            // Центрируем карту ровно под пальцем игрока
+                            translationX = state.dragPosition.x - (targetSize.width / 2)
+                            translationY = state.dragPosition.y - (targetSize.height / 2)
+                            scaleX = 0.9f
                             scaleY = 0.9f
                         }
                         .onGloballyPositioned { targetSize = it.size }
@@ -68,31 +61,38 @@ fun DragTarget(
     content: @Composable () -> Unit
 ) {
     val currentDragTargetInfo = LocalDragTargetInfo.current
+    var startPositionInWindow by remember { mutableStateOf(Offset.Zero) }
+
     Box(
-        modifier = modifier.pointerInput(card.id) {
-            detectDragGesturesAfterLongPress(
-                onDragStart = { offset ->
-                    currentDragTargetInfo.isDragging = true
-                    currentDragTargetInfo.dragPosition = offset
-                    currentDragTargetInfo.draggableCard = card
-                    currentDragTargetInfo.dataToDrop = card
-                },
-                onDrag = { change, dragAmount ->
-                    change.consume()
-                    currentDragTargetInfo.dragOffset += Offset(dragAmount.x, dragAmount.y)
-                },
-                onDragEnd = {
-                    currentDragTargetInfo.isDragging = false
-                    currentDragTargetInfo.dragOffset = Offset.Zero
-                },
-                onDragCancel = {
-                    currentDragTargetInfo.isDragging = false
-                    currentDragTargetInfo.dragOffset = Offset.Zero
-                }
-            )
-        }
+        modifier = modifier
+            .onGloballyPositioned { startPositionInWindow = it.positionInWindow() }
+            .pointerInput(card.id) {
+                detectDragGesturesAfterLongPress(
+                    onDragStart = { localOffset ->
+                        currentDragTargetInfo.isDragging = true
+                        // Переводим стартовую позицию в абсолютные координаты экрана
+                        currentDragTargetInfo.dragPosition = startPositionInWindow + localOffset
+                        currentDragTargetInfo.draggableCard = card
+                    },
+                    onDrag = { change, dragAmount ->
+                        change.consume()
+                        // Накапливаем позицию в глобальной системе координат
+                        currentDragTargetInfo.dragPosition += Offset(dragAmount.x, dragAmount.y)
+                    },
+                    onDragEnd = {
+                        currentDragTargetInfo.isDragging = false
+                    },
+                    onDragCancel = {
+                        currentDragTargetInfo.isDragging = false
+                    }
+                )
+            }
     ) {
-        content()
+        // Чтобы карточка не двоилась в руке при перетаскивании, скрываем оригинал
+        val isCurrentDragging = currentDragTargetInfo.isDragging && currentDragTargetInfo.draggableCard?.id == card.id
+        Box(modifier = Modifier.graphicsLayer { alpha = if (isCurrentDragging) 0.0f else 1.0f }) {
+            content()
+        }
     }
 }
 
@@ -104,21 +104,21 @@ fun DropTarget(
 ) {
     val dragInfo = LocalDragTargetInfo.current
     var isHovered by remember { mutableStateOf(false) }
-    var bounds: Offset by remember { mutableStateOf(Rect.Zero) }
+    var globalBounds by remember { mutableStateOf(Rect.Zero) }
 
     Box(
-        modifier = modifier
-            .onGloballyPositioned { bounds = it.localToWindow(Rect(Offset.Zero, it.size.toSize())) }
+        modifier = modifier.onGloballyPositioned {
+            val position = it.positionInWindow()
+            globalBounds = Rect(position, Offset(position.x + it.size.width, position.y + it.size.height))
+        }
     ) {
-        // Проверяем, находится ли перетаскиваемый объект над зоной дропа
-        val dragPosition = dragInfo.dragPosition + dragInfo.dragOffset
-        isHovered = dragInfo.isDragging && bounds.contains(dragPosition)
+        // Сверяем глобальные координаты зоны и глобальный вектор пальца
+        isHovered = dragInfo.isDragging && globalBounds.contains(dragInfo.dragPosition)
 
-        // Ловим момент отпускания пальца
+        // Фиксируем Drop при отпускании пальца над зоной
         LaunchedEffect(dragInfo.isDragging) {
             if (!dragInfo.isDragging && isHovered) {
-                val card = dragInfo.dataToDrop as? CardModel
-                if (card != null) {
+                dragInfo.draggableCard?.let { card ->
                     onCardDropped(card)
                 }
             }
@@ -127,6 +127,3 @@ fun DropTarget(
         content(isHovered)
     }
 }
-
-// Расширение для приведения IntSize в Size
-private fun androidx.compose.ui.unit.IntSize.toSize() = androidx.compose.ui.geometry.Size(width.toFloat(), height.toFloat())
