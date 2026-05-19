@@ -161,6 +161,9 @@ class GameViewModel : ViewModel() {
                     val tCard = oBoard.find { it.id == target.id }
 
                     if (aCard != null && tCard != null) {
+                        // ФИКСАЦИЯ ОГРАНИЧЕНИЯ: Карта тратит свой лимит атаки на этот ход!
+                        aCard.hasAttackedThisTurn = true
+
                         tCard.lastDamageTaken = aCard.currentAttack
                         aCard.lastDamageTaken = tCard.currentAttack
 
@@ -235,34 +238,37 @@ class GameViewModel : ViewModel() {
         val state = _gameState.value ?: return
         if (state.isAnimating || state.currentTurn != Turn.PLAYER) return
 
-        // ВАЛИДАЦИЯ: Передаем null в качестве цели, чтобы проверить, открыто ли лицо (нет ли танк-карт)
-        if (!com.example.cardsandshades.engine.GameEngine.canAttackTarget(state, attacker, null)) {
-            return
-        }
+        // Проверяем жесткое ограничение перед ударом в лицо
+        if (!GameEngine.canAttackHero(state, attacker)) return
 
         viewModelScope.launch {
             _gameState.update { it?.copy(isAnimating = true) }
 
-            // Рывок вперед
             updateCardAnimation(attacker.id, isAttacking = true)
             delay(200)
 
-            // Анимация удара в лицо врага
             opponentHeroDamageValue = attacker.currentAttack
             opponentHeroTakingDamage = true
 
             _gameState.update { currentState ->
                 currentState?.let { s ->
-                    s.copy(opponent = s.opponent.copy(currentHp = s.opponent.currentHp - attacker.currentAttack))
+                    val pBoard = s.player.board.map { it.copy() }.toMutableList()
+                    // Тратим ход карты при ударе в лицо
+                    pBoard.find { it.id == attacker.id }?.hasAttackedThisTurn = true
+
+                    s.copy(
+                        player = s.player.copy(board = pBoard),
+                        opponent = s.opponent.copy(currentHp = s.opponent.currentHp - attacker.currentAttack)
+                    )
                 }
             }
+
             updateCardAnimation(attacker.id, isAttacking = false)
-            delay(500) // Держим вспышку урона на лице
+            delay(500)
 
             opponentHeroTakingDamage = false
             _gameState.update { it?.copy(isAnimating = false) }
 
-            // Проверка конца игры
             _gameState.value?.let { s ->
                 if (s.opponent.currentHp <= 0) {
                     _gameState.update { it?.copy(isGameOver = true, winnerName = s.player.name) }
@@ -270,6 +276,7 @@ class GameViewModel : ViewModel() {
             }
         }
     }
+
 
     fun endTurn() {
         _gameState.update { currentState ->

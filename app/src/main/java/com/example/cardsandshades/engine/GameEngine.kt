@@ -51,17 +51,29 @@ object GameEngine {
         return false
     }
 
+    // Валидация атаки карты на карту врага
     fun canAttackTarget(state: GameState, attacker: CardModel, target: CardModel?): Boolean {
-        if (attacker.isSleeping || attacker.hasAttackedThisTurn) return false
+        // ОГРАНИЧЕНИЕ 1: Спящая карта (болезнь призыва) атаковать не может
+        if (attacker.isSleeping) return false
+
+        // ОГРАНИЧЕНИЕ 2: Карта уже атаковала в этот ход
+        if (attacker.hasAttackedThisTurn) return false
 
         val enemyPlayer = if (state.currentTurn == Turn.PLAYER) state.opponent else state.player
 
-        // Если у врага есть Танки (Провокация), атаковать другие карты или лицо нельзя
+        // ОГРАНИЧЕНИЕ 3: Правило Провокации (Танка)
         val hasTauntOnBoard = enemyPlayer.board.any { it.hasTaunt }
         if (hasTauntOnBoard && (target == null || !target.hasTaunt)) {
-            return false // Игрок пытается пробить не Танка, когда Танк жив
+            return false
         }
+
         return true
+    }
+
+    // Вспомогательный метод для проверки атаки в лицо (чтобы использовать в UI и ИИ)
+    fun canAttackHero(state: GameState, attacker: CardModel): Boolean {
+        // Лицо — это частный случай атаки, когда цель равна null
+        return canAttackTarget(state, attacker, null)
     }
 
     fun calculateCombat(state: GameState, attacker: CardModel, target: CardModel) {
