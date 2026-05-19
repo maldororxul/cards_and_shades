@@ -1,19 +1,14 @@
 package com.example.cardsandshades.ui.components
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -25,7 +20,6 @@ import androidx.compose.ui.window.Dialog
 import com.example.cardsandshades.model.CardModel
 import com.example.cardsandshades.model.Rarity
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CardComponent(
     card: CardModel,
@@ -42,25 +36,26 @@ fun CardComponent(
         Rarity.LEGENDARY -> Color(0xFFFDD835)
     }
 
-    val cardBgColor = Color(0xFF212121)
-
     Card(
         modifier = modifier
             .width(105.dp)
             .height(150.dp)
             .border(2.dp, borderColor, RoundedCornerShape(8.dp))
-            .combinedClickable(
-                enabled = !isPreview,
-                onClick = { onClick() },
-                onLongClick = { showInspectDialog = true } // Осмотр карты по зажатию
-            ),
+            .clickable(enabled = !isPreview) {
+                // ИСПРАВЛЕНИЕ: Если onClick передан пустой (как в руке), открываем осмотр
+                // Если onClick передан рабочий (как на столе для атаки), срабатывает атака
+                if (onClick == {}) {
+                    showInspectDialog = true
+                } else {
+                    onClick()
+                }
+            },
         shape = RoundedCornerShape(8.dp),
-        colors = CardDefaults.cardColors(containerColor = cardBgColor)
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF212121))
     ) {
         CardContent(card = card, borderColor = borderColor)
     }
 
-    // Всплывающее окно детального осмотра
     if (showInspectDialog) {
         Dialog(onDismissRequest = { showInspectDialog = false }) {
             Card(
@@ -72,7 +67,6 @@ fun CardComponent(
                 colors = CardDefaults.cardColors(containerColor = Color(0xFF1A1A1A))
             ) {
                 Box(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-                    // Мана вверху по центру для красоты в режиме инспекции
                     Box(
                         modifier = Modifier
                             .size(36.dp)
@@ -92,14 +86,13 @@ fun CardComponent(
                         Text(card.rarity.name, color = borderColor, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            text = "Существо базовой ценности статов: ${card.manaCost * 2}. Не имеет особых скрытых эффектов.",
+                            text = "Существо базовой ценности статов: ${card.manaCost * 2}. Призовите его на поле боя для сражения.",
                             color = Color.Gray,
                             fontSize = 12.sp,
                             textAlign = TextAlign.Center
                         )
                     }
 
-                    // Атака и ХП внизу
                     Row(
                         modifier = Modifier.fillMaxWidth().align(Alignment.BottomCenter),
                         horizontalArrangement = Arrangement.SpaceBetween

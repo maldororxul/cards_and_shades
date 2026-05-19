@@ -1,5 +1,8 @@
 package com.example.cardsandshades.ui.game
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -15,84 +18,105 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.cardsandshades.model.CardModel
+import com.example.cardsandshades.model.Turn
 import com.example.cardsandshades.ui.components.CardComponent
 import com.example.cardsandshades.ui.components.DragAndDropContainer
 import com.example.cardsandshades.ui.components.DragTarget
+import com.example.cardsandshades.ui.components.DropTarget
 
 @Composable
 fun GameScreen(
     viewModel: GameViewModel,
     onBackToMenu: () -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     val gameState by viewModel.gameState.collectAsState()
     var selectedCardForAttack by remember { mutableStateOf<CardModel?>(null) }
 
+    // Текстовый лог для информирования игрока
+    var battleLog by remember { mutableStateOf("Ваш ход. Разыграйте карты или атакуйте врага!") }
+
     if (gameState == null) {
-        // Заглушка на случай, если экран пытается отрисоваться без данных
-        Box(
-            modifier = Modifier.fillMaxSize().background(Color.Black),
-            contentAlignment = Alignment.Center
-        ) {
+        Box(modifier = Modifier.fillMaxSize().background(Color.Black), contentAlignment = Alignment.Center) {
             Text("Загрузка боя...", color = Color.White)
         }
     } else {
         val state = gameState!!
-        // Оборачиваем весь экран в глобальный контейнер Drag & Drop
+
+        // Сбрасываем лог, если ход перешел к ИИ
+        LaunchedEffect(state.currentTurn) {
+            battleLog = if (state.currentTurn == Turn.PLAYER) {
+                "Ваш ход! Мана обновлена. Доступно карт на поле: ${state.player.board.size}"
+            } else {
+                "Ход соперника... Противник принимает решение."
+            }
+        }
+
         DragAndDropContainer(modifier = modifier) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color(0xFF121212))
-                    .padding(16.dp),
+                    .background(Color(0xFF141414))
+                    .padding(12.dp),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
                 // ================= ВРАГ (ВЕРХНЯЯ ЧАСТЬ) =================
-                Column(modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.fillMaxWidth().background(Color(0xFF1E1414), RoundedCornerShape(8.dp)).padding(8.dp)) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(state.opponent.name, color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                        Text(state.opponent.name, color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                         Text(
                             "HP: ${state.opponent.currentHp}/${state.opponent.maxHp} ❤️",
-                            color = Color.Red,
+                            color = Color(0xFFFF5252),
                             fontSize = 18.sp,
-                            modifier = Modifier.clickable {
-                                selectedCardForAttack?.let { attacker ->
-                                    viewModel.attackEnemyHero(attacker)
-                                    selectedCardForAttack = null
+                            fontWeight = FontWeight.Black,
+                            modifier = Modifier
+                                .border(1.dp, Color.Red, RoundedCornerShape(4.dp))
+                                .padding(horizontal = 8.dp, vertical = 2.dp)
+                                .clickable {
+                                    selectedCardForAttack?.let { attacker ->
+                                        if (state.opponent.board.isEmpty()) {
+                                            viewModel.attackEnemyHero(attacker)
+                                            battleLog = "💥 Вы атаковали героя врага на ${attacker.currentAttack} урона!"
+                                            selectedCardForAttack = null
+                                        } else {
+                                            battleLog = "❌ Нельзя атаковать лицо, пока у врага есть существа на поле!"
+                                        }
+                                    }
                                 }
-                            }
                         )
                     }
-                    Text("Карт в руке: ${state.opponent.hand.size} | Мана: ${state.opponent.currentMana}/${state.opponent.maxMana}", color = Color.Gray, fontSize = 12.sp)
+                    Text("Карт в руке: ${state.opponent.hand.size} | Мана врага: ${state.opponent.currentMana}/${state.opponent.maxMana}", color = Color.Gray, fontSize = 12.sp)
                 }
 
                 // ================= ПОЛЕ БОЯ ВРАГА =================
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(160.dp)
-                        .border(1.dp, Color.DarkGray, RoundedCornerShape(8.dp))
-                        .background(Color(0xFF1E1E1E)),
+                        .height(150.dp)
+                        .border(1.dp, Color(0xFF3A2323), RoundedCornerShape(8.dp))
+                        .background(Color(0xFF1F1818)),
                     contentAlignment = Alignment.Center
                 ) {
                     if (state.opponent.board.isEmpty()) {
-                        Text("Поле врага пусто", color = Color.Gray)
+                        Text("Поле противника пусто. Его Лицо открыто для атак!", color = Color.DarkGray, fontSize = 12.sp)
                     } else {
                         LazyRow(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
-                            items(state.opponent.board) { enemyCard ->
+                            items(state.opponent.board, key = { "opp_${it.id}" }) { enemyCard ->
                                 CardComponent(
                                     card = enemyCard,
                                     modifier = Modifier.padding(4.dp),
                                     onClick = {
                                         selectedCardForAttack?.let { attacker ->
                                             viewModel.attackEnemyCard(attacker, enemyCard)
+                                            battleLog = "⚔️ ${attacker.name} атаковал ${enemyCard.name}!"
                                             selectedCardForAttack = null
                                         }
                                     }
@@ -102,45 +126,70 @@ fun GameScreen(
                     }
                 }
 
-                // ================= ИСПРАВЛЕНИЕ: ПОЛЕ БОЯ ИГРОКА (DROP TARGET) =================
+                // ================= ИНФОРМАЦИОННЫЙ ЦЕНТР (ЛОГ) =================
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color(0xFF222222), RoundedCornerShape(4.dp))
+                        .padding(6.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = battleLog,
+                        color = if (battleLog.contains("❌")) Color.Red else Color.Yellow,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Medium,
+                        textAlign = TextAlign.Center
+                    )
+                }
+
+                // ================= ПОЛЕ БОЯ ИГРОКА (DROP TARGET) =================
                 DropTarget(
-                    modifier = Modifier.fillMaxWidth().height(160.dp),
+                    modifier = Modifier.fillMaxWidth().height(150.dp),
                     onCardDropped = { droppedCard ->
-                        // Когда карту отпускают над столом, вызываем метод её розыгрыша
-                        viewModel.playCard(droppedCard)
+                        val hasMana = state.player.currentMana >= droppedCard.manaCost
+                        val hasSpace = state.player.board.size < 5 // Проверяем лимит стола (макс. 5 карт)
+
+                        if (hasMana && hasSpace) {
+                            viewModel.playCard(droppedCard)
+                            battleLog = "🃏 Вы разыграли карту ${droppedCard.name}"
+                        } else if (!hasMana) {
+                            battleLog = "❌ Недостаточно маны для карты ${droppedCard.name}!"
+                        } else {
+                            battleLog = "❌ Нет места на поле боя для карты ${droppedCard.name}!"
+                        }
                     }
                 ) { isHovered ->
-                    val boardBorderColor = if (isHovered) Color.Green else Color.DarkGray
-                    val boardBgColor = if (isHovered) Color(0xFF1B3A1B) else Color(0xFF1E1E1E)
+                    val boardBorderColor = if (isHovered) Color.Green else Color(0xFF233A23)
+                    val boardBgColor = if (isHovered) Color(0xFF142414) else Color(0xFF141F14)
 
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .border(2.dp, boardBorderColor, RoundedCornerShape(8.dp))
+                            .border(1.dp, boardBorderColor, RoundedCornerShape(8.dp))
                             .background(boardBgColor),
                         contentAlignment = Alignment.Center
                     ) {
                         if (state.player.board.isEmpty()) {
-                            Text("Перетащите карту сюда, чтобы разыграть", color = Color.Gray)
+                            Text("Перетащите карту сюда из руки, чтобы призвать существо", color = Color.Gray, fontSize = 12.sp)
                         } else {
-                            LazyRow(
-                                horizontalArrangement = Arrangement.Center,
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                // Добавляем обязательный уникальный ключ для сохранения инстанса Compose
-                                items(state.player.board, key = { it.id }) { playerCard ->
-                                    val isSelected = selectedCardForAttack == playerCard
+                            LazyRow(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
+                                items(state.player.board, key = { "pl_${it.id}" }) { playerCard ->
+                                    val isSelected = selectedCardForAttack?.id == playerCard.id
                                     CardComponent(
                                         card = playerCard,
                                         modifier = Modifier
                                             .padding(4.dp)
                                             .border(
-                                                width = if (isSelected) 3.dp else 0.dp,
-                                                color = if (isSelected) Color.Green else Color.Transparent,
+                                                width = if (isSelected) 3.dp else 1.dp,
+                                                color = if (isSelected) Color.Green else Color(0xFF4CAF50),
                                                 shape = RoundedCornerShape(8.dp)
                                             ),
                                         onClick = {
-                                            selectedCardForAttack = if (isSelected) null else playerCard
+                                            if (state.currentTurn == Turn.PLAYER) {
+                                                selectedCardForAttack = if (isSelected) null else playerCard
+                                                if (!isSelected) battleLog = "🎯 Выбрана карта: ${playerCard.name}. Выберите цель для атаки!"
+                                            }
                                         }
                                     )
                                 }
@@ -152,33 +201,36 @@ fun GameScreen(
                 // ================= ИГРОК (НИЖНЯЯ ЧАСТЬ) =================
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().background(Color(0xFF141A1E), RoundedCornerShape(8.dp)).padding(8.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column {
-                            Text(state.player.name, color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                            Text("Мана: ${state.player.currentMana}/${state.player.maxMana} 💧", color = Color(0xFF0288D1), fontSize = 14.sp)
+                            Text(state.player.name, color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                            Text("Ваша мана: ${state.player.currentMana}/${state.player.maxMana} 💧", color = Color(0xFF29B6F6), fontSize = 14.sp, fontWeight = FontWeight.Bold)
                         }
 
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("HP: ${state.player.currentHp}/${state.player.maxHp} ❤️", color = Color.Green, fontSize = 18.sp, modifier = Modifier.padding(end = 16.dp))
-                            Button(onClick = { viewModel.endTurn(); selectedCardForAttack = null }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE64A19))) {
-                                Text("Ход")
+                            Text("Ваше HP: ${state.player.currentHp}/${state.player.maxHp} ❤️", color = Color(0xFF66BB6A), fontSize = 16.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(end = 12.dp))
+                            Button(
+                                onClick = {
+                                    viewModel.endTurn()
+                                    selectedCardForAttack = null
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD84315)),
+                                shape = RoundedCornerShape(4.dp),
+                                enabled = state.currentTurn == Turn.PLAYER
+                            ) {
+                                Text("Конец Хода")
                             }
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(6.dp))
 
-                    // РУКА ИГРОКА (ДРАГ-ТАГЕТЫ)
-                    Text("Ваша рука (Зажмите карту для перетаскивания, долгий тап - осмотр):", color = Color.Gray, fontSize = 11.sp)
-                    LazyRow(
-                        modifier = Modifier.fillMaxWidth().height(160.dp),
-                        horizontalArrangement = Arrangement.Start
-                    ) {
-                        // Привязываем key = { it.id }, чтобы DragTarget не сбрасывал стейт при скролле руки
-                        items(state.player.hand, key = { it.id }) { card ->
+                    // РУКА ИГРОКА
+                    LazyRow(modifier = Modifier.fillMaxWidth().height(150.dp), horizontalArrangement = Arrangement.Start) {
+                        items(state.player.hand, key = { "hand_${it.id}" }) { card ->
                             DragTarget(card = card, modifier = Modifier.padding(4.dp)) {
                                 CardComponent(card = card)
                             }
@@ -188,24 +240,39 @@ fun GameScreen(
             }
 
             // Оверлей конца игры
-            if (state.isGameOver) {
-                Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.85f)), contentAlignment = Alignment.Center) {
+            AnimatedVisibility(
+                visible = state.isGameOver,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
+                Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.9f)), contentAlignment = Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("Игра Окончена!", color = Color.White, fontSize = 32.sp, fontWeight = FontWeight.Bold)
+                        Text("Битва Завершена!", color = Color.White, fontSize = 28.sp, fontWeight = FontWeight.Black)
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text("Победитель: ${state.winnerName}", color = Color.Yellow, fontSize = 20.sp)
-                        Spacer(modifier = Modifier.height(24.dp))
-                        Button(onClick = { viewModel.restartCurrentGame() }) { Text("Играть снова") }
-                        Spacer(modifier = Modifier.height(8.dp))
+
+                        val isPlayerWin = state.winnerName == state.player.name
+                        Text(
+                            text = if (isPlayerWin) "ВЫ ПОБЕДИЛИ! 🎉" else "ВЫ ПРОИГРАЛИ 💀",
+                            color = if (isPlayerWin) Color.Green else Color.Red,
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        if (isPlayerWin) {
+                            Text("+50 Золотых монет начислено", color = Color.Yellow, fontSize = 14.sp, modifier = Modifier.padding(top = 4.dp))
+                        }
+
+                        Spacer(modifier = Modifier.height(32.dp))
+
                         Button(
                             onClick = {
-                                if (state.winnerName == state.player.name) {
-                                    com.example.cardsandshades.model.UserProfile.gold.value += 50
-                                }
+                                viewModel.claimRewardsAndExit(isPlayerWin)
                                 onBackToMenu()
                             },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF388E3C))
-                        ) { Text("В меню кампании") }
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF388E3C)),
+                            modifier = Modifier.width(200.dp)
+                        ) {
+                            Text("Забрать награду и выйти")
+                        }
                     }
                 }
             }

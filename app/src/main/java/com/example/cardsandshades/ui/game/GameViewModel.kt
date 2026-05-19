@@ -75,6 +75,15 @@ class GameViewModel : ViewModel() {
         _gameState.value = initialState
     }
 
+    fun claimRewardsAndExit(isPlayerWin: Boolean) {
+        if (isPlayerWin) {
+            // Безопасное начисление золота через инкапсулированный профиль
+            com.example.cardsandshades.model.UserProfile.gold.value += 50
+        }
+        // Сбрасываем стейт боя, подготавливая ViewModel к следующему матчу кампании
+        _gameState.value = null
+    }
+
     fun restartCurrentGame() {
         currentLevel?.let { startNewGame(it) }
     }
