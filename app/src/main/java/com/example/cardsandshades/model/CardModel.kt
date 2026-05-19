@@ -11,9 +11,13 @@ data class CardModel(
     val baseAttack: Int,
     val baseHealth: Int,
     val rarity: Rarity,
-    // Текущие значения в бою (по умолчанию равны базовым)
     var currentAttack: Int = baseAttack,
-    var currentHealth: Int = baseHealth
+    var currentHealth: Int = baseHealth,
+    // Поля для анимации (не участвуют в copy по умолчанию)
+    var isAttacking: Boolean = false,
+    var isTakingDamage: Boolean = false,
+    var lastDamageTaken: Int = 0,
+    var isDying: Boolean = false
 ) {
     val isDead: Boolean get() = currentHealth <= 0
 

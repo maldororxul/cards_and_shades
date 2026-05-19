@@ -125,21 +125,100 @@ class GameViewModel : ViewModel() {
 
     // Атака карты на карту с глубоким клонированием стейта статов существ
     fun attackEnemyCard(attacker: CardModel, target: CardModel) {
-        _gameState.update { currentState ->
-            currentState?.let { state ->
-                if (state.currentTurn == Turn.PLAYER) {
-                    val updatedPlayer = state.player.copy(board = state.player.board.map { it.copy() }.toMutableList())
-                    val updatedOpponent = state.opponent.copy(board = state.opponent.board.map { it.copy() }.toMutableList())
-                    val updatedState = state.copy(player = updatedPlayer, opponent = updatedOpponent)
+        val state = _gameState.value ?: return
+        if (state.isAnimating || state.currentTurn != Turn.PLAYER) return
 
-                    val newAttacker = updatedPlayer.board.find { it.id == attacker.id }
-                    val newTarget = updatedOpponent.board.find { it.id == target.id }
+        viewModelScope.launch {
+            // Блокируем стол
+            _gameState.update { it?.copy(isAnimating = true) }
 
-                    if (newAttacker != null && newTarget != null) {
-                        GameEngine.attackCard(updatedState, newAttacker, newTarget)
+            // 1. Анимация рывка атакующего вперед
+            updateCardAnimation(attacker.id, isAttacking = true)
+            delay(200)
+
+            // 2. Встречный удар: фиксация урона, тряска и вылет цифр
+            _gameState.update { currentState ->
+                currentState?.let { s ->
+                    val pBoard = s.player.board.map { it.copy() }.toMutableList()
+                    val oBoard = s.opponent.board.map { it.copy() }.toMutableList()
+
+                    val aCard = pBoard.find { it.id == attacker.id }
+                    val tCard = oBoard.find { it.id == target.id }
+
+                    if (aCard != null && tCard != null) {
+                        // Пишем дельту урона
+                        tCard.lastDamageTaken = aCard.currentAttack
+                        aCard.lastDamageTaken = tCard.currentAttack
+
+                        // Включаем тряску и анимацию получения урона
+                        tCard.isTakingDamage = true
+                        aCard.isTakingDamage = true
+
+                        // Плавное снижение здоровья
+                        tCard.currentHealth -= aCard.currentAttack
+                        aCard.currentHealth -= tCard.currentAttack
                     }
-                    updatedState
-                } else state
+                    s.copy(player = s.player.copy(board = pBoard), opponent = s.opponent.copy(board = oBoard))
+                }
+            }
+            // Возвращаем атакующую карту назад, держим тряску получения урона
+            updateCardAnimation(attacker.id, isAttacking = false)
+            delay(300)
+
+            // 3. Анимация смерти (падения), если здоровье <= 0
+            var checkGameOver = false
+            _gameState.update { currentState ->
+                currentState?.let { s ->
+                    val pBoard = s.player.board.map { it.copy() }.toMutableList()
+                    val oBoard = s.opponent.board.map { it.copy() }.toMutableList()
+
+                    pBoard.find { it.id == attacker.id }?.let {
+                        it.isTakingDamage = false
+                        if (it.currentHealth <= 0) it.isDying = true
+                    }
+                    oBoard.find { it.id == target.id }?.let {
+                        it.isTakingDamage = false
+                        if (it.currentHealth <= 0) it.isDying = true
+                    }
+                    s.copy(player = s.player.copy(board = pBoard), opponent = s.opponent.copy(board = oBoard))
+                }
+            }
+
+            // Если кто-то умирает — даем 400мс на анимацию исчезновения
+            val hasDeaths = _gameState.value?.player?.board?.any { it.isDying } == true ||
+                    _gameState.value?.opponent?.board?.any { it.isDying } == true
+            if (hasDeaths) delay(400)
+
+            // 4. Окончательное удаление карт со стола и проверка финала
+            _gameState.update { currentState ->
+                currentState?.let { s ->
+                    val pBoard = s.player.board.filter { it.currentHealth > 0 }.toMutableList()
+                    val oBoard = s.opponent.filter { it.currentHealth > 0 }.toMutableList()
+
+                    checkGameOver = true
+                    s.copy(
+                        player = s.player.copy(board = pBoard),
+                        opponent = s.opponent.copy(board = oBoard),
+                        isAnimating = false
+                    ).apply {
+                        // Вызываем проверку победы из вашего GameEngine
+                        if (player.currentHp <= 0 || opponent.currentHp <= 0) {
+                            this.isGameOver = true
+                            this.winnerName = if (opponent.currentHp <= 0) player.name else opponent.name
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Вспомогательный метод переключения флагов
+    private fun updateCardAnimation(cardId: String, isAttacking: Boolean = false) {
+        _gameState.update { currentState ->
+            currentState?.let { s ->
+                val pBoard = s.player.board.map { if (it.id == cardId) it.copy(isAttacking = isAttacking) else it }.toMutableList()
+                val oBoard = s.opponent.board.map { if (it.id == cardId) it.copy(isAttacking = isAttacking) else it }.toMutableList()
+                s.copy(player = s.player.copy(board = pBoard), opponent = s.opponent.copy(board = oBoard))
             }
         }
     }

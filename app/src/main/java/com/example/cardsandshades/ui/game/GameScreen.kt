@@ -113,15 +113,17 @@ fun GameScreen(
                             if (selectedCardForAttack?.id == id) startArrowOffset = offset
                         },
                         onCardClick = { card, offset ->
-                            if (state.currentTurn == Turn.PLAYER) {
-                                if (selectedCardForAttack?.id == card.id) {
-                                    selectedCardForAttack = null
-                                    isDrawingArrow = false
-                                } else {
-                                    selectedCardForAttack = card
-                                    startArrowOffset = offset
-                                    isDrawingArrow = true
-                                    battleLog = "🎯 Выбрана ${card.name}. Нажмите на карту врага или его HP!"
+                            if (state.currentTurn == Turn.PLAYER && !state.isAnimating) {
+                                if (state.currentTurn == Turn.PLAYER) {
+                                    if (selectedCardForAttack?.id == card.id) {
+                                        selectedCardForAttack = null
+                                        isDrawingArrow = false
+                                    } else {
+                                        selectedCardForAttack = card
+                                        startArrowOffset = offset
+                                        isDrawingArrow = true
+                                        battleLog = "🎯 Выбрана ${card.name}. Нажмите на карту врага или его HP!"
+                                    }
                                 }
                             }
                         }

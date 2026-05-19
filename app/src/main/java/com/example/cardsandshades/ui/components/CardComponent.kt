@@ -1,5 +1,17 @@
 package com.example.cardsandshades.ui.components
 
+import android.annotation.SuppressLint
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -11,6 +23,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -20,6 +34,7 @@ import androidx.compose.ui.window.Dialog
 import com.example.cardsandshades.model.CardModel
 import com.example.cardsandshades.model.Rarity
 
+@SuppressLint("UseOfNonLambdaOffsetOverload")
 @Composable
 fun CardComponent(
     card: CardModel,
@@ -36,24 +51,66 @@ fun CardComponent(
         Rarity.LEGENDARY -> Color(0xFFFDD835)
     }
 
-    Card(
+    // 1. АНИМАЦИЯ АТАКУЮЩЕГО (Рывок вверх/вниз на 40dp)
+    val attackOffset by animateDpAsState(
+        targetValue = if (card.isAttacking) (-40).dp else 0.dp,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow)
+    )
+
+    // 2. АНИМАЦИЯ ПОЛУЧЕНИЯ УРОНА (Тряска по оси X через бесконечную анимацию)
+    val shakeTransition = rememberInfiniteTransition()
+    val shakeOffset by shakeTransition.animateFloat(
+        initialValue = -6f,
+        targetValue = 6f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(50, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
+    val currentXOffset = if (card.isTakingDamage) shakeOffset.dp else 0.dp
+
+    // 3. АНИМАЦИЯ ПАДЕНИЯ/СМЕРТИ (Уменьшение масштаба и растворение)
+    val deathAlpha by animateFloatAsState(targetValue = if (card.isDying) 0f else 1f, animationSpec = tween(350))
+    val deathScale by animateFloatAsState(targetValue = if (card.isDying) 0.5f else 1f, animationSpec = tween(350))
+
+    Box(
         modifier = modifier
-            .width(105.dp)
-            .height(150.dp)
-            .border(2.dp, borderColor, RoundedCornerShape(8.dp))
-            .clickable(enabled = !isPreview) {
-                // ИСПРАВЛЕНИЕ: Если onClick передан пустой (как в руке), открываем осмотр
-                // Если onClick передан рабочий (как на столе для атаки), срабатывает атака
-                if (onClick == {}) {
-                    showInspectDialog = true
-                } else {
-                    onClick()
-                }
-            },
-        shape = RoundedCornerShape(8.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF212121))
+            .offset(x = currentXOffset, y = attackOffset)
+            .alpha(deathAlpha)
+            .scale(deathScale)
     ) {
-        CardContent(card = card, borderColor = borderColor)
+        Card(
+            modifier = Modifier
+                .width(105.dp)
+                .height(150.dp)
+                .border(2.dp, if (card.isTakingDamage) Color.Red else borderColor, RoundedCornerShape(8.dp))
+                .clickable(enabled = !isPreview) {
+                    if (onClick == {}) showInspectDialog = true else onClick()
+                },
+            shape = RoundedCornerShape(8.dp),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFF212121))
+        ) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                CardContent(card = card, borderColor = borderColor)
+
+                // 4. ВЫЛЕТАЮЩИЕ ЦИФРЫ УРОНА (Появляются поверх карты при уроне)
+                if (card.isTakingDamage && card.lastDamageTaken > 0) {
+                    val damageYOffset by animateDpAsState(
+                        targetValue = (-30).dp,
+                        animationSpec = tween(400, easing = FastOutSlowInEasing)
+                    )
+                    Text(
+                        text = "-${card.lastDamageTaken}",
+                        color = Color.Red,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Black,
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .offset(y = damageYOffset)
+                    )
+                }
+            }
+        }
     }
 
     if (showInspectDialog) {
