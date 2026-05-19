@@ -2,12 +2,11 @@ package com.example.cardsandshades.ui.game
 
 import BattleLogZone
 import EnemyBoardZone
-import GameOverOverlay
+import com.example.cardsandshades.ui.battle.GameOverOverlay
 import OpponentHeaderZone
 import PlayerBoardZone
 import PlayerControlsZone
 import RenderAttackArrows
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Text
@@ -182,7 +181,7 @@ fun GameScreen(
                 rewardCardName = viewModel.currentLevel?.rewardCardName,
                 onExitClick = { isPlayerWin ->
                     viewModel.claimRewardsAndExit(isPlayerWin)
-                    com.example.cardsandshades.model.UserProfile.save(context)
+                    UserProfile.save(context)
                     onBackToMenu()
                 }
             )

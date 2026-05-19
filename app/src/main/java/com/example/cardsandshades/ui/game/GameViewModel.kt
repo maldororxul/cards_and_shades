@@ -362,39 +362,40 @@ class GameViewModel : ViewModel() {
                 val attackerCards = state.opponent.board.toList()
 
                 for (attacker in attackerCards) {
+                    // 1. Проверяем, живо ли еще атакующее существо ИИ
                     val activeAttacker = _gameState.value?.opponent?.board?.find { it.id == attacker.id } ?: continue
 
-                    // Проверяем готовность карты ИИ к бою (теперь она будет готова!)
+                    // 2. Проверяем базовую готовность существа к бою (не спит ли оно)
                     val canAIAttack = com.example.cardsandshades.engine.GameEngine.canAttackHero(_gameState.value!!, activeAttacker)
                     if (!canAIAttack) continue
 
-                    val playerBoard = _gameState.value?.player?.board ?: emptyList()
+                    // ИСПРАВЛЕНИЕ: Переносим чтение стола игрока ВНУТРЬ цикла, прямо перед выбором цели!
+                    // Теперь ИИ всегда видит актуальный и живой стол игрока.
+                    val currentGameState = _gameState.value ?: continue
+                    val playerBoard = currentGameState.player.board
                     val hasTargets = playerBoard.isNotEmpty()
-
                     val tauntTargets = playerBoard.filter { it.hasTaunt }
-                    val validTargets = if (tauntTargets.isNotEmpty()) tauntTargets else playerBoard
 
                     // Включаем стрелку прицеливания для ИИ
                     opponentAttackerId = activeAttacker.id
 
                     if (tauntTargets.isNotEmpty()) {
-                        // 1. Приоритет №1: Если есть Танки (Провокация) — ИИ обязан бить только их
+                        // Атакуем только живых Танков
                         val target = tauntTargets.random()
                         opponentTargetId = target.id
                         isOpponentTargetingHero = false
                     } else if (hasTargets) {
-                        // 2. Приоритет №2 (ИСПРАВЛЕНИЕ БАГА): Если Танков нет, но на столе игрока есть ЛЮБЫЕ другие карты —
-                        // ИИ обязан атаковать только существ! Атака лица в обход стола ПОЛНОСТЬЮ ЗАБЛОКИРОВАНА.
+                        // Танков нет, но есть обычные живые существа — атакуем только их
                         val target = playerBoard.random()
                         opponentTargetId = target.id
                         isOpponentTargetingHero = false
                     } else {
-                        // 3. И только если у игрока абсолютно ПУСТОЙ стол — ИИ имеет право ударить в лицо
+                        // Стол полностью пуст — бьем в лицо
                         opponentTargetId = null
                         isOpponentTargetingHero = true
                     }
 
-                    delay(1000) // Игрок видит, куда наводится стрелка ИИ
+                    delay(1000) // Игрок видит стрелку
 
                     // Анимация рывка существа ИИ вперед
                     updateCardAnimation(activeAttacker.id, isAttacking = true)
@@ -412,14 +413,13 @@ class GameViewModel : ViewModel() {
                                 if (!isOpponentTargetingHero) {
                                     val nextTarget = pBoard.find { it.id == opponentTargetId }
                                     if (nextTarget != null) {
-                                        // Применяем математику боя: проставляем флаг hasAttackedThisTurn внутри calculateCombat
-                                        GameEngine.calculateCombat(s, nextAttacker, nextTarget)
+                                        // Передаем актуальные живые копии карт в движок
+                                        com.example.cardsandshades.engine.GameEngine.calculateCombat(s, nextAttacker, nextTarget)
 
                                         nextTarget.isTakingDamage = true
                                         nextAttacker.isTakingDamage = true
                                     }
                                 } else {
-                                    // Атака в лицо игрока: списываем HP и блокируем повторную атаку этой карты ИИ
                                     nextAttacker.hasAttackedThisTurn = true
                                     playerHeroDamageValue = nextAttacker.currentAttack
                                     playerHeroTakingDamage = true
@@ -477,7 +477,7 @@ class GameViewModel : ViewModel() {
                             }
                         }
                     }
-                    delay(400) // Маленькая пауза перед ходом следующего существа ИИ
+                    delay(400) // Пауза перед ходом следующего существа ИИ
                 }
             }
 
