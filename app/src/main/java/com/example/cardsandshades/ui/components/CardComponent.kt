@@ -44,6 +44,31 @@ fun CardComponent(
 ) {
     var showInspectDialog by remember { mutableStateOf(false) }
 
+    // 1. АНИМАЦИЯ АТАКУЮЩЕГО (Рывок вперед)
+    val attackOffset by animateDpAsState(
+        targetValue = if (card.isAttacking) (-40).dp else 0.dp,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow)
+    )
+
+    // 2. ИСПРАВЛЕНИЕ ЗАЦИКЛИВАНИЯ: Ограниченная по времени тряска урона
+    var shakeOffset by remember { mutableStateOf(0f) }
+    LaunchedEffect(card.isTakingDamage) {
+        if (card.isTakingDamage) {
+            // Запускаем ровно 4 быстрых колебания влево-вправо
+            repeat(2) {
+                shakeOffset = -10f
+                kotlinx.coroutines.delay(50)
+                shakeOffset = 10f
+                kotlinx.coroutines.delay(50)
+            }
+            shakeOffset = 0f
+        }
+    }
+
+    // 3. АНИМАЦИЯ ПАДЕНИЯ/СМЕРТИ
+    val deathAlpha by animateFloatAsState(targetValue = if (card.isDying) 0f else 1f, animationSpec = tween(350))
+    val deathScale by animateFloatAsState(targetValue = if (card.isDying) 0.5f else 1f, animationSpec = tween(350))
+
     val borderColor = when (card.rarity) {
         Rarity.COMMON -> Color.Gray
         Rarity.RARE -> Color(0xFF1E88E5)
@@ -51,31 +76,9 @@ fun CardComponent(
         Rarity.LEGENDARY -> Color(0xFFFDD835)
     }
 
-    // 1. АНИМАЦИЯ АТАКУЮЩЕГО (Рывок вверх/вниз на 40dp)
-    val attackOffset by animateDpAsState(
-        targetValue = if (card.isAttacking) (-40).dp else 0.dp,
-        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow)
-    )
-
-    // 2. АНИМАЦИЯ ПОЛУЧЕНИЯ УРОНА (Тряска по оси X через бесконечную анимацию)
-    val shakeTransition = rememberInfiniteTransition()
-    val shakeOffset by shakeTransition.animateFloat(
-        initialValue = -6f,
-        targetValue = 6f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(50, easing = LinearEasing),
-            repeatMode = RepeatMode.Reverse
-        )
-    )
-    val currentXOffset = if (card.isTakingDamage) shakeOffset.dp else 0.dp
-
-    // 3. АНИМАЦИЯ ПАДЕНИЯ/СМЕРТИ (Уменьшение масштаба и растворение)
-    val deathAlpha by animateFloatAsState(targetValue = if (card.isDying) 0f else 1f, animationSpec = tween(350))
-    val deathScale by animateFloatAsState(targetValue = if (card.isDying) 0.5f else 1f, animationSpec = tween(350))
-
     Box(
         modifier = modifier
-            .offset(x = currentXOffset, y = attackOffset)
+            .offset(x = shakeOffset.dp, y = attackOffset)
             .alpha(deathAlpha)
             .scale(deathScale)
     ) {
@@ -93,20 +96,22 @@ fun CardComponent(
             Box(modifier = Modifier.fillMaxSize()) {
                 CardContent(card = card, borderColor = borderColor)
 
-                // 4. ВЫЛЕТАЮЩИЕ ЦИФРЫ УРОНА (Появляются поверх карты при уроне)
+                // 4. ВЫЛЕТАЮЩИЕ ЦИФРЫ УРОНА
                 if (card.isTakingDamage && card.lastDamageTaken > 0) {
-                    val damageYOffset by animateDpAsState(
-                        targetValue = (-30).dp,
-                        animationSpec = tween(400, easing = FastOutSlowInEasing)
-                    )
+                    var damageYOffset by remember { mutableStateOf(0.dp) }
+                    LaunchedEffect(Unit) {
+                        damageYOffset = (-40).dp
+                    }
+                    val animatedDamageY by animateDpAsState(targetValue = damageYOffset, animationSpec = tween(400))
+
                     Text(
                         text = "-${card.lastDamageTaken}",
                         color = Color.Red,
-                        fontSize = 24.sp,
+                        fontSize = 26.sp,
                         fontWeight = FontWeight.Black,
                         modifier = Modifier
                             .align(Alignment.Center)
-                            .offset(y = damageYOffset)
+                            .offset(y = animatedDamageY)
                     )
                 }
             }

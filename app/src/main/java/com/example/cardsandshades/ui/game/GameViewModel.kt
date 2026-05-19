@@ -35,6 +35,16 @@ class GameViewModel : ViewModel() {
     var isOpponentTargetingHero by mutableStateOf(false)
         private set
 
+    var playerHeroTakingDamage by mutableStateOf(false)
+        private set
+    var playerHeroDamageValue by mutableStateOf(0)
+        private set
+
+    var opponentHeroTakingDamage by mutableStateOf(false)
+        private set
+    var opponentHeroDamageValue by mutableStateOf(0)
+        private set
+
     // Убрали принудительный вызов из init, чтобы игра не крашилась при старте до выбора уровня
     init {
         _gameState.value = null
@@ -216,19 +226,36 @@ class GameViewModel : ViewModel() {
     }
 
     fun attackEnemyHero(attacker: CardModel) {
-        _gameState.update { currentState ->
-            currentState?.let { state ->
-                if (state.currentTurn == Turn.PLAYER) {
-                    val updatedPlayer = state.player.copy(board = state.player.board.map { it.copy() }.toMutableList())
-                    val updatedOpponent = state.opponent.copy()
-                    val updatedState = state.copy(player = updatedPlayer, opponent = updatedOpponent)
+        val state = _gameState.value ?: return
+        if (state.isAnimating || state.currentTurn != Turn.PLAYER) return
 
-                    val newAttacker = updatedPlayer.board.find { it.id == attacker.id }
-                    if (newAttacker != null) {
-                        GameEngine.attackHero(updatedState, newAttacker)
-                    }
-                    updatedState
-                } else state
+        viewModelScope.launch {
+            _gameState.update { it?.copy(isAnimating = true) }
+
+            // Рывок вперед
+            updateCardAnimation(attacker.id, isAttacking = true)
+            delay(200)
+
+            // Анимация удара в лицо врага
+            opponentHeroDamageValue = attacker.currentAttack
+            opponentHeroTakingDamage = true
+
+            _gameState.update { currentState ->
+                currentState?.let { s ->
+                    s.copy(opponent = s.opponent.copy(currentHp = s.opponent.currentHp - attacker.currentAttack))
+                }
+            }
+            updateCardAnimation(attacker.id, isAttacking = false)
+            delay(500) // Держим вспышку урона на лице
+
+            opponentHeroTakingDamage = false
+            _gameState.update { it?.copy(isAnimating = false) }
+
+            // Проверка конца игры
+            _gameState.value?.let { s ->
+                if (s.opponent.currentHp <= 0) {
+                    _gameState.update { it?.copy(isGameOver = true, winnerName = s.player.name) }
+                }
             }
         }
     }
@@ -321,6 +348,9 @@ class GameViewModel : ViewModel() {
                                         nextAttacker.currentHealth -= nextTarget.currentAttack
                                     }
                                 } else {
+                                    // Анимация удара ИИ в лицо игрока
+                                    playerHeroDamageValue = nextAttacker.currentAttack
+                                    playerHeroTakingDamage = true
                                     // Атака в лицо игрока (меняем только здоровье игрока)
                                     val updatedPlayerModel = s.player.copy(currentHp = s.player.currentHp - nextAttacker.currentAttack)
                                     return@update s.copy(player = updatedPlayerModel)
@@ -333,7 +363,9 @@ class GameViewModel : ViewModel() {
                     opponentAttackerId = null
                     opponentTargetId = null
                     isOpponentTargetingHero = false
-                    delay(300)
+
+                    delay(500) // Даем рассмотреть урон по лицу игрока
+                    playerHeroTakingDamage = false
 
                     // 4. Анимация смерти для погибших существ
                     _gameState.update { currentState ->
@@ -381,7 +413,7 @@ class GameViewModel : ViewModel() {
             _gameState.update { currentState ->
                 currentState?.let { state ->
                     val updatedState = state.copy()
-                    com.example.cardsandshades.engine.GameEngine.endTurn(updatedState)
+                    GameEngine.endTurn(updatedState)
                     updatedState
                 }
             }

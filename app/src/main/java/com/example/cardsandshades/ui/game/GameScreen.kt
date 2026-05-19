@@ -7,6 +7,7 @@ import OpponentHeaderZone
 import PlayerBoardZone
 import PlayerControlsZone
 import RenderAttackArrows
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Text
@@ -139,7 +140,7 @@ fun GameScreen(
                         viewModel.endTurn()
                         selectedCardForAttack = null
                         isDrawingArrow = false
-                    }
+                    },
                 )
             }
 
