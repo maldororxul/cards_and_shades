@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    // Подключаем KSP и официальный плагин Room
+    id("com.google.devtools.ksp")
 }
 
 android {
@@ -60,4 +62,12 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
+    // ROOM
+    val roomVersion = "2.6.1"
+    implementation("androidx.room:room-runtime:$roomVersion")
+    implementation("androidx.room:room-ktx:$roomVersion")
+    "ksp"("androidx.room:room-compiler:$roomVersion") // Обработка аннотаций через строковый KSP
+
+    // Библиотека Gson для быстрой сериализации списков карт в JSON
+    implementation("com.google.code.gson:gson:2.10.1")
 }

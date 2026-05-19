@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import com.example.cardsandshades.ui.booster.BoosterScreen
+import com.example.cardsandshades.model.UserProfile
 import com.example.cardsandshades.ui.campaign.CampaignScreen
 import com.example.cardsandshades.ui.game.GameScreen
 import com.example.cardsandshades.ui.game.GameViewModel
@@ -34,6 +34,9 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Инициализируем локальное хранилище Room при запуске игры
+        UserProfile.initDatabase(this)
 
         // 1. Разрешаем приложению отрисовываться под системными панелями
         WindowCompat.setDecorFitsSystemWindows(window, false)
