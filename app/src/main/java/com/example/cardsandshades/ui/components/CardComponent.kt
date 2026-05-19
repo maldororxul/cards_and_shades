@@ -130,11 +130,20 @@ fun CardComponent(
                         Text(card.rarity.name, color = borderColor, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        // ИСПРАВЛЕНИЕ: Выводим реальное динамическое описание способностей из ООП-эффектов карты
-                        val effectsDescription = if (card.effects.isNotEmpty()) {
-                            card.effects.joinToString("\n") { "✨ ${it.name}: ${it.description}" }
+                        val effectsDescription = if (card.effectTags.isNotEmpty()) {
+                            card.activeEffects.joinToString("\n") { "✨ ${it.name}: ${it.description}" }
                         } else {
                             "Обычное существо. Не имеет скрытых магических сил."
+                        }
+
+                        if (card.effectTags.isNotEmpty()) {
+                            Text(
+                                text = "[${card.activeEffects.first().name}]",
+                                color = Color.Yellow,
+                                fontSize = 9.sp,
+                                fontWeight = FontWeight.Light,
+                                modifier = Modifier.padding(top = 4.dp)
+                            )
                         }
 
                         Text(
@@ -177,9 +186,9 @@ private fun BoxScope.CardContent(card: CardModel, borderColor: Color) {
         Text(text = card.rarity.name, color = borderColor, fontSize = 8.sp, fontWeight = FontWeight.Bold)
 
         // Маленький текстовый индикатор абилки прямо на карте для удобства в бою
-        if (card.effects.isNotEmpty()) {
+        if (card.effectTags.isNotEmpty()) {
             Text(
-                text = "[${card.effects.first().name}]",
+                text = "[${card.activeEffects.first().name}]",
                 color = Color.Yellow,
                 fontSize = 9.sp,
                 fontWeight = FontWeight.Light,

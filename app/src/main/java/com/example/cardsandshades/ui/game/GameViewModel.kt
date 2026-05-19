@@ -55,15 +55,16 @@ class GameViewModel : ViewModel() {
     fun startNewGame(level: LevelModel) {
         currentLevel = level
 
-        // ИСПРАВЛЕНИЕ: Берем реальную собранную колоду игрока, если она готова
+        // ИСПРАВЛЕНИЕ: Берем сохраненную деку игрока из профиля и полностью восстанавливаем ей статы
         val playerDeck = if (UserProfile.selectedDeck.size == 20) {
-            UserProfile.selectedDeck.map { it.copy(id = java.util.UUID.randomUUID().toString()).apply { reset() } }.toMutableList()
+            UserProfile.selectedDeck.map {
+                it.copy(id = java.util.UUID.randomUUID().toString()).apply { reset() }
+            }.toMutableList()
         } else {
-            // Фолбэк на случай непредвиденного старта без колоды
+            // Если игрок умудрился зайти без деки — используем случайный автонабор
             CardCatalog.generateTestDeck()
         }
 
-        // Колода ИИ по-прежнему генерируется автоматически
         val opponentDeck = CardCatalog.generateTestDeck()
 
         val player = PlayerModel(

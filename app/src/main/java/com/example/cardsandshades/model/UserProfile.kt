@@ -10,14 +10,13 @@ import kotlinx.coroutines.launch
 object UserProfile {
     val gold = MutableStateFlow(500)
     val collection = MutableListFlow(mutableListOf<CardModel>())
-    val selectedDeck = mutableListOf<CardModel>()
+    val selectedDeck = MutableListFlow(mutableListOf<CardModel>()) // Теперь тоже реактивный MutableListFlow
     val maxUnlockedLevel = MutableStateFlow(1)
 
     private const val PREFS_NAME = "cards_and_shades_prefs"
     private val scope = CoroutineScope(Dispatchers.IO)
     private val gson = Gson()
 
-    // Инициализация и автозагрузка данных с диска
     fun initDatabase(context: Context) {
         scope.launch {
             val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -39,18 +38,28 @@ object UserProfile {
 
                 selectedDeck.clear()
                 selectedDeck.addAll(loadedDeck)
+                selectedDeck.notifyChanges()
             } else {
-                // Первый запуск: генерируем стартовую мини-коллекцию
-                repeat(15) {
-                    com.example.cardsandshades.catalog.CardCatalog.generateTestDeck().firstOrNull()?.let { collection.add(it) }
+                // Первый старт: генерируем начальный стартовый набор (30 карт)
+                repeat(30) {
+                    com.example.cardsandshades.catalog.CardCatalog.generateTestDeck().firstOrNull()?.let {
+                        collection.add(it)
+                    }
                 }
                 collection.notifyChanges()
+
+                // Автоматически собираем первую деку из первых 20 карт для фолбэка
+                val initialDeck = collection.take(20)
+                if (initialDeck.size == 20) {
+                    selectedDeck.addAll(initialDeck)
+                    selectedDeck.notifyChanges()
+                }
+
                 save(context)
             }
         }
     }
 
-    // Надежное сохранение данных профиля
     fun save(context: Context) {
         scope.launch {
             val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)

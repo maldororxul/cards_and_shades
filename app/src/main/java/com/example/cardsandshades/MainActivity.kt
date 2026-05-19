@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -57,17 +58,21 @@ class MainActivity : ComponentActivity() {
 
                     when (currentScreen) {
                         "campaign" -> {
-                            Column {
-                                Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)) {
+                            Column(modifier = Modifier.fillMaxSize()) {
+                                // ПАНЕЛЬ НАВИГАЦИИ МЕНЮ ГЛАВНОЙ КАМПАНИИ
+                                Row(
+                                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
                                     Button(
                                         onClick = { currentScreen = "shop" },
-                                        modifier = Modifier.weight(1f).padding(end = 4.dp)
+                                        modifier = Modifier.weight(1f)
                                     ) { Text("🏪 Магазин") }
 
                                     Button(
                                         onClick = { currentScreen = "collection" },
-                                        modifier = Modifier.weight(1f).padding(start = 4.dp),
-                                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF673AB7))
+                                        modifier = Modifier.weight(1f),
+                                        colors = ButtonDefaults.buttonColors(containerColor = androidx.compose.ui.graphics.Color(0xFF673AB7))
                                     ) { Text("🃏 Коллекция") }
                                 }
 

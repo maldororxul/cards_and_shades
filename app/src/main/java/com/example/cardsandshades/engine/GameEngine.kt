@@ -43,7 +43,7 @@ object GameEngine {
             activePlayer.hand.remove(card)
 
             // ТРИГГЕР: Активируем эффекты при призыве (например, Рывок сразу разбудит карту)
-            card.effects.forEach { it.onSummon(card) }
+            card.activeEffects.forEach { it.onSummon(card) }
 
             activePlayer.board.add(card)
             return true
@@ -84,8 +84,8 @@ object GameEngine {
         var counterDamageToAttacker = target.currentAttack
 
         // Применяем модификаторы эффектов
-        target.effects.forEach { damageToTarget = it.modifyIncomingDamage(target, damageToTarget) }
-        attacker.effects.forEach { counterDamageToAttacker = it.modifyCounterDamage(attacker, target, counterDamageToAttacker) }
+        target.activeEffects.forEach { damageToTarget = it.modifyIncomingDamage(target, damageToTarget) }
+        attacker.activeEffects.forEach { counterDamageToAttacker = it.modifyCounterDamage(attacker, target, counterDamageToAttacker) }
 
         // Нанесение урона существам
         target.currentHealth -= damageToTarget
@@ -95,7 +95,7 @@ object GameEngine {
         attacker.lastDamageTaken = counterDamageToAttacker
 
         // Пост-эффекты атаки (например, Маг бьет по соседям)
-        attacker.effects.forEach { it.onAfterAttack(state, attacker, target) }
+        attacker.activeEffects.forEach { it.onAfterAttack(state, attacker, target) }
     }
 
     // 4. Бой: Атака карты на карту противника (Взаимный урон)
