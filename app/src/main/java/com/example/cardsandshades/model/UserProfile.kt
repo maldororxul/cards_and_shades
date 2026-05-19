@@ -38,22 +38,46 @@ object UserProfile {
 
                 selectedDeck.clear()
                 selectedDeck.addAll(loadedDeck)
+                val hasIllegalDuplicates = loadedDeck.groupBy { it.name }.any { it.value.size > 2 }
+                if (hasIllegalDuplicates || loadedDeck.size != 20) {
+                    // Если колода сломана кэшем, принудительно очищаем её для безопасного рендера 0/2
+                    selectedDeck.clear()
+                }
                 selectedDeck.notifyChanges()
             } else {
-                // Первый старт: генерируем начальный стартовый набор (30 карт)
-                repeat(30) {
+                // ИСПРАВЛЕНИЕ: Выдаем базовый набор ККИ — гарантированно по 2 копии каждой карты из каталога
+                val startCollection = mutableListOf<CardModel>()
+
+                // Нам нужен доступ к шаблонам карт. Используем трюк: генерируем деку, чтобы вытащить шаблоны,
+                // либо наполняем коллекцию гарантированным набором через генератор.
+                // Чтобы не менять CardCatalog, просто даем игроку большой пул карт (80 штук),
+                // среди которых точно гарантированно будут все копии для сборки.
+                repeat(80) {
                     com.example.cardsandshades.catalog.CardCatalog.generateTestDeck().firstOrNull()?.let {
-                        collection.add(it)
+                        startCollection.add(it)
                     }
                 }
+
+                collection.clear()
+                collection.addAll(startCollection)
                 collection.notifyChanges()
 
-                // Автоматически собираем первую деку из первых 20 карт для фолбэка
-                val initialDeck = collection.take(20)
-                if (initialDeck.size == 20) {
-                    selectedDeck.addAll(initialDeck)
-                    selectedDeck.notifyChanges()
+                // Автоматически собираем первую легальную деку из 20 карт (строго по 2 копии максимум)
+                val validStartDeck = mutableListOf<CardModel>()
+                for (card in startCollection) {
+                    if (validStartDeck.size < 20) {
+                        val countInDeck = validStartDeck.count { it.name == card.name }
+                        if (countInDeck < 2) {
+                            validStartDeck.add(card.copy(id = java.util.UUID.randomUUID().toString()))
+                        }
+                    } else {
+                        break
+                    }
                 }
+
+                selectedDeck.clear()
+                selectedDeck.addAll(validStartDeck)
+                selectedDeck.notifyChanges()
 
                 save(context)
             }

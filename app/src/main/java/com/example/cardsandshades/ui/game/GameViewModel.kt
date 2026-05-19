@@ -65,7 +65,14 @@ class GameViewModel : ViewModel() {
             CardCatalog.generateTestDeck()
         }
 
-        val opponentDeck = CardCatalog.generateTestDeck()
+        // ИСПРАВЛЕНИЕ: Собираем уникальную тематическую колоду для ИИ на основе пресета уровня
+        val opponentDeck = level.opponentDeckPreset.map { cardName ->
+            // Ищем карту в каталоге по имени. Если не нашли (опечатка) — подставляем Тень-новобранца
+            (CardCatalog.createCardInstance(cardName) ?: CardCatalog.createCardInstance("Тень-новобранец")!!).apply { reset() }
+        }.toMutableList()
+
+        // Обязательно перемешиваем колоду босса перед началом матча
+        opponentDeck.shuffle()
 
         val player = PlayerModel(
             name = "Игрок",
@@ -295,8 +302,16 @@ class GameViewModel : ViewModel() {
             currentState?.let { state ->
                 if (state.currentTurn == Turn.PLAYER) {
                     val updatedState = state.copy()
-                    GameEngine.endTurn(updatedState)
-                    updatedState
+                    com.example.cardsandshades.engine.GameEngine.endTurn(updatedState)
+
+                    // ИСПРАВЛЕНИЕ БАГА: В момент передачи хода к ИИ, мы будим его СТАРЫЕ карты на столе
+                    val activeOpponent = updatedState.opponent.copy(
+                        board = updatedState.opponent.board.map { card ->
+                            card.copy(isSleeping = false, hasAttackedThisTurn = false)
+                        }.toMutableList()
+                    )
+
+                    updatedState.copy(opponent = activeOpponent)
                 } else state
             }
         }
@@ -328,29 +343,23 @@ class GameViewModel : ViewModel() {
                 }
             }
 
-            delay(1200)
+            delay(500)
 
             // ФАЗА ИИ 2: Атака с пошаговой визуализацией
             val state = _gameState.value
             if (state != null && !state.isGameOver) {
-                // ИИ берет копию своего стола для перебора
                 val attackerCards = state.opponent.board.toList()
 
                 for (attacker in attackerCards) {
-                    // 1. ПРОВЕРКА: Живо ли еще существо ИИ на столе?
                     val activeAttacker = _gameState.value?.opponent?.board?.find { it.id == attacker.id } ?: continue
 
-                    // 2. ОГРАНИЧЕНИЕ ИИ: Проверяем, может ли эта карта атаковать (не спит ли она и не ходила ли уже)
-                    // Передаем null, чтобы просто проверить базовую готовность существа к бою
+                    // Проверяем готовность карты ИИ к бою (теперь она будет готова!)
                     val canAIAttack = com.example.cardsandshades.engine.GameEngine.canAttackHero(_gameState.value!!, activeAttacker)
-                    if (!canAIAttack) continue // Если карта ИИ спит (только выложена), она пропускает фазу атаки
+                    if (!canAIAttack) continue
 
-                    // Ищем доступные цели на столе игрока
                     val playerBoard = _gameState.value?.player?.board ?: emptyList()
                     val hasTargets = playerBoard.isNotEmpty()
 
-                    // 3. ОГРАНИЧЕНИЕ ИИ: Правило Провокации (Танков)
-                    // Если у игрока есть танки, ИИ обязан выбрать цель только среди них
                     val tauntTargets = playerBoard.filter { it.hasTaunt }
                     val validTargets = if (tauntTargets.isNotEmpty()) tauntTargets else playerBoard
 
@@ -358,23 +367,18 @@ class GameViewModel : ViewModel() {
                     opponentAttackerId = activeAttacker.id
 
                     if (tauntTargets.isNotEmpty()) {
-                        // Если есть танки, ИИ берет случайного танка
-                        val target = validTargets.random()
+                        // 1. Приоритет №1: Если есть Танки (Провокация) — ИИ обязан бить только их
+                        val target = tauntTargets.random()
                         opponentTargetId = target.id
                         isOpponentTargetingHero = false
                     } else if (hasTargets) {
-                        // Если танков нет, но есть обычные существа, ИИ с шансом 50/50 бьет лицо или существо
-                        val attackHeroChoice = (0..1).random() == 0
-                        if (attackHeroChoice) {
-                            opponentTargetId = null
-                            isOpponentTargetingHero = true
-                        } else {
-                            val target = validTargets.random()
-                            opponentTargetId = target.id
-                            isOpponentTargetingHero = false
-                        }
+                        // 2. Приоритет №2 (ИСПРАВЛЕНИЕ БАГА): Если Танков нет, но на столе игрока есть ЛЮБЫЕ другие карты —
+                        // ИИ обязан атаковать только существ! Атака лица в обход стола ПОЛНОСТЬЮ ЗАБЛОКИРОВАНА.
+                        val target = playerBoard.random()
+                        opponentTargetId = target.id
+                        isOpponentTargetingHero = false
                     } else {
-                        // Если у игрока вообще пустой стол — ИИ целится строго в лицо
+                        // 3. И только если у игрока абсолютно ПУСТОЙ стол — ИИ имеет право ударить в лицо
                         opponentTargetId = null
                         isOpponentTargetingHero = true
                     }
@@ -472,7 +476,14 @@ class GameViewModel : ViewModel() {
             _gameState.update { currentState ->
                 currentState?.let { state ->
                     val updatedState = state.copy()
-                    GameEngine.endTurn(updatedState)
+                    com.example.cardsandshades.engine.GameEngine.endTurn(updatedState)
+
+                    // ФИКС: Наступил ход игрока — гарантированно будим все его карты на столе!
+                    updatedState.player.board.forEach {
+                        it.isSleeping = false
+                        it.hasAttackedThisTurn = false
+                    }
+
                     updatedState
                 }
             }

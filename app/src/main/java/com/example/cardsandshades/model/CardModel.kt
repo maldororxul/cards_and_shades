@@ -23,12 +23,11 @@ data class CardModel(
     var currentAttack: Int = baseAttack,
     var currentHealth: Int = baseHealth,
 
-    // ИСПРАВЛЕНИЕ: Теперь храним только теги. Это на 100% защищает от крашей Gson!
-    val effectTags: List<EffectTag> = emptyList(),
+    // Gson может записать сюда null при десериализации старого кэша, если поле отсутствовало
+    private val effectTags: List<EffectTag>? = emptyList(),
 
     var isSleeping: Boolean = true,
     var hasAttackedThisTurn: Boolean = false,
-
     var isAttacking: Boolean = false,
     var isTakingDamage: Boolean = false,
     var lastDamageTaken: Int = 0,
@@ -36,12 +35,15 @@ data class CardModel(
 ) {
     val isDead: Boolean get() = currentHealth <= 0
 
-    // Динамически опрашиваем тег без жесткого if-else
-    val hasTaunt: Boolean get() = effectTags.contains(EffectTag.TAUNT)
+    // ИСПРАВЛЕНИЕ: Безопасный публичный доступ к тегам
+    val activeTags: List<EffectTag> get() = effectTags ?: emptyList()
 
-    // ПОЛИМОРФИЗМ: Возвращаем реальные ООП-объекты эффектов на основе тегов карты
+    // ИСПРАВЛЕНИЕ: Проверка танка через activeTags
+    val hasTaunt: Boolean get() = activeTags.contains(EffectTag.TAUNT)
+
+    // ИСПРАВЛЕНИЕ: Развертывание эффектов через activeTags
     val activeEffects: List<CardEffect>
-        get() = effectTags.map { tag ->
+        get() = activeTags.map { tag ->
             when (tag) {
                 EffectTag.RUSH -> RushEffect()
                 EffectTag.TAUNT -> TauntEffect()
@@ -62,7 +64,6 @@ data class CardModel(
         isTakingDamage = false
         isDying = false
         lastDamageTaken = 0
-        // Если у карты есть Рывок (RUSH), она не должна спать при перезапуске матча
-        isSleeping = !effectTags.contains(EffectTag.RUSH)
+        isSleeping = !activeTags.contains(EffectTag.RUSH)
     }
 }

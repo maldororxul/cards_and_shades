@@ -15,6 +15,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -93,56 +94,99 @@ fun CollectionScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(groupedCards) { (cardSample, count) ->
-                    // Считаем, сколько карт с таким именем уже лежит в нашей текущей колоде
                     val countInDeck = currentDeck.count { it.name == cardSample.name }
-                    val availableToPlace = count - countInDeck
 
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    // Флаг: можно ли еще добавить эту карту в колоду
+                    val canAddMore = countInDeck < 2 && currentDeck.size < 20
+
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier
+                            .padding(4.dp)
+                            .background(Color(0xFF1E1E1E), RoundedCornerShape(8.dp))
+                            .padding(8.dp)
+                    ) {
                         Box(contentAlignment = Alignment.BottomCenter) {
                             CardComponent(
                                 card = cardSample,
-                                isPreview = true, // Отключаем поп-апы инспекции внутри грида
-                                modifier = Modifier.clickable {
-                                    if (availableToPlace > 0 && currentDeck.size < 20) {
-                                        // Добавляем клон карты в колоду
-                                        currentDeck.add(cardSample.copy(id = java.util.UUID.randomUUID().toString()))
-                                        errorMessage = "Соберите колоду: ${currentDeck.size}/20 карт"
-                                    } else if (currentDeck.size >= 20) {
-                                        errorMessage = "❌ Максимум 20 карт в колоде!"
-                                    } else {
-                                        errorMessage = "❌ Все доступные копии этой карты уже в колоде!"
-                                    }
-                                }
-                            )
-
-                            // Счетчик количества карт в коллекции
-                            Box(
+                                isPreview = true,
+                                // Меняем прозрачность всей карты, если лимит в колоде уже достигнут
                                 modifier = Modifier
-                                    .padding(bottom = 4.dp)
-                                    .background(Color.Black.copy(alpha = 0.75f), RoundedCornerShape(4.dp))
-                                    .padding(horizontal = 6.dp, vertical = 2.dp)
-                            ) {
-                                Text(text = "В наличии: $availableToPlace/$count", color = Color.White, fontSize = 10.sp)
-                            }
-                        }
-
-                        // Кнопка быстрого удаления карты из собираемой колоды
-                        if (countInDeck > 0) {
-                            Text(
-                                text = "В колоде: $countInDeck (Удалить)",
-                                color = Color(0xFFFF5252),
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier
-                                    .padding(top = 4.dp)
+                                    .graphicsLayer { alpha = if (countInDeck >= 2) 0.4f else 1f }
                                     .clickable {
-                                        val cardToRemove = currentDeck.find { it.name == cardSample.name }
-                                        if (cardToRemove != null) {
-                                            currentDeck.remove(cardToRemove)
+                                        if (currentDeck.size >= 20) {
+                                            errorMessage = "❌ Максимум 20 карт в колоде!"
+                                        } else if (countInDeck >= 2) {
+                                            errorMessage = "❌ Достигнут лимит: максимум 2 копии одной карты!"
+                                        } else {
+                                            currentDeck.add(cardSample.copy(id = java.util.UUID.randomUUID().toString()))
                                             errorMessage = "Соберите колоду: ${currentDeck.size}/20 карт"
                                         }
                                     }
                             )
+
+                            // Четкий ККИ-счетчик поверх карты
+                            Box(
+                                modifier = Modifier
+                                    .padding(bottom = 4.dp)
+                                    .background(if (countInDeck >= 2) Color(0xFF388E3C) else Color.Black.copy(alpha = 0.75f), RoundedCornerShape(4.dp))
+                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                            ) {
+                                Text(
+                                    text = "В колоде: $countInDeck / 2",
+                                    color = Color.White,
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        // ПОНЯТНЫЕ КНОПКИ УПРАВЛЕНИЯ ПОД КАРТОЙ
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceEvenly,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            // Кнопка МИНУС (Удалить из колоды)
+                            if (countInDeck > 0) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(28.dp)
+                                        .background(Color(0xFFFF5252), RoundedCornerShape(14.dp))
+                                        .clickable {
+                                            val cardToRemove = currentDeck.find { it.name == cardSample.name }
+                                            if (cardToRemove != null) {
+                                                currentDeck.remove(cardToRemove)
+                                                errorMessage = "Соберите колоду: ${currentDeck.size}/20 карт"
+                                            }
+                                        },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text("-", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                                }
+                            }
+
+                            // Кнопка ПЛЮС (Добавить в колоду)
+                            if (countInDeck < 2) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(28.dp)
+                                        .background(if (currentDeck.size < 20) Color(0xFF4CAF50) else Color.Gray, RoundedCornerShape(14.dp))
+                                        .clickable {
+                                            if (currentDeck.size < 20) {
+                                                currentDeck.add(cardSample.copy(id = java.util.UUID.randomUUID().toString()))
+                                                errorMessage = "Соберите колоду: ${currentDeck.size}/20 карт"
+                                            } else {
+                                                errorMessage = "❌ Максимум 20 карт в колоде!"
+                                            }
+                                        },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text("+", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                                }
+                            }
                         }
                     }
                 }
