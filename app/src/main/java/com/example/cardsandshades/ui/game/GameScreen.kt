@@ -31,8 +31,8 @@ fun GameScreen(
     val gameState by viewModel.gameState.collectAsState()
     var selectedCardForAttack by remember { mutableStateOf<CardModel?>(null) }
 
-    // Координаты для стрелок ККИ-прицеливания
     var startArrowOffset by remember { mutableStateOf(Offset.Zero) }
+    var currentArrowOffset by remember { mutableStateOf(Offset.Zero) }
     var isDrawingArrow by remember { mutableStateOf(false) }
 
     val playerCardsOffsets = remember { mutableStateMapOf<String, Offset>() }
@@ -61,9 +61,11 @@ fun GameScreen(
                 modifier = Modifier.fillMaxSize().background(Color(0xFF141414)).padding(12.dp),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
-                // ВРАГ: Панель здоровья и маны
+                // ВРАГ: Передаем значения из viewModel напрямую в аргументы
                 OpponentHeaderZone(
                     opponent = state.opponent,
+                    isHeroTakingDamage = viewModel.opponentHeroTakingDamage,
+                    damageValue = viewModel.opponentHeroDamageValue,
                     onEnemyHeroPositioned = { enemyHeroOffset = it },
                     onEnemyHeroClick = {
                         selectedCardForAttack?.let { attacker ->
@@ -114,33 +116,34 @@ fun GameScreen(
                             if (selectedCardForAttack?.id == id) startArrowOffset = offset
                         },
                         onCardClick = { card, offset ->
-                            if (state.currentTurn == Turn.PLAYER && !state.isAnimating) {
-                                if (state.currentTurn == Turn.PLAYER) {
-                                    if (selectedCardForAttack?.id == card.id) {
-                                        selectedCardForAttack = null
-                                        isDrawingArrow = false
-                                    } else {
-                                        selectedCardForAttack = card
-                                        startArrowOffset = offset
-                                        isDrawingArrow = true
-                                        battleLog = "🎯 Выбрана ${card.name}. Нажмите на карту врага или его HP!"
-                                    }
+                            if (state.currentTurn == Turn.PLAYER) {
+                                if (selectedCardForAttack?.id == card.id) {
+                                    selectedCardForAttack = null
+                                    isDrawingArrow = false
+                                } else {
+                                    selectedCardForAttack = card
+                                    startArrowOffset = offset
+                                    currentArrowOffset = offset
+                                    isDrawingArrow = true
+                                    battleLog = "🎯 Выбрана ${card.name}. Нажмите на карту врага или его HP!"
                                 }
                             }
                         }
                     )
                 }
 
-                // ИГРОК: Контроллеры, мана и рука
+                // ИГРОК: Контроллеры, мана и рука. Тоже передаем значения урона по лицу
                 PlayerControlsZone(
                     player = state.player,
                     isPlayerTurn = state.currentTurn == Turn.PLAYER,
+                    isHeroTakingDamage = viewModel.playerHeroTakingDamage,
+                    damageValue = viewModel.playerHeroDamageValue,
                     onPlayerHeroPositioned = { playerHeroOffset = it },
                     onEndTurnClick = {
                         viewModel.endTurn()
                         selectedCardForAttack = null
                         isDrawingArrow = false
-                    },
+                    }
                 )
             }
 
