@@ -1,7 +1,8 @@
 package com.example.cardsandshades.ui.components
 
-import androidx.compose.foundation.gestures.drag
-import androidx.compose.foundation.gestures.forEachGesture
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.draggable
+import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,17 +11,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.PointerEventPass
-import androidx.compose.ui.input.pointer.PointerInputChange
-import androidx.compose.ui.input.pointer.changedToUp
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.unit.IntSize
 import com.example.cardsandshades.model.CardModel
-import kotlinx.coroutines.TimeoutCancellationException
-import kotlinx.coroutines.withTimeout
 
 internal val LocalDragTargetInfo = compositionLocalOf { DragTargetInfo() }
 
@@ -52,7 +46,10 @@ fun DragAndDropContainer(
                         }
                         .onGloballyPositioned { targetSize = it.size }
                 ) {
-                    CardComponent(card = state.draggableCard!!, isPreview = true)
+                    // ИСПРАВЛЕНО: Корректное имя функции CardComponent
+                    state.draggableCard?.let { currentCard ->
+                        CardComponent(card = currentCard, isPreview = true)
+                    }
                 }
             }
         }
@@ -67,48 +64,42 @@ fun DragTarget(
 ) {
     val currentDragTargetInfo = LocalDragTargetInfo.current
     var startPositionInWindow by remember { mutableStateOf(Offset.Zero) }
+    var accumulatedDragY by remember { mutableStateOf(0f) }
 
     Box(
         modifier = modifier
             .onGloballyPositioned { startPositionInWindow = it.positionInWindow() }
-            .pointerInput(card.id) {
-                forEachGesture {
-                    awaitPointerEventScope {
-                        // 1. Ожидаем касание пальца
-                        val down = awaitPointerJointomPress(pass = PointerEventPass.Initial) ?: return@awaitPointerEventScope
-                        var isDragStarted = false
-
-                        try {
-                            // 2. Инициализируем короткую задержку взлета карты (150 мс вместо дефолтных 500 мс)
-                            withTimeout(150) {
-                                val upOrDrag = awaitPointerEvent(pass = PointerEventPass.Main)
-                                upOrDrag.changes.forEach { it.consume() }
-                            }
-                        } catch (e: TimeoutCancellationException) {
-                            // Если палец удержан дольше 150 мс — активируем взлет карты!
-                            isDragStarted = true
-                            currentDragTargetInfo.isDragging = true
-                            currentDragTargetInfo.dragPosition = startPositionInWindow + down.position
-                            currentDragTargetInfo.draggableCard = card
-                        }
-
-                        if (isDragStarted) {
-                            // 3. Фаза активного перемещения карты
-                            drag(down.id) { change ->
-                                change.consume()
-                                val positionChange = change.positionChange()
-                                currentDragTargetInfo.dragPosition = Offset(
-                                    currentDragTargetInfo.dragPosition.x + positionChange.x,
-                                    currentDragTargetInfo.dragPosition.y + positionChange.y
-                                )
-                            }
-
-                            // 4. Гарантированный сброс состояния при отрыве пальца
-                            currentDragTargetInfo.isDragging = false
-                        }
+            .draggable(
+                orientation = Orientation.Vertical,
+                state = rememberDraggableState { delta ->
+                    accumulatedDragY += delta
+                    if (accumulatedDragY < -10f && !currentDragTargetInfo.isDragging) {
+                        currentDragTargetInfo.isDragging = true
+                        currentDragTargetInfo.draggableCard = card
+                        currentDragTargetInfo.dragPosition = startPositionInWindow + Offset(50f, 0f)
                     }
+
+                    if (currentDragTargetInfo.isDragging) {
+                        currentDragTargetInfo.dragPosition = Offset(
+                            currentDragTargetInfo.dragPosition.x,
+                            currentDragTargetInfo.dragPosition.y + delta
+                        )
+                    }
+                },
+                onDragStarted = { localOffset ->
+                    accumulatedDragY = 0f
+                    // ИСПРАВЛЕНО: Прямое обращение к свойству dragPosition вместо вызова метода
+                    if (currentDragTargetInfo.isDragging) {
+                        currentDragTargetInfo.dragPosition = Offset(
+                            startPositionInWindow.x + localOffset.x,
+                            currentDragTargetInfo.dragPosition.y
+                        )
+                    }
+                },
+                onDragStopped = {
+                    currentDragTargetInfo.isDragging = false
                 }
-            }
+            )
     ) {
         val isCurrentDragging = currentDragTargetInfo.isDragging && currentDragTargetInfo.draggableCard?.id == card.id
         Box(modifier = Modifier.graphicsLayer { alpha = if (isCurrentDragging) 0.0f else 1.0f }) {
@@ -135,8 +126,6 @@ fun DropTarget(
     ) {
         isHovered = dragInfo.isDragging && globalBounds.contains(dragInfo.dragPosition)
 
-        // ИСПРАВЛЕНИЕ DROP: Реагируем реактивно на изменение флага перетаскивания.
-        // Как только палец оторван, а мы находились в зоне — немедленно производим Drop.
         var wasDragging by remember { mutableStateOf(false) }
 
         LaunchedEffect(dragInfo.isDragging) {
@@ -150,10 +139,4 @@ fun DropTarget(
 
         content(isHovered)
     }
-}
-
-// Вспомогательная функция для регистрации первого нажатия
-private suspend fun androidx.compose.ui.input.pointer.PointerInputScope.awaitPointerJointomPress(pass: PointerEventPass): PointerInputChange? {
-    val event = awaitPointerEvent(pass)
-    return event.changes.firstOrNull { it.pressed }
 }
