@@ -53,8 +53,9 @@ class MainActivity : ComponentActivity() {
                         "game" -> {
                             GameScreen(
                                 viewModel = gameViewModel,
-                                onBackToMenu = { currentScreen = "campaign" } // Передаем возврат
-                            )
+                            ) { currentScreen = "campaign" }
+                            // Передаем возврат
+
                         }
                         "shop" -> {
                             BoosterScreen(onBack = { currentScreen = "campaign" })

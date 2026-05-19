@@ -18,14 +18,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.cardsandshades.model.CardModel
-import com.example.cardsandshades.model.UserProfile
 import com.example.cardsandshades.ui.components.CardComponent
 
 @Composable
 fun GameScreen(
     viewModel: GameViewModel,
-    onBackToMenu: Any,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onBackToMenu: () -> Unit
 ) {
     val gameState by viewModel.gameState.collectAsState()
 
@@ -227,17 +226,26 @@ fun GameScreen(
                         fontSize = 20.sp
                     )
                     Spacer(modifier = Modifier.height(24.dp))
-                    Button(onClick = {
-                        // За победу начисляем 50 золота
-                        if (state.winnerName == state.player.name) {
-                            UserProfile.gold.value += 50
-                        }
-                        // Здесь мы прокинем лямбду для выхода в главное меню
-                    }) { Text("В меню кампании") }
-                    Button(onClick = { viewModel.startNewGame(
-                        level = TODO()
-                    ) }) {
+
+                    // Кнопка переигрывания
+                    Button(onClick = { viewModel.restartCurrentGame() }) {
                         Text("Играть снова")
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // ИСПРАВЛЕНИЕ: Используем onBackToMenu и начисляем награду
+                    Button(
+                        onClick = {
+                            // Начисляем золото, если победил игрок
+                            if (state.winnerName == state.player.name) {
+                                com.example.cardsandshades.model.UserProfile.gold.value += 50
+                            }
+                            onBackToMenu() // Возвращаемся в кампанию
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF388E3C))
+                    ) {
+                        Text("В меню кампании")
                     }
                 }
             }

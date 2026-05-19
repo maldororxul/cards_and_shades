@@ -74,8 +74,18 @@ class GameViewModel : ViewModel() {
         _gameState.update { currentState ->
             currentState?.let { state ->
                 if (state.currentTurn == Turn.PLAYER) {
-                    val updatedState = state.copy()
-                    GameEngine.playCard(updatedState, card)
+                    // Создаем глубокую копию состояния для Compose
+                    val updatedPlayer = state.player.copy(
+                        hand = state.player.hand.toMutableList(),
+                        board = state.player.board.toMutableList()
+                    )
+                    val updatedState = state.copy(player = updatedPlayer)
+
+                    // Находим именно ту карту, которая лежит в новой руке
+                    val cardInNewHand = updatedPlayer.hand.find { it.id == card.id }
+                    if (cardInNewHand != null) {
+                        GameEngine.playCard(updatedState, cardInNewHand)
+                    }
                     updatedState
                 } else state
             }
@@ -87,8 +97,16 @@ class GameViewModel : ViewModel() {
         _gameState.update { currentState ->
             currentState?.let { state ->
                 if (state.currentTurn == Turn.PLAYER) {
-                    val updatedState = state.copy()
-                    GameEngine.attackCard(updatedState, attacker, target)
+                    val updatedPlayer = state.player.copy(board = state.player.board.map { it.copy() }.toMutableList())
+                    val updatedOpponent = state.opponent.copy(board = state.opponent.board.map { it.copy() }.toMutableList())
+                    val updatedState = state.copy(player = updatedPlayer, opponent = updatedOpponent)
+
+                    val newAttacker = updatedPlayer.board.find { it.id == attacker.id }
+                    val newTarget = updatedOpponent.board.find { it.id == target.id }
+
+                    if (newAttacker != null && newTarget != null) {
+                        GameEngine.attackCard(updatedState, newAttacker, newTarget)
+                    }
                     updatedState
                 } else state
             }
