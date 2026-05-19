@@ -22,69 +22,77 @@ class GameViewModel : ViewModel() {
     private val _gameState = MutableStateFlow<GameState?>(null)
     val gameState: StateFlow<GameState?> = _gameState.asStateFlow()
 
-    init {
-        startNewGame(
-            level = TODO()
-        )
-    }
-
     var currentLevel: LevelModel? = null
         private set
 
-    // Инициализация матча с учетом выбранного уровня
+    // Убрали принудительный вызов из init, чтобы игра не крашилась при старте до выбора уровня
+    init {
+        _gameState.value = null
+    }
+
+    // Инициализация матча для конкретного уровня кампании
     fun startNewGame(level: LevelModel) {
         currentLevel = level
 
+        // Генерируем новые чистые колоды (глубокие копии объектов)
+        val playerDeck = CardCatalog.generateTestDeck()
+        val opponentDeck = CardCatalog.generateTestDeck()
+
         val player = PlayerModel(
             name = "Игрок",
-            deck = CardCatalog.generateTestDeck()
+            deck = playerDeck,
+            hand = mutableListOf(),
+            board = mutableListOf()
         )
 
-        // Масштабируем сложность ИИ на основе данных уровня
         val opponent = PlayerModel(
             name = level.opponentName,
             maxHp = level.opponentMaxHp,
             currentHp = level.opponentMaxHp,
-            deck = CardCatalog.generateTestDeck() // В будущем заменим на тематические колоды
+            deck = opponentDeck,
+            hand = mutableListOf(),
+            board = mutableListOf()
         )
 
         val initialState = GameState(
             player = player,
             opponent = opponent,
             currentTurn = Turn.PLAYER,
-            turnNumber = 1
+            turnNumber = 1,
+            isGameOver = false,
+            winnerName = null
         )
 
+        // Раздаем стартовые карты
         repeat(4) {
             GameEngine.drawCard(initialState.player)
             GameEngine.drawCard(initialState.opponent)
         }
 
+        // Начисляем стартовую ману для первого хода
         GameEngine.startTurn(initialState)
+
         _gameState.value = initialState
     }
 
-    // Перегрузим старый метод без параметров для кнопки "Играть снова"
     fun restartCurrentGame() {
         currentLevel?.let { startNewGame(it) }
     }
 
-    // Игрок разыгрывает карту из руки
+    // Разыгрывание карты игроком (с глубоким копированием для Compose)
     fun playCard(card: CardModel) {
         _gameState.update { currentState ->
             currentState?.let { state ->
                 if (state.currentTurn == Turn.PLAYER) {
-                    // Создаем глубокую копию состояния для Compose
                     val updatedPlayer = state.player.copy(
                         hand = state.player.hand.toMutableList(),
                         board = state.player.board.toMutableList()
                     )
                     val updatedState = state.copy(player = updatedPlayer)
 
-                    // Находим именно ту карту, которая лежит в новой руке
-                    val cardInNewHand = updatedPlayer.hand.find { it.id == card.id }
-                    if (cardInNewHand != null) {
-                        GameEngine.playCard(updatedState, cardInNewHand)
+                    val cardInHand = updatedPlayer.hand.find { it.id == card.id }
+                    if (cardInHand != null) {
+                        GameEngine.playCard(updatedState, cardInHand)
                     }
                     updatedState
                 } else state
@@ -92,7 +100,7 @@ class GameViewModel : ViewModel() {
         }
     }
 
-    // Игрок атакует карту противника своей картой
+    // Атака карты на карту с глубоким клонированием стейта статов существ
     fun attackEnemyCard(attacker: CardModel, target: CardModel) {
         _gameState.update { currentState ->
             currentState?.let { state ->
@@ -113,20 +121,24 @@ class GameViewModel : ViewModel() {
         }
     }
 
-    // Игрок атакует "лицо" противника
     fun attackEnemyHero(attacker: CardModel) {
         _gameState.update { currentState ->
             currentState?.let { state ->
                 if (state.currentTurn == Turn.PLAYER) {
-                    val updatedState = state.copy()
-                    GameEngine.attackHero(updatedState, attacker)
+                    val updatedPlayer = state.player.copy(board = state.player.board.map { it.copy() }.toMutableList())
+                    val updatedOpponent = state.opponent.copy()
+                    val updatedState = state.copy(player = updatedPlayer, opponent = updatedOpponent)
+
+                    val newAttacker = updatedPlayer.board.find { it.id == attacker.id }
+                    if (newAttacker != null) {
+                        GameEngine.attackHero(updatedState, newAttacker)
+                    }
                     updatedState
                 } else state
             }
         }
     }
 
-    // Завершение хода игрока
     fun endTurn() {
         _gameState.update { currentState ->
             currentState?.let { state ->
@@ -138,27 +150,26 @@ class GameViewModel : ViewModel() {
             }
         }
 
-        // Если ход перешел к ИИ, запускаем его логику
         val state = _gameState.value
         if (state != null && state.currentTurn == Turn.OPPONENT && !state.isGameOver) {
             executeOpponentTurn()
         }
     }
 
-    // Логика поведения Искусственного Интеллекта
     private fun executeOpponentTurn() {
         viewModelScope.launch {
-            // 1. Небольшая пауза, будто ИИ оценивает ситуацию
             delay(1000)
 
-            // --- ФАЗА 1: Разыгрывание карт из руки ---
+            // ФАЗА ИИ 1: Розыгрыш карт
             _gameState.update { currentState ->
                 currentState?.let { state ->
-                    val updatedState = state.copy()
-                    // Берем копию руки, чтобы не словить ConcurrentModificationException при удалении
-                    val cardsInHand = updatedState.opponent.hand.toList()
+                    val updatedOpponent = state.opponent.copy(
+                        hand = state.opponent.hand.toMutableList(),
+                        board = state.opponent.board.toMutableList()
+                    )
+                    val updatedState = state.copy(opponent = updatedOpponent)
+                    val cardsInHand = updatedOpponent.hand.toList()
 
-                    // Пытаемся разыграть карты, пока хватает маны и места на столе
                     for (card in cardsInHand) {
                         GameEngine.playCard(updatedState, card)
                     }
@@ -166,34 +177,32 @@ class GameViewModel : ViewModel() {
                 }
             }
 
-            delay(1200) // Пауза между разыгрыванием карт и атакой
+            delay(1200)
 
-            // --- ФАЗА 2: Проведение атак ---
+            // ФАЗА ИИ 2: Атака
             _gameState.update { currentState ->
                 currentState?.let { state ->
-                    val updatedState = state.copy()
+                    val updatedPlayer = state.player.copy(board = state.player.board.map { it.copy() }.toMutableList())
+                    val updatedOpponent = state.opponent.copy(board = state.opponent.board.map { it.copy() }.toMutableList())
+                    val updatedState = state.copy(player = updatedPlayer, opponent = updatedOpponent)
 
-                    // ИИ берет свои карты на столе для совершения атак
-                    val attackerCards = updatedState.opponent.board.toList()
-
+                    val attackerCards = updatedOpponent.board.toList()
                     for (attacker in attackerCards) {
-                        // Если у игрока есть карты на поле — бьем их
+                        val activeAttacker = updatedOpponent.board.find { it.id == attacker.id } ?: continue
                         if (updatedState.player.board.isNotEmpty()) {
-                            // ИИ выбирает случайную цель на столе игрока
                             val target = updatedState.player.board.random()
-                            GameEngine.attackCard(updatedState, attacker, target)
+                            GameEngine.attackCard(updatedState, activeAttacker, target)
                         } else {
-                            // Если у игрока пусто на столе — бьем напрямую в лицо
-                            GameEngine.attackHero(updatedState, attacker)
+                            GameEngine.attackHero(updatedState, activeAttacker)
                         }
                     }
                     updatedState
                 }
             }
 
-            delay(1000) // Пауза перед завершением хода
+            delay(1000)
 
-            // --- ФАЗА 3: Завершение хода ИИ ---
+            // ФАЗА ИИ 3: Передача хода
             _gameState.update { currentState ->
                 currentState?.let { state ->
                     val updatedState = state.copy()
@@ -203,5 +212,4 @@ class GameViewModel : ViewModel() {
             }
         }
     }
-
 }
