@@ -6,6 +6,7 @@ import com.example.cardsandshades.catalog.CardCatalog
 import com.example.cardsandshades.engine.GameEngine
 import com.example.cardsandshades.model.CardModel
 import com.example.cardsandshades.model.GameState
+import com.example.cardsandshades.model.LevelModel
 import com.example.cardsandshades.model.PlayerModel
 import com.example.cardsandshades.model.Turn
 import kotlinx.coroutines.delay
@@ -22,18 +23,29 @@ class GameViewModel : ViewModel() {
     val gameState: StateFlow<GameState?> = _gameState.asStateFlow()
 
     init {
-        startNewGame()
+        startNewGame(
+            level = TODO()
+        )
     }
 
-    // Инициализация матча
-    fun startNewGame() {
+    var currentLevel: LevelModel? = null
+        private set
+
+    // Инициализация матча с учетом выбранного уровня
+    fun startNewGame(level: LevelModel) {
+        currentLevel = level
+
         val player = PlayerModel(
             name = "Игрок",
             deck = CardCatalog.generateTestDeck()
         )
+
+        // Масштабируем сложность ИИ на основе данных уровня
         val opponent = PlayerModel(
-            name = "Темный Властелин",
-            deck = CardCatalog.generateTestDeck()
+            name = level.opponentName,
+            maxHp = level.opponentMaxHp,
+            currentHp = level.opponentMaxHp,
+            deck = CardCatalog.generateTestDeck() // В будущем заменим на тематические колоды
         )
 
         val initialState = GameState(
@@ -43,16 +55,18 @@ class GameViewModel : ViewModel() {
             turnNumber = 1
         )
 
-        // Раздача стартовой руки (по 4 карты)
         repeat(4) {
             GameEngine.drawCard(initialState.player)
             GameEngine.drawCard(initialState.opponent)
         }
 
-        // Запуск первого хода (начисление маны и добор первой карты за ход)
         GameEngine.startTurn(initialState)
-
         _gameState.value = initialState
+    }
+
+    // Перегрузим старый метод без параметров для кнопки "Играть снова"
+    fun restartCurrentGame() {
+        currentLevel?.let { startNewGame(it) }
     }
 
     // Игрок разыгрывает карту из руки
