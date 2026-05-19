@@ -43,6 +43,7 @@ fun GameScreen(
     val gameState by viewModel.gameState.collectAsState()
     var selectedCardForAttack by remember { mutableStateOf<CardModel?>(null) }
 
+    // ЕДИНСТВЕННЫЙ источник правды для состояния стрелки атаки
     var startArrowOffset by remember { mutableStateOf(Offset.Zero) }
     var currentArrowOffset by remember { mutableStateOf(Offset.Zero) }
     var isDrawingArrow by remember { mutableStateOf(false) }
@@ -66,28 +67,22 @@ fun GameScreen(
             }
         }
 
+        // Переносим контейнер DragAndDrop на самый верх, чтобы он накрывал экран
         DragAndDropContainer(modifier = modifier) {
 
-            // ПЕРЕМЕННЫЕ ДЛЯ СТРЕЛКИ (добавьте их сюда, если еще не добавили)
-            var startArrowOffset by remember { mutableStateOf(Offset.Zero) }
-            var currentArrowOffset by remember { mutableStateOf(Offset.Zero) }
-            var isDrawingArrow by remember { mutableStateOf(false) }
-
-            // НОВЫЙ СЛОЙ-КОНТЕЙНЕР ДЛЯ СТРЕЛКИ И ИНТЕРФЕЙСА
+            // Заставляем весь экран слушать движения пальца при активной стрелке
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .pointerInput(isDrawingArrow) {
-                        // Если игрок выбрал карту для атаки, начинаем трекать движение пальца по всему экрану
                         if (isDrawingArrow) {
                             detectDragGestures(
                                 onDragStart = { localOffset ->
-                                    // При зажатии пальца в любой точке переносим туда конец стрелки
-                                    currentArrowOffset = localOffset
+                                    // Обновляем наконечник относительно точки старта карты
+                                    currentArrowOffset = startArrowOffset
                                 },
                                 onDrag = { change, dragAmount ->
                                     change.consume()
-                                    // Плавно двигаем наконечник стрелки вслед за пальцем
                                     currentArrowOffset = Offset(
                                         currentArrowOffset.x + dragAmount.x,
                                         currentArrowOffset.y + dragAmount.y
@@ -97,6 +92,7 @@ fun GameScreen(
                         }
                     }
             ) {
+                // Основная игровая вертикальная разметка интерфейса
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -126,6 +122,7 @@ fun GameScreen(
                                                 viewModel.attackEnemyHero(attacker)
                                                 battleLog = "💥 Вы атаковали героя врага на ${attacker.currentAttack} урона!"
                                                 selectedCardForAttack = null
+                                                isDrawingArrow = false // ИСПРАВЛЕНИЕ: Выключаем стрелку после удара
                                             } else {
                                                 battleLog = "❌ Нельзя атаковать лицо, пока у врага есть существа на поле!"
                                             }
@@ -158,6 +155,7 @@ fun GameScreen(
                                                 viewModel.attackEnemyCard(attacker, enemyCard)
                                                 battleLog = "⚔️ ${attacker.name} атаковал ${enemyCard.name}!"
                                                 selectedCardForAttack = null
+                                                isDrawingArrow = false // ИСПРАВЛЕНИЕ: Убираем стрелку после боя
                                             }
                                         }
                                     )
@@ -187,16 +185,13 @@ fun GameScreen(
                     DropTarget(
                         modifier = Modifier.fillMaxWidth().height(150.dp),
                         onCardDropped = { droppedCard ->
-                            val hasMana = state.player.currentMana >= droppedCard.manaCost
-                            val hasSpace = state.player.board.size < 5 // Проверяем лимит стола (макс. 5 карт)
+                            // Передаем карту во ViewModel. Она сама найдет её по ID и честно проверит ману
+                            val success = viewModel.playCard(droppedCard)
 
-                            if (hasMana && hasSpace) {
-                                viewModel.playCard(droppedCard)
-                                battleLog = "🃏 Вы разыграли карту ${droppedCard.name}"
-                            } else if (!hasMana) {
-                                battleLog = "❌ Недостаточно маны для карты ${droppedCard.name}!"
+                            battleLog = if (success) {
+                                "🃏 Вы разыграли карту ${droppedCard.name}"
                             } else {
-                                battleLog = "❌ Нет места на поле боя для карты ${droppedCard.name}!"
+                                "❌ Не удалось разыграть карту! Проверьте ману (${state.player.currentMana}/${state.player.maxMana}) или свободное место."
                             }
                         }
                     ) { isHovered ->
@@ -224,7 +219,6 @@ fun GameScreen(
                                             modifier = Modifier
                                                 .padding(4.dp)
                                                 .onGloballyPositioned { coords ->
-                                                    // Запоминаем глобальные координаты центра карты на экране
                                                     val pos = coords.positionInWindow()
                                                     cardSize = coords.size
                                                     cardOffset = Offset(pos.x + cardSize.width / 2, pos.y + cardSize.height / 2)
@@ -237,16 +231,15 @@ fun GameScreen(
                                             onClick = {
                                                 if (state.currentTurn == Turn.PLAYER) {
                                                     if (isSelected) {
-                                                        // Отмена выбора
                                                         selectedCardForAttack = null
                                                         isDrawingArrow = false
                                                     } else {
-                                                        // Активируем режим прицеливания стрелкой
+                                                        // ИСПРАВЛЕНИЕ: Пишем напрямую в единственные внешние переменные
                                                         selectedCardForAttack = playerCard
                                                         startArrowOffset = cardOffset
                                                         currentArrowOffset = cardOffset
                                                         isDrawingArrow = true
-                                                        battleLog = "🎯 Выбрана карта: ${playerCard.name}. Нажмите на карту врага или его лицо для удара!"
+                                                        battleLog = "🎯 Выбрана карта: ${playerCard.name}. Выберите цель для атаки!"
                                                     }
                                                 }
                                             }
@@ -275,6 +268,7 @@ fun GameScreen(
                                     onClick = {
                                         viewModel.endTurn()
                                         selectedCardForAttack = null
+                                        isDrawingArrow = false // Гарантированно гасим стрелку при передаче хода
                                     },
                                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD84315)),
                                     shape = RoundedCornerShape(4.dp),
@@ -296,6 +290,11 @@ fun GameScreen(
                             }
                         }
                     }
+                }
+
+                // === СЛОЙ 2: КРАСНАЯ СТРЕЛКА АТАКИ ПОВЕРХ ВСЕГО СТОЛА ===
+                if (isDrawingArrow && selectedCardForAttack != null) {
+                    AttackArrow(start = startArrowOffset, end = currentArrowOffset)
                 }
 
                 // Оверлей конца игры
@@ -335,11 +334,6 @@ fun GameScreen(
                         }
                     }
                 }
-            }
-
-            // --- СЛОЙ 2: КРАСНАЯ СТРЕЛКА АТАКИ ПОВЕРХ ВСЕГО СТОЛА ---
-            if (isDrawingArrow && selectedCardForAttack != null) {
-                AttackArrow(start = startArrowOffset, end = currentArrowOffset)
             }
         }
     }

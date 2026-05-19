@@ -89,7 +89,8 @@ class GameViewModel : ViewModel() {
     }
 
     // Разыгрывание карты игроком (с глубоким копированием для Compose)
-    fun playCard(card: CardModel) {
+    fun playCard(card: CardModel): Boolean {
+        var isPlayed = false
         _gameState.update { currentState ->
             currentState?.let { state ->
                 if (state.currentTurn == Turn.PLAYER) {
@@ -99,14 +100,17 @@ class GameViewModel : ViewModel() {
                     )
                     val updatedState = state.copy(player = updatedPlayer)
 
+                    // Находим карту по ID именно в актуальной руке игрока из стейта
                     val cardInHand = updatedPlayer.hand.find { it.id == card.id }
-                    if (cardInHand != null) {
-                        GameEngine.playCard(updatedState, cardInHand)
-                    }
-                    updatedState
+                    if (cardInHand != null && updatedPlayer.currentMana >= cardInHand.manaCost && updatedPlayer.board.size < 5) {
+                        com.example.cardsandshades.engine.GameEngine.playCard(updatedState, cardInHand)
+                        isPlayed = true
+                        updatedState
+                    } else state
                 } else state
             }
         }
+        return isPlayed
     }
 
     // Атака карты на карту с глубоким клонированием стейта статов существ
