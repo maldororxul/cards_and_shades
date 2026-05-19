@@ -39,4 +39,13 @@ data class CardModel(
         isSleeping = false
         hasAttackedThisTurn = false
     }
+
+    fun reset() {
+        currentAttack = baseAttack
+        currentHealth = baseHealth
+        isAttacking = false
+        isTakingDamage = false
+        isDying = false
+        lastDamageTaken = 0
+    }
 }

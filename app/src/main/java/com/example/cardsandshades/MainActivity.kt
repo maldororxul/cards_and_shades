@@ -5,10 +5,12 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -17,6 +19,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -51,18 +54,36 @@ class MainActivity : ComponentActivity() {
 
                     when (currentScreen) {
                         "campaign" -> {
-                            CampaignScreen(
-                                onLevelSelect = { selectedLevel ->
-                                    gameViewModel.startNewGame(selectedLevel)
-                                    currentScreen = "game"
+                            Column {
+                                Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)) {
+                                    Button(
+                                        onClick = { currentScreen = "shop" },
+                                        modifier = Modifier.weight(1f).padding(end = 4.dp)
+                                    ) { Text("🏪 Магазин") }
+
+                                    Button(
+                                        onClick = { currentScreen = "collection" },
+                                        modifier = Modifier.weight(1f).padding(start = 4.dp),
+                                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF673AB7))
+                                    ) { Text("🃏 Коллекция") }
                                 }
-                            )
+
+                                CampaignScreen(
+                                    onLevelSelect = { selectedLevel ->
+                                        gameViewModel.startNewGame(selectedLevel)
+                                        currentScreen = "game"
+                                    }
+                                )
+                            }
                         }
                         "game" -> {
-                            GameScreen(
-                                viewModel = gameViewModel,
-                                onBackToMenu = { currentScreen = "campaign" }
-                            )
+                            GameScreen(viewModel = gameViewModel, onBackToMenu = { currentScreen = "campaign" })
+                        }
+                        "shop" -> {
+                            com.example.cardsandshades.ui.booster.BoosterScreen(onBack = { currentScreen = "campaign" })
+                        }
+                        "collection" -> {
+                            com.example.cardsandshades.ui.collection.CollectionScreen(onBack = { currentScreen = "campaign" })
                         }
                     }
                 }

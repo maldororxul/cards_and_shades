@@ -12,6 +12,7 @@ import com.example.cardsandshades.model.GameState
 import com.example.cardsandshades.model.LevelModel
 import com.example.cardsandshades.model.PlayerModel
 import com.example.cardsandshades.model.Turn
+import com.example.cardsandshades.model.UserProfile
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -54,8 +55,15 @@ class GameViewModel : ViewModel() {
     fun startNewGame(level: LevelModel) {
         currentLevel = level
 
-        // Генерируем новые чистые колоды (глубокие копии объектов)
-        val playerDeck = CardCatalog.generateTestDeck()
+        // ИСПРАВЛЕНИЕ: Берем реальную собранную колоду игрока, если она готова
+        val playerDeck = if (UserProfile.selectedDeck.size == 20) {
+            UserProfile.selectedDeck.map { it.copy(id = java.util.UUID.randomUUID().toString()).apply { reset() } }.toMutableList()
+        } else {
+            // Фолбэк на случай непредвиденного старта без колоды
+            CardCatalog.generateTestDeck()
+        }
+
+        // Колода ИИ по-прежнему генерируется автоматически
         val opponentDeck = CardCatalog.generateTestDeck()
 
         val player = PlayerModel(
