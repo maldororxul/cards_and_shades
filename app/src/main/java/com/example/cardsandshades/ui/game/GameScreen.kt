@@ -185,9 +185,7 @@ fun GameScreen(
                     DropTarget(
                         modifier = Modifier.fillMaxWidth().height(150.dp),
                         onCardDropped = { droppedCard ->
-                            // Передаем карту во ViewModel. Она сама найдет её по ID и честно проверит ману
                             val success = viewModel.playCard(droppedCard)
-
                             battleLog = if (success) {
                                 "🃏 Вы разыграли карту ${droppedCard.name}"
                             } else {
@@ -227,20 +225,42 @@ fun GameScreen(
                                                     width = if (isSelected) 3.dp else 1.dp,
                                                     color = if (isSelected) Color.Green else Color(0xFF4CAF50),
                                                     shape = RoundedCornerShape(8.dp)
-                                                ),
+                                                )
+                                                .pointerInput(playerCard.id) {
+                                                    // СТРЕЛКА: Карта сама отслеживает движение пальца наружу
+                                                    detectDragGestures(
+                                                        onDragStart = {
+                                                            if (state.currentTurn == Turn.PLAYER) {
+                                                                selectedCardForAttack = playerCard
+                                                                startArrowOffset = cardOffset
+                                                                currentArrowOffset = cardOffset
+                                                                isDrawingArrow = true
+                                                                battleLog = "🎯 Наведение атаки из ${playerCard.name}..."
+                                                            }
+                                                        },
+                                                        onDrag = { change, dragAmount ->
+                                                            if (isDrawingArrow) {
+                                                                change.consume()
+                                                                currentArrowOffset = Offset(
+                                                                    currentArrowOffset.x + dragAmount.x,
+                                                                    currentArrowOffset.y + dragAmount.y
+                                                                )
+                                                            }
+                                                        },
+                                                        onDragEnd = {
+                                                            // Атака сбросится, если палец отпустили не над целью
+                                                            isDrawingArrow = false
+                                                        },
+                                                        onDragCancel = {
+                                                            isDrawingArrow = false
+                                                        }
+                                                    )
+                                                },
                                             onClick = {
-                                                if (state.currentTurn == Turn.PLAYER) {
-                                                    if (isSelected) {
-                                                        selectedCardForAttack = null
-                                                        isDrawingArrow = false
-                                                    } else {
-                                                        // ИСПРАВЛЕНИЕ: Пишем напрямую в единственные внешние переменные
-                                                        selectedCardForAttack = playerCard
-                                                        startArrowOffset = cardOffset
-                                                        currentArrowOffset = cardOffset
-                                                        isDrawingArrow = true
-                                                        battleLog = "🎯 Выбрана карта: ${playerCard.name}. Выберите цель для атаки!"
-                                                    }
+                                                // Обычный клик для отмены
+                                                if (state.currentTurn == Turn.PLAYER && isSelected) {
+                                                    selectedCardForAttack = null
+                                                    isDrawingArrow = false
                                                 }
                                             }
                                         )
