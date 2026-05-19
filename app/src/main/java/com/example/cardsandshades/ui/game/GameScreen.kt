@@ -44,6 +44,9 @@ fun GameScreen(
     var currentArrowOffset by remember { mutableStateOf(androidx.compose.ui.geometry.Offset.Zero) }
     var isDrawingArrow by remember { mutableStateOf(false) }
 
+    val playerCardsOffsets = remember { mutableStateMapOf<String, androidx.compose.ui.geometry.Offset>() }
+    var playerHeroOffset by remember { mutableStateOf(androidx.compose.ui.geometry.Offset.Zero) }
+
     // Хранилище координат всех карт противника на столе для наведения стрелки
     val enemyCardsOffsets = remember { mutableStateMapOf<String, androidx.compose.ui.geometry.Offset>() }
     var enemyHeroOffset by remember { mutableStateOf(androidx.compose.ui.geometry.Offset.Zero) }
@@ -201,7 +204,7 @@ fun GameScreen(
                                                 .onGloballyPositioned { coords ->
                                                     val pos = coords.positionInWindow()
                                                     cardOffset = androidx.compose.ui.geometry.Offset(pos.x + coords.size.width / 2, pos.y + coords.size.height / 2)
-
+                                                    playerCardsOffsets[playerCard.id] = cardOffset
                                                     // Если карта выбрана, динамически обновляем старт стрелки
                                                     if (isSelected) startArrowOffset = cardOffset
                                                 }
@@ -243,7 +246,18 @@ fun GameScreen(
                                 Text("Ваша мана: ${state.player.currentMana}/${state.player.maxMana} 💧", color = Color(0xFF29B6F6), fontSize = 14.sp)
                             }
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text("HP: ${state.player.currentHp}/${state.player.maxHp} ❤️", color = Color(0xFF66BB6A), fontSize = 16.sp, modifier = Modifier.padding(end = 12.dp))
+                                Text(
+                                    text = "Ваше HP: ${state.player.currentHp}/${state.player.maxHp} ❤️",
+                                    color = Color(0xFF66BB6A),
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier
+                                        .padding(end = 12.dp)
+                                        .onGloballyPositioned { coords ->
+                                            val pos = coords.positionInWindow()
+                                            playerHeroOffset = androidx.compose.ui.geometry.Offset(pos.x + coords.size.width / 2, pos.y + coords.size.height / 2)
+                                        }
+                                )
                                 Button(
                                     onClick = {
                                         viewModel.endTurn()
@@ -272,12 +286,25 @@ fun GameScreen(
                 }
 
                 // === СЛОЙ СТРЕЛКИ ===
+                // 1. Стрелка игрока
                 if (isDrawingArrow && selectedCardForAttack != null) {
-                    // Подтягиваем координаты конца стрелки к цели, если у игрока наведен фокус (для визуала)
                     val targetCardOffset = state.opponent.board.firstOrNull()?.id?.let { enemyCardsOffsets[it] }
                     val finalArrowEnd = targetCardOffset ?: enemyHeroOffset.takeIf { state.opponent.board.isEmpty() } ?: startArrowOffset
-
                     AttackArrow(start = startArrowOffset, end = finalArrowEnd)
+                }
+
+                // 2. СУПЕР-ИСПРАВЛЕНИЕ: Стрелка атаки ИИ
+                if (viewModel.opponentAttackerId != null) {
+                    val aiStart = enemyCardsOffsets[viewModel.opponentAttackerId!!]
+                    val aiEnd = if (viewModel.isOpponentTargetingHero) {
+                        playerHeroOffset
+                    } else {
+                        playerCardsOffsets[viewModel.opponentTargetId]
+                    }
+
+                    if (aiStart != null && aiEnd != null) {
+                        AttackArrow(start = aiStart, end = aiEnd)
+                    }
                 }
 
                 // Оверлей конца игры

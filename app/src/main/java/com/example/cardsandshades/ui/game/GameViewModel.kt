@@ -1,5 +1,8 @@
 package com.example.cardsandshades.ui.game
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.cardsandshades.catalog.CardCatalog
@@ -23,6 +26,13 @@ class GameViewModel : ViewModel() {
     val gameState: StateFlow<GameState?> = _gameState.asStateFlow()
 
     var currentLevel: LevelModel? = null
+        private set
+
+    var opponentAttackerId by mutableStateOf<String?>(null)
+        private set
+    var opponentTargetId by mutableStateOf<String?>(null)
+        private set
+    var isOpponentTargetingHero by mutableStateOf(false)
         private set
 
     // Убрали принудительный вызов из init, чтобы игра не крашилась при старте до выбора уровня
@@ -192,28 +202,62 @@ class GameViewModel : ViewModel() {
 
             delay(1200)
 
-            // ФАЗА ИИ 2: Атака
-            _gameState.update { currentState ->
-                currentState?.let { state ->
-                    val updatedPlayer = state.player.copy(board = state.player.board.map { it.copy() }.toMutableList())
-                    val updatedOpponent = state.opponent.copy(board = state.opponent.board.map { it.copy() }.toMutableList())
-                    val updatedState = state.copy(player = updatedPlayer, opponent = updatedOpponent)
+            // ФАЗА ИИ 2: Атака (с пошаговой визуализацией)
+            val updatedState = _gameState.value?.copy()
+            if (updatedState != null && !updatedState.isGameOver) {
+                val attackerCards = updatedState.opponent.board.toList()
 
-                    val attackerCards = updatedOpponent.board.toList()
-                    for (attacker in attackerCards) {
-                        val activeAttacker = updatedOpponent.board.find { it.id == attacker.id } ?: continue
-                        if (updatedState.player.board.isNotEmpty()) {
-                            val target = updatedState.player.board.random()
-                            GameEngine.attackCard(updatedState, activeAttacker, target)
-                        } else {
-                            GameEngine.attackHero(updatedState, activeAttacker)
+                for (attacker in attackerCards) {
+                    // Проверяем, жива ли еще сама атакующая карта ИИ
+                    val activeAttacker = _gameState.value?.opponent?.board?.find { it.id == attacker.id } ?: continue
+                    val hasTargets = _gameState.value?.player?.board?.isNotEmpty() == true
+
+                    // 1. ПОДГОТОВКА: Включаем стрелку прицеливания для ИИ
+                    opponentAttackerId = activeAttacker.id
+                    if (hasTargets) {
+                        val target = _gameState.value?.player?.board?.random()
+                        opponentTargetId = target?.id
+                        isOpponentTargetingHero = false
+                    } else {
+                        opponentTargetId = null
+                        isOpponentTargetingHero = true
+                    }
+
+                    // Даем игроку 1.2 секунды рассмотреть, куда целится ИИ
+                    delay(1200)
+
+                    // 2. УДАР: Проводим математический расчет атаки
+                    _gameState.update { currentState ->
+                        currentState?.let { state ->
+                            val currentUpdatedPlayer = state.player.copy(board = state.player.board.map { it.copy() }.toMutableList())
+                            val currentUpdatedOpponent = state.opponent.copy(board = state.opponent.board.map { it.copy() }.toMutableList())
+                            val currentUpdatedState = state.copy(player = currentUpdatedPlayer, opponent = currentUpdatedOpponent)
+
+                            val nextAttacker = currentUpdatedOpponent.board.find { it.id == activeAttacker.id }
+                            if (nextAttacker != null) {
+                                if (hasTargets) {
+                                    val nextTarget = currentUpdatedPlayer.board.find { it.id == opponentTargetId }
+                                    if (nextTarget != null) {
+                                        GameEngine.attackCard(currentUpdatedState, nextAttacker, nextTarget)
+                                    }
+                                } else {
+                                    GameEngine.attackHero(currentUpdatedState, nextAttacker)
+                                }
+                            }
+                            currentUpdatedState
                         }
                     }
-                    updatedState
+
+                    // Выключаем стрелку текущей атаки перед следующим существом
+                    opponentAttackerId = null
+                    opponentTargetId = null
+                    isOpponentTargetingHero = false
+
+                    delay(400) // Маленькая пауза между атаками разных существ
                 }
             }
 
-            delay(1000)
+            delay(300)
 
             // ФАЗА ИИ 3: Передача хода
             _gameState.update { currentState ->
