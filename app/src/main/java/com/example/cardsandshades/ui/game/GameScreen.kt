@@ -6,7 +6,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -17,13 +16,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.cardsandshades.model.CardModel
@@ -43,10 +39,14 @@ fun GameScreen(
     val gameState by viewModel.gameState.collectAsState()
     var selectedCardForAttack by remember { mutableStateOf<CardModel?>(null) }
 
-    // ЕДИНСТВЕННЫЙ источник правды для состояния стрелки атаки
-    var startArrowOffset by remember { mutableStateOf(Offset.Zero) }
-    var currentArrowOffset by remember { mutableStateOf(Offset.Zero) }
+    // Координаты для статической стрелки между выбранными картами
+    var startArrowOffset by remember { mutableStateOf(androidx.compose.ui.geometry.Offset.Zero) }
+    var currentArrowOffset by remember { mutableStateOf(androidx.compose.ui.geometry.Offset.Zero) }
     var isDrawingArrow by remember { mutableStateOf(false) }
+
+    // Хранилище координат всех карт противника на столе для наведения стрелки
+    val enemyCardsOffsets = remember { mutableStateMapOf<String, androidx.compose.ui.geometry.Offset>() }
+    var enemyHeroOffset by remember { mutableStateOf(androidx.compose.ui.geometry.Offset.Zero) }
 
     // Текстовый лог для информирования игрока
     var battleLog by remember { mutableStateOf("Ваш ход. Разыграйте карты или атакуйте врага!") }
@@ -58,41 +58,16 @@ fun GameScreen(
     } else {
         val state = gameState!!
 
-        // Сбрасываем лог, если ход перешел к ИИ
         LaunchedEffect(state.currentTurn) {
             battleLog = if (state.currentTurn == Turn.PLAYER) {
-                "Ваш ход! Мана обновлена. Доступно карт на поле: ${state.player.board.size}"
+                "Ваш ход! Мана обновлена."
             } else {
-                "Ход соперника... Противник принимает решение."
+                "Ход соперника..."
             }
         }
 
-        // Переносим контейнер DragAndDrop на самый верх, чтобы он накрывал экран
         DragAndDropContainer(modifier = modifier) {
-
-            // Заставляем весь экран слушать движения пальца при активной стрелке
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .pointerInput(isDrawingArrow) {
-                        if (isDrawingArrow) {
-                            detectDragGestures(
-                                onDragStart = { localOffset ->
-                                    // Обновляем наконечник относительно точки старта карты
-                                    currentArrowOffset = startArrowOffset
-                                },
-                                onDrag = { change, dragAmount ->
-                                    change.consume()
-                                    currentArrowOffset = Offset(
-                                        currentArrowOffset.x + dragAmount.x,
-                                        currentArrowOffset.y + dragAmount.y
-                                    )
-                                }
-                            )
-                        }
-                    }
-            ) {
-                // Основная игровая вертикальная разметка интерфейса
+            Box(modifier = Modifier.fillMaxSize()) {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -114,6 +89,10 @@ fun GameScreen(
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Black,
                                 modifier = Modifier
+                                    .onGloballyPositioned { coords ->
+                                        val pos = coords.positionInWindow()
+                                        enemyHeroOffset = androidx.compose.ui.geometry.Offset(pos.x + coords.size.width / 2, pos.y + coords.size.height / 2)
+                                    }
                                     .border(1.dp, Color.Red, RoundedCornerShape(4.dp))
                                     .padding(horizontal = 8.dp, vertical = 2.dp)
                                     .clickable {
@@ -122,9 +101,9 @@ fun GameScreen(
                                                 viewModel.attackEnemyHero(attacker)
                                                 battleLog = "💥 Вы атаковали героя врага на ${attacker.currentAttack} урона!"
                                                 selectedCardForAttack = null
-                                                isDrawingArrow = false // ИСПРАВЛЕНИЕ: Выключаем стрелку после удара
+                                                isDrawingArrow = false
                                             } else {
-                                                battleLog = "❌ Нельзя атаковать лицо, пока у врага есть существа на поле!"
+                                                battleLog = "❌ Нельзя атаковать лицо, пока у врага есть существа!"
                                             }
                                         }
                                     }
@@ -149,13 +128,18 @@ fun GameScreen(
                                 items(state.opponent.board, key = { "opp_${it.id}" }) { enemyCard ->
                                     CardComponent(
                                         card = enemyCard,
-                                        modifier = Modifier.padding(4.dp),
+                                        modifier = Modifier
+                                            .padding(4.dp)
+                                            .onGloballyPositioned { coords ->
+                                                val pos = coords.positionInWindow()
+                                                enemyCardsOffsets[enemyCard.id] = androidx.compose.ui.geometry.Offset(pos.x + coords.size.width / 2, pos.y + coords.size.height / 2)
+                                            },
                                         onClick = {
                                             selectedCardForAttack?.let { attacker ->
                                                 viewModel.attackEnemyCard(attacker, enemyCard)
                                                 battleLog = "⚔️ ${attacker.name} атаковал ${enemyCard.name}!"
                                                 selectedCardForAttack = null
-                                                isDrawingArrow = false // ИСПРАВЛЕНИЕ: Убираем стрелку после боя
+                                                isDrawingArrow = false
                                             }
                                         }
                                     )
@@ -164,7 +148,7 @@ fun GameScreen(
                         }
                     }
 
-                    // ================= ИНФОРМАЦИОННЫЙ ЦЕНТР (ЛОГ) =================
+                    // ================= ЛОГ =================
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -176,8 +160,7 @@ fun GameScreen(
                             text = battleLog,
                             color = if (battleLog.contains("❌")) Color.Red else Color.Yellow,
                             fontSize = 13.sp,
-                            fontWeight = FontWeight.Medium,
-                            textAlign = TextAlign.Center
+                            fontWeight = FontWeight.Medium
                         )
                     }
 
@@ -189,7 +172,7 @@ fun GameScreen(
                             battleLog = if (success) {
                                 "🃏 Вы разыграли карту ${droppedCard.name}"
                             } else {
-                                "❌ Не удалось разыграть карту! Проверьте ману (${state.player.currentMana}/${state.player.maxMana}) или свободное место."
+                                "❌ Не удалось разыграть карту! Проверьте ману или место."
                             }
                         }
                     ) { isHovered ->
@@ -204,13 +187,12 @@ fun GameScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             if (state.player.board.isEmpty()) {
-                                Text("Перетащите карту сюда из руки, чтобы призвать существо", color = Color.Gray, fontSize = 12.sp)
+                                Text("Перетащите карту сюда из руки", color = Color.Gray, fontSize = 12.sp)
                             } else {
                                 LazyRow(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
                                     items(state.player.board, key = { "pl_${it.id}" }) { playerCard ->
                                         val isSelected = selectedCardForAttack?.id == playerCard.id
-                                        var cardOffset by remember { mutableStateOf(Offset.Zero) }
-                                        var cardSize by remember { mutableStateOf(androidx.compose.ui.unit.IntSize.Zero) }
+                                        var cardOffset by remember { mutableStateOf(androidx.compose.ui.geometry.Offset.Zero) }
 
                                         CardComponent(
                                             card = playerCard,
@@ -218,56 +200,28 @@ fun GameScreen(
                                                 .padding(4.dp)
                                                 .onGloballyPositioned { coords ->
                                                     val pos = coords.positionInWindow()
-                                                    cardSize = coords.size
-                                                    cardOffset = Offset(pos.x + cardSize.width / 2, pos.y + cardSize.height / 2)
+                                                    cardOffset = androidx.compose.ui.geometry.Offset(pos.x + coords.size.width / 2, pos.y + coords.size.height / 2)
+
+                                                    // Если карта выбрана, динамически обновляем старт стрелки
+                                                    if (isSelected) startArrowOffset = cardOffset
                                                 }
                                                 .border(
                                                     width = if (isSelected) 3.dp else 1.dp,
                                                     color = if (isSelected) Color.Green else Color(0xFF4CAF50),
                                                     shape = RoundedCornerShape(8.dp)
-                                                )
-                                                .pointerInput(playerCard.id) {
-                                                    // НИЗКОУРОВНЕВЫЙ ТРЕКИНГ СТРЕЛКИ (БЕЗ ЗАДЕРЖЕК КЛИКА)
-                                                    androidx.compose.foundation.gestures.awaitEachGesture {
-                                                        val down = awaitFirstDown(requireUnconsumed = false)
-
-                                                        if (state.currentTurn == Turn.PLAYER) {
-                                                            selectedCardForAttack = playerCard
-                                                            startArrowOffset = cardOffset
-                                                            currentArrowOffset = cardOffset
-                                                            isDrawingArrow = true
-                                                            battleLog = "🎯 Наведение атаки из ${playerCard.name}..."
-                                                        }
-
-                                                        var finalFingerPosition = cardOffset
-
-                                                        drag(down.id) { change ->
-                                                            change.consume()
-                                                            // positionInWindow() дает точную глобальную точку на экране
-                                                            finalFingerPosition = change.positionInWindow()
-                                                            currentArrowOffset = finalFingerPosition
-                                                        }
-
-                                                        // ЛОГИКА ДРОПА АТАКИ ПРИ ОТПУСКАНИИ ПАЛЬЦА
-                                                        isDrawingArrow = false
-
-                                                        // 1. Проверяем, попали ли в лицо врага (координаты HP врага)
-                                                        // Для простоты ККИ механики: если палец в верхней трети экрана — это атака в лицо
-                                                        if (finalFingerPosition.y < 300f && state.opponent.board.isEmpty()) {
-                                                            viewModel.attackEnemyHero(playerCard)
-                                                            battleLog = "💥 Вы атаковали героя врага на ${playerCard.currentAttack} урона!"
-                                                            selectedCardForAttack = null
-                                                        }
-                                                        // 2. Обычный сброс стрелки (кликовая атака по врагу из старой логики также продолжит работать)
-                                                        else {
-                                                            battleLog = "🎯 Стрелка сброшена. Вы можете нажать на карту врага для атаки."
-                                                        }
-                                                    }
-                                                },
+                                                ),
                                             onClick = {
-                                                if (state.currentTurn == Turn.PLAYER && isSelected) {
-                                                    selectedCardForAttack = null
-                                                    isDrawingArrow = false
+                                                if (state.currentTurn == Turn.PLAYER) {
+                                                    if (isSelected) {
+                                                        selectedCardForAttack = null
+                                                        isDrawingArrow = false
+                                                    } else {
+                                                        selectedCardForAttack = playerCard
+                                                        startArrowOffset = cardOffset
+                                                        currentArrowOffset = cardOffset
+                                                        isDrawingArrow = true
+                                                        battleLog = "🎯 Выбрана ${playerCard.name}. Нажмите на карту врага или его HP!"
+                                                    }
                                                 }
                                             }
                                         )
@@ -286,16 +240,15 @@ fun GameScreen(
                         ) {
                             Column {
                                 Text(state.player.name, color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                                Text("Ваша мана: ${state.player.currentMana}/${state.player.maxMana} 💧", color = Color(0xFF29B6F6), fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                                Text("Ваша мана: ${state.player.currentMana}/${state.player.maxMana} 💧", color = Color(0xFF29B6F6), fontSize = 14.sp)
                             }
-
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text("Ваше HP: ${state.player.currentHp}/${state.player.maxHp} ❤️", color = Color(0xFF66BB6A), fontSize = 16.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(end = 12.dp))
+                                Text("HP: ${state.player.currentHp}/${state.player.maxHp} ❤️", color = Color(0xFF66BB6A), fontSize = 16.sp, modifier = Modifier.padding(end = 12.dp))
                                 Button(
                                     onClick = {
                                         viewModel.endTurn()
                                         selectedCardForAttack = null
-                                        isDrawingArrow = false // Гарантированно гасим стрелку при передаче хода
+                                        isDrawingArrow = false
                                     },
                                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD84315)),
                                     shape = RoundedCornerShape(4.dp),
@@ -308,7 +261,6 @@ fun GameScreen(
 
                         Spacer(modifier = Modifier.height(6.dp))
 
-                        // РУКА ИГРОКА
                         LazyRow(modifier = Modifier.fillMaxWidth().height(150.dp), horizontalArrangement = Arrangement.Start) {
                             items(state.player.hand, key = { "hand_${it.id}" }) { card ->
                                 DragTarget(card = card, modifier = Modifier.padding(4.dp)) {
@@ -319,44 +271,26 @@ fun GameScreen(
                     }
                 }
 
-                // === СЛОЙ 2: КРАСНАЯ СТРЕЛКА АТАКИ ПОВЕРХ ВСЕГО СТОЛА ===
+                // === СЛОЙ СТРЕЛКИ ===
                 if (isDrawingArrow && selectedCardForAttack != null) {
-                    AttackArrow(start = startArrowOffset, end = currentArrowOffset)
+                    // Подтягиваем координаты конца стрелки к цели, если у игрока наведен фокус (для визуала)
+                    val targetCardOffset = state.opponent.board.firstOrNull()?.id?.let { enemyCardsOffsets[it] }
+                    val finalArrowEnd = targetCardOffset ?: enemyHeroOffset.takeIf { state.opponent.board.isEmpty() } ?: startArrowOffset
+
+                    AttackArrow(start = startArrowOffset, end = finalArrowEnd)
                 }
 
                 // Оверлей конца игры
-                AnimatedVisibility(
-                    visible = state.isGameOver,
-                    enter = fadeIn(),
-                    exit = fadeOut()
-                ) {
+                AnimatedVisibility(visible = state.isGameOver, enter = fadeIn(), exit = fadeOut()) {
                     Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.9f)), contentAlignment = Alignment.Center) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text("Битва Завершена!", color = Color.White, fontSize = 28.sp, fontWeight = FontWeight.Black)
                             Spacer(modifier = Modifier.height(8.dp))
-
                             val isPlayerWin = state.winnerName == state.player.name
-                            Text(
-                                text = if (isPlayerWin) "ВЫ ПОБЕДИЛИ! 🎉" else "ВЫ ПРОИГРАЛИ 💀",
-                                color = if (isPlayerWin) Color.Green else Color.Red,
-                                fontSize = 22.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                            if (isPlayerWin) {
-                                Text("+50 Золотых монет начислено", color = Color.Yellow, fontSize = 14.sp, modifier = Modifier.padding(top = 4.dp))
-                            }
-
+                            Text(text = if (isPlayerWin) "ВЫ ПОБЕДИЛИ! 🎉" else "ВЫ ПРОИГРАЛИ 💀", color = if (isPlayerWin) Color.Green else Color.Red, fontSize = 22.sp, fontWeight = FontWeight.Bold)
                             Spacer(modifier = Modifier.height(32.dp))
-
-                            Button(
-                                onClick = {
-                                    viewModel.claimRewardsAndExit(isPlayerWin)
-                                    onBackToMenu()
-                                },
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF388E3C)),
-                                modifier = Modifier.width(200.dp)
-                            ) {
-                                Text("Забрать награду и выйти")
+                            Button(onClick = { viewModel.claimRewardsAndExit(isPlayerWin); onBackToMenu() }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF388E3C)), modifier = Modifier.width(200.dp)) {
+                                Text("Выйти")
                             }
                         }
                     }
