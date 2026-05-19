@@ -16,9 +16,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.cardsandshades.model.CardModel
 import com.example.cardsandshades.model.Turn
+import com.example.cardsandshades.model.UserProfile
 import com.example.cardsandshades.ui.components.DragAndDropContainer
 import com.example.cardsandshades.ui.components.DropTarget
 
@@ -28,6 +30,7 @@ fun GameScreen(
     onBackToMenu: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     val gameState by viewModel.gameState.collectAsState()
     var selectedCardForAttack by remember { mutableStateOf<CardModel?>(null) }
 
@@ -176,6 +179,7 @@ fun GameScreen(
                 playerName = state.player.name,
                 onExitClick = { isPlayerWin ->
                     viewModel.claimRewardsAndExit(isPlayerWin)
+                    UserProfile.save(context)
                     onBackToMenu()
                 }
             )

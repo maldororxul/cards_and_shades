@@ -1,8 +1,6 @@
 package com.example.cardsandshades.model
 
 import android.content.Context
-import com.example.cardsandshades.data.local.AppDatabase
-import com.example.cardsandshades.data.local.UserEntity
 import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -13,26 +11,27 @@ object UserProfile {
     val gold = MutableStateFlow(500)
     val collection = MutableListFlow(mutableListOf<CardModel>())
     val selectedDeck = mutableListOf<CardModel>()
-    var maxUnlockedLevel = 1
+    val maxUnlockedLevel = MutableStateFlow(1)
 
-    private var database: AppDatabase? = null
+    private const val PREFS_NAME = "cards_and_shades_prefs"
     private val scope = CoroutineScope(Dispatchers.IO)
     private val gson = Gson()
 
-    // Инициализация базы данных при старте приложения
+    // Инициализация и автозагрузка данных с диска
     fun initDatabase(context: Context) {
-        database = AppDatabase.getDatabase(context)
-
-        // Асинхронно загружаем профиль из Room
         scope.launch {
-            val savedUser = database?.userDao()?.getUserProfile()
-            if (savedUser != null) {
-                gold.value = savedUser.gold
-                maxUnlockedLevel = savedUser.maxUnlockedLevel
+            val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+
+            if (prefs.contains("gold")) {
+                gold.value = prefs.getInt("gold", 500)
+                maxUnlockedLevel.value = prefs.getInt("maxUnlockedLevel", 1)
+
+                val collectionJson = prefs.getString("collection", "[]") ?: "[]"
+                val deckJson = prefs.getString("deck", "[]") ?: "[]"
 
                 val listType = object : com.google.gson.reflect.TypeToken<List<CardModel>>() {}.type
-                val loadedCollection: List<CardModel> = gson.fromJson(savedUser.collectionJson, listType) ?: emptyList()
-                val loadedDeck: List<CardModel> = gson.fromJson(savedUser.selectedDeckJson, listType) ?: emptyList()
+                val loadedCollection: List<CardModel> = gson.fromJson(collectionJson, listType) ?: emptyList()
+                val loadedDeck: List<CardModel> = gson.fromJson(deckJson, listType) ?: emptyList()
 
                 collection.clear()
                 collection.addAll(loadedCollection)
@@ -41,7 +40,7 @@ object UserProfile {
                 selectedDeck.clear()
                 selectedDeck.addAll(loadedDeck)
             } else {
-                // Если база чистая (первый запуск), наполняем коллекцию базовыми картами и сохраняем ее
+                // Первый запуск: генерируем стартовую мини-коллекцию
                 repeat(15) {
                     com.example.cardsandshades.catalog.CardCatalog.generateTestDeck().firstOrNull()?.let { collection.add(it) }
                 }
@@ -51,17 +50,17 @@ object UserProfile {
         }
     }
 
-    // Метод принудительного сохранения состояния в Room DB
+    // Надежное сохранение данных профиля
     fun save(context: Context) {
-        val db = database ?: AppDatabase.getDatabase(context)
         scope.launch {
-            val entity = UserEntity(
-                gold = gold.value,
-                maxUnlockedLevel = maxUnlockedLevel,
-                collectionJson = gson.toJson(collection.toList()),
-                selectedDeckJson = gson.toJson(selectedDeck.toList())
-            )
-            db.userDao().saveUserProfile(entity)
+            val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            prefs.edit().apply {
+                putInt("gold", gold.value)
+                putInt("maxUnlockedLevel", maxUnlockedLevel.value)
+                putString("collection", gson.toJson(collection.toList()))
+                putString("deck", gson.toJson(selectedDeck.toList()))
+                apply()
+            }
         }
     }
 }
