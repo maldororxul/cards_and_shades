@@ -1,6 +1,8 @@
 package com.example.cardsandshades.ui.components
 
-import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.drag
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,7 +22,7 @@ internal val LocalDragTargetInfo = compositionLocalOf { DragTargetInfo() }
 
 internal class DragTargetInfo {
     var isDragging: Boolean by mutableStateOf(false)
-    var dragPosition by mutableStateOf(Offset.Zero) // Точные глобальные координаты пальца
+    var dragPosition by mutableStateOf(Offset.Zero) // Абсолютные координаты пальца на экране
     var draggableCard: CardModel? by mutableStateOf(null)
 }
 
@@ -39,7 +41,7 @@ fun DragAndDropContainer(
                 Box(
                     modifier = Modifier
                         .graphicsLayer {
-                            // Идеальная центровка летающей карты строго под пальцем игрока по двум осям
+                            // Идеально точная центровка летающего оверлея под пальцем
                             translationX = state.dragPosition.x - (targetSize.width / 2)
                             translationY = state.dragPosition.y - (targetSize.height / 2)
                             scaleX = 0.95f
@@ -69,44 +71,42 @@ fun DragTarget(
 
     Box(
         modifier = modifier
+            // Корректно сохраняем абсолютную координату левого верхнего угла карты на экране
             .onGloballyPositioned { startPositionInWindow = it.positionInWindow() }
             .pointerInput(card.id) {
-                detectDragGestures(
-                    onDragStart = { localOffset ->
-                        accumulatedDrag = Offset.Zero
-                        isVerticalDragActive = false
-                    },
-                    onDrag = { change, dragAmount ->
-                        // Если перетаскивание еще не активировано, замеряем направление движения
+                awaitEachGesture {
+                    val down = awaitFirstDown(requireUnconsumed = false)
+                    accumulatedDrag = Offset.Zero
+                    isVerticalDragActive = false
+
+                    drag(down.id) { change ->
+                        val dragDelta = change.positionChange()
+                        accumulatedDrag = Offset(accumulatedDrag.x + dragDelta.x, accumulatedDrag.y + dragDelta.y)
+
                         if (!isVerticalDragActive) {
-                            accumulatedDrag += dragAmount
-                            // Если палец сдвинулся вверх более чем на 15 пикселей и движение преимущественно вертикальное
+                            // Если потянули карту вверх хотя бы на 15 пикселей
                             if (accumulatedDrag.y < -15f && abs(accumulatedDrag.y) > abs(accumulatedDrag.x)) {
                                 isVerticalDragActive = true
                                 currentDragTargetInfo.isDragging = true
                                 currentDragTargetInfo.draggableCard = card
-                                currentDragTargetInfo.dragPosition = startPositionInWindow + change.position
                             }
                         }
 
-                        // Если Drag активен, полностью потребляем ивент и обновляем 2D координаты
-                        if (isVerticalDragActive && currentDragTargetInfo.isDragging) {
+                        if (isVerticalDragActive) {
                             change.consume()
+                            // ИСПРАВЛЕНИЕ: Рассчитываем глобальную точку на экране через сумму векторов.
+                            // Точка левого верхнего угла карты в окне + текущая точка пальца на самой карте.
                             currentDragTargetInfo.dragPosition = Offset(
-                                currentDragTargetInfo.dragPosition.x + dragAmount.x,
-                                currentDragTargetInfo.dragPosition.y + dragAmount.y
+                                startPositionInWindow.x + change.position.x,
+                                startPositionInWindow.y + change.position.y
                             )
                         }
-                    },
-                    onDragEnd = {
-                        currentDragTargetInfo.isDragging = false
-                        isVerticalDragActive = false
-                    },
-                    onDragCancel = {
-                        currentDragTargetInfo.isDragging = false
-                        isVerticalDragActive = false
                     }
-                )
+
+                    if (isVerticalDragActive) {
+                        currentDragTargetInfo.isDragging = false
+                    }
+                }
             }
     ) {
         val isCurrentDragging = currentDragTargetInfo.isDragging && currentDragTargetInfo.draggableCard?.id == card.id
@@ -132,7 +132,7 @@ fun DropTarget(
             globalBounds = Rect(position, Offset(position.x + it.size.width, position.y + it.size.height))
         }
     ) {
-        // Теперь проверка вхождения работает безупречно, так как X и Y координаты корректны
+        // Сверка глобальных координат теперь работает идеально
         isHovered = dragInfo.isDragging && globalBounds.contains(dragInfo.dragPosition)
 
         var wasDragging by remember { mutableStateOf(false) }
@@ -148,4 +148,11 @@ fun DropTarget(
 
         content(isHovered)
     }
+}
+
+// Расширение-хелпер для совместимости со стары appointments API Compose
+private fun androidx.compose.ui.input.pointer.PointerInputChange.positionChange(): Offset {
+    val previous = previousPosition
+    val current = position
+    return Offset(current.x - previous.x, current.y - previous.y)
 }
