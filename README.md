@@ -1,5 +1,6 @@
 # Card trading game on Kotlin
 Полная рекурсивная структура проекта (maldororxul/cards_and_shades @ main):
+```agsl
 ├── app/
 │   ├── src/
 │   │   ├── androidTest/
@@ -30,7 +31,8 @@
 │   │   │   │               │   ├── campaign/
 │   │   │   │               │   │   └── CampaignScreen.kt -> https://github.com/maldororxul/cards_and_shades/blob/main/app/src/main/java/com/example/cardsandshades/ui/campaign/CampaignScreen.kt
 │   │   │   │               │   ├── components/
-│   │   │   │               │   │   └── CardComponent.kt -> https://github.com/maldororxul/cards_and_shades/blob/main/app/src/main/java/com/example/cardsandshades/ui/components/CardComponent.kt
+│   │   │   │               │   │   ├── CardComponent.kt -> https://github.com/maldororxul/cards_and_shades/blob/main/app/src/main/java/com/example/cardsandshades/ui/components/CardComponent.kt
+│   │   │   │               │   │   └── DragAndDropSpaces.kt -> https://github.com/maldororxul/cards_and_shades/blob/main/app/src/main/java/com/example/cardsandshades/ui/components/DragAndDropSpaces.kt
 │   │   │   │               │   ├── game/
 │   │   │   │               │   │   ├── GameScreen.kt -> https://github.com/maldororxul/cards_and_shades/blob/main/app/src/main/java/com/example/cardsandshades/ui/game/GameScreen.kt
 │   │   │   │               │   │   └── GameViewModel.kt -> https://github.com/maldororxul/cards_and_shades/blob/main/app/src/main/java/com/example/cardsandshades/ui/game/GameViewModel.kt
@@ -84,3 +86,4 @@
 ├── gradlew.bat -> https://github.com/maldororxul/cards_and_shades/blob/main/gradlew.bat
 ├── README.md -> https://github.com/maldororxul/cards_and_shades/blob/main/README.md
 └── settings.gradle.kts -> https://github.com/maldororxul/cards_and_shades/blob/main/settings.gradle.kts
+```
