@@ -138,6 +138,12 @@ class GameViewModel : ViewModel() {
         val state = _gameState.value ?: return
         if (state.isAnimating || state.currentTurn != Turn.PLAYER) return
 
+        // ВАЛИДАЦИЯ: Проверяем, спит ли карта и нет ли на поле врага Танков (Провокаторов)
+        if (!com.example.cardsandshades.engine.GameEngine.canAttackTarget(state, attacker, target)) {
+            // Если атака запрещена правилами ККИ, прерываем выполнение
+            return
+        }
+
         viewModelScope.launch {
             _gameState.update { it?.copy(isAnimating = true) }
 
@@ -228,6 +234,11 @@ class GameViewModel : ViewModel() {
     fun attackEnemyHero(attacker: CardModel) {
         val state = _gameState.value ?: return
         if (state.isAnimating || state.currentTurn != Turn.PLAYER) return
+
+        // ВАЛИДАЦИЯ: Передаем null в качестве цели, чтобы проверить, открыто ли лицо (нет ли танк-карт)
+        if (!com.example.cardsandshades.engine.GameEngine.canAttackTarget(state, attacker, null)) {
+            return
+        }
 
         viewModelScope.launch {
             _gameState.update { it?.copy(isAnimating = true) }

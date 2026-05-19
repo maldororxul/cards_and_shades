@@ -1,5 +1,8 @@
 package com.example.cardsandshades.model
 
+import com.example.cardsandshades.effect.CardEffect
+import com.example.cardsandshades.effect.TauntEffect
+
 enum class Rarity {
     COMMON, RARE, EPIC, LEGENDARY
 }
@@ -13,7 +16,15 @@ data class CardModel(
     val rarity: Rarity,
     var currentAttack: Int = baseAttack,
     var currentHealth: Int = baseHealth,
-    // Поля для анимации (не участвуют в copy по умолчанию)
+
+    // Новая ООП структура эффектов
+    val effects: List<CardEffect> = emptyList(),
+
+    // Боевые состояния хода
+    var isSleeping: Boolean = true,
+    var hasAttackedThisTurn: Boolean = false,
+
+    // Состояния анимации
     var isAttacking: Boolean = false,
     var isTakingDamage: Boolean = false,
     var lastDamageTaken: Int = 0,
@@ -21,9 +32,11 @@ data class CardModel(
 ) {
     val isDead: Boolean get() = currentHealth <= 0
 
-    // Метод для сброса состояния карты перед новым матчем
-    fun reset() {
-        currentAttack = baseAttack
-        currentHealth = baseHealth
+    // Вспомогательные проверки наличия эффектов у карты без явных if-else
+    val hasTaunt: Boolean get() = effects.any { it is TauntEffect }
+
+    fun resetTurnState() {
+        isSleeping = false
+        hasAttackedThisTurn = false
     }
 }

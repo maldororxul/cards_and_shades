@@ -13,16 +13,14 @@ object GameEngine {
     // 1. Старт нового хода: увеличиваем ману, добираем карту
     fun startTurn(state: GameState) {
         if (state.isGameOver) return
-
         val activePlayer = if (state.currentTurn == Turn.PLAYER) state.player else state.opponent
 
-        // Увеличиваем максимальную ману до капа в 10 единиц
-        if (activePlayer.maxMana < MAX_MANA_CAP) {
-            activePlayer.maxMana += 1
-        }
+        if (activePlayer.maxMana < MAX_MANA_CAP) activePlayer.maxMana += 1
         activePlayer.currentMana = activePlayer.maxMana
 
-        // Добор карты в начале хода
+        // ООП-сброс состояний сна и атак для всех существ на столе в начале их хода
+        activePlayer.board.forEach { it.resetTurnState() }
+
         drawCard(activePlayer)
     }
 
@@ -40,14 +38,52 @@ object GameEngine {
     // 3. Разыгрывание карты из руки на стол
     fun playCard(state: GameState, card: CardModel): Boolean {
         val activePlayer = if (state.currentTurn == Turn.PLAYER) state.player else state.opponent
-
         if (activePlayer.currentMana >= card.manaCost && activePlayer.board.size < MAX_BOARD_SIZE) {
             activePlayer.currentMana -= card.manaCost
             activePlayer.hand.remove(card)
+
+            // ТРИГГЕР: Активируем эффекты при призыве (например, Рывок сразу разбудит карту)
+            card.effects.forEach { it.onSummon(card) }
+
             activePlayer.board.add(card)
-            return true // Карта успешно разыграна
+            return true
         }
-        return false // Недостаточно маны или нет места на столе
+        return false
+    }
+
+    fun canAttackTarget(state: GameState, attacker: CardModel, target: CardModel?): Boolean {
+        if (attacker.isSleeping || attacker.hasAttackedThisTurn) return false
+
+        val enemyPlayer = if (state.currentTurn == Turn.PLAYER) state.opponent else state.player
+
+        // Если у врага есть Танки (Провокация), атаковать другие карты или лицо нельзя
+        val hasTauntOnBoard = enemyPlayer.board.any { it.hasTaunt }
+        if (hasTauntOnBoard && (target == null || !target.hasTaunt)) {
+            return false // Игрок пытается пробить не Танка, когда Танк жив
+        }
+        return true
+    }
+
+    fun calculateCombat(state: GameState, attacker: CardModel, target: CardModel) {
+        attacker.hasAttackedThisTurn = true
+
+        // Базовый расчет урона
+        var damageToTarget = attacker.currentAttack
+        var counterDamageToAttacker = target.currentAttack
+
+        // Применяем модификаторы эффектов
+        target.effects.forEach { damageToTarget = it.modifyIncomingDamage(target, damageToTarget) }
+        attacker.effects.forEach { counterDamageToAttacker = it.modifyCounterDamage(attacker, target, counterDamageToAttacker) }
+
+        // Нанесение урона существам
+        target.currentHealth -= damageToTarget
+        attacker.currentHealth -= counterDamageToAttacker
+
+        target.lastDamageTaken = damageToTarget
+        attacker.lastDamageTaken = counterDamageToAttacker
+
+        // Пост-эффекты атаки (например, Маг бьет по соседям)
+        attacker.effects.forEach { it.onAfterAttack(state, attacker, target) }
     }
 
     // 4. Бой: Атака карты на карту противника (Взаимный урон)
