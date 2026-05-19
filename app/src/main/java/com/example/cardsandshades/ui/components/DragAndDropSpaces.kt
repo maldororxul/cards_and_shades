@@ -20,10 +20,20 @@ import kotlin.math.abs
 
 internal val LocalDragTargetInfo = compositionLocalOf { DragTargetInfo() }
 
+// Глобальный реестр для отслеживания координат всех DropTarget на экране
+internal class DropTargetBounds(
+    val id: String,
+    val bounds: Rect,
+    val onDropped: (CardModel) -> Unit
+)
+
 internal class DragTargetInfo {
     var isDragging: Boolean by mutableStateOf(false)
-    var dragPosition by mutableStateOf(Offset.Zero) // Абсолютные координаты пальца на экране
+    var dragPosition by mutableStateOf(Offset.Zero)
     var draggableCard: CardModel? by mutableStateOf(null)
+
+    // Список всех активных зон сброса на экране
+    val activeDropTargets = mutableStateListOf<DropTargetBounds>()
 }
 
 @Composable
@@ -41,7 +51,6 @@ fun DragAndDropContainer(
                 Box(
                     modifier = Modifier
                         .graphicsLayer {
-                            // Идеально точная центровка летающего оверлея под пальцем
                             translationX = state.dragPosition.x - (targetSize.width / 2)
                             translationY = state.dragPosition.y - (targetSize.height / 2)
                             scaleX = 0.95f
@@ -65,46 +74,58 @@ fun DragTarget(
     content: @Composable () -> Unit
 ) {
     val currentDragTargetInfo = LocalDragTargetInfo.current
-    var startPositionInWindow by remember { mutableStateOf(Offset.Zero) }
+    var currentPositionInWindow by remember { mutableStateOf(Offset.Zero) }
     var accumulatedDrag by remember { mutableStateOf(Offset.Zero) }
     var isVerticalDragActive by remember { mutableStateOf(false) }
 
     Box(
         modifier = modifier
-            // Корректно сохраняем абсолютную координату левого верхнего угла карты на экране
-            .onGloballyPositioned { startPositionInWindow = it.positionInWindow() }
+            .onGloballyPositioned { currentPositionInWindow = it.positionInWindow() }
             .pointerInput(card.id) {
                 awaitEachGesture {
                     val down = awaitFirstDown(requireUnconsumed = false)
                     accumulatedDrag = Offset.Zero
                     isVerticalDragActive = false
 
+                    val initialFingerGlobalPosition = currentPositionInWindow + down.position
+
                     drag(down.id) { change ->
                         val dragDelta = change.positionChange()
                         accumulatedDrag = Offset(accumulatedDrag.x + dragDelta.x, accumulatedDrag.y + dragDelta.y)
 
                         if (!isVerticalDragActive) {
-                            // Если потянули карту вверх хотя бы на 15 пикселей
                             if (accumulatedDrag.y < -15f && abs(accumulatedDrag.y) > abs(accumulatedDrag.x)) {
                                 isVerticalDragActive = true
                                 currentDragTargetInfo.isDragging = true
                                 currentDragTargetInfo.draggableCard = card
+                                currentDragTargetInfo.dragPosition = initialFingerGlobalPosition
                             }
                         }
 
                         if (isVerticalDragActive) {
                             change.consume()
-                            // ИСПРАВЛЕНИЕ: Рассчитываем глобальную точку на экране через сумму векторов.
-                            // Точка левого верхнего угла карты в окне + текущая точка пальца на самой карте.
                             currentDragTargetInfo.dragPosition = Offset(
-                                startPositionInWindow.x + change.position.x,
-                                startPositionInWindow.y + change.position.y
+                                initialFingerGlobalPosition.x + accumulatedDrag.x,
+                                initialFingerGlobalPosition.y + accumulatedDrag.y
                             )
                         }
                     }
 
+                    // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Обрабатываем сброс прямо в момент отпускания пальца
                     if (isVerticalDragActive) {
+                        val finalDropPosition = currentDragTargetInfo.dragPosition
+
+                        // Ищем, в какую из зарегистрированных зон попал палец
+                        val targetZone = currentDragTargetInfo.activeDropTargets.find { zone ->
+                            zone.bounds.contains(finalDropPosition)
+                        }
+
+                        // Если зона найдена — принудительно активируем логику розыгрыша карты
+                        targetZone?.onDropped?.invoke(card)
+
+                        // Очищаем глобальное состояние
                         currentDragTargetInfo.isDragging = false
+                        isVerticalDragActive = false
                     }
                 }
             }
@@ -127,30 +148,33 @@ fun DropTarget(
     var globalBounds by remember { mutableStateOf(Rect.Zero) }
 
     Box(
-        modifier = modifier.onGloballyPositioned {
-            val position = it.positionInWindow()
-            globalBounds = Rect(position, Offset(position.x + it.size.width, position.y + it.size.height))
+        modifier = modifier.onGloballyPositioned { coordinates ->
+            val position = coordinates.positionInWindow()
+            globalBounds = Rect(position, Offset(position.x + coordinates.size.width, position.y + coordinates.size.height))
         }
     ) {
-        // Сверка глобальных координат теперь работает идеально
         isHovered = dragInfo.isDragging && globalBounds.contains(dragInfo.dragPosition)
 
-        var wasDragging by remember { mutableStateOf(false) }
+        // Регистрируем зону сброса в глобальном реестре при отрисовке и обновляем при изменении границ
+        val currentZone = remember(globalBounds) {
+            DropTargetBounds(
+                id = "player_battle_board",
+                bounds = globalBounds,
+                onDropped = onCardDropped
+            )
+        }
 
-        LaunchedEffect(dragInfo.isDragging) {
-            if (wasDragging && !dragInfo.isDragging && isHovered) {
-                dragInfo.draggableCard?.let { card ->
-                    onCardDropped(card)
-                }
+        DisposableEffect(currentZone) {
+            dragInfo.activeDropTargets.add(currentZone)
+            onDispose {
+                dragInfo.activeDropTargets.remove(currentZone)
             }
-            wasDragging = dragInfo.isDragging
         }
 
         content(isHovered)
     }
 }
 
-// Расширение-хелпер для совместимости со стары appointments API Compose
 private fun androidx.compose.ui.input.pointer.PointerInputChange.positionChange(): Offset {
     val previous = previousPosition
     val current = position
