@@ -426,9 +426,6 @@ class GameViewModel : ViewModel() {
 
                     // Выключаем анимации текущей атаки
                     updateCardAnimation(activeAttacker.id, isAttacking = false)
-                    opponentAttackerId = null
-                    opponentTargetId = null
-                    isOpponentTargetingHero = false
 
                     delay(500) // Даем рассмотреть цифры урона
                     playerHeroTakingDamage = false
@@ -450,6 +447,10 @@ class GameViewModel : ViewModel() {
                             s.copy(player = s.player.copy(board = pBoard), opponent = s.opponent.copy(board = oBoard))
                         }
                     }
+
+                    opponentAttackerId = null
+                    opponentTargetId = null
+                    isOpponentTargetingHero = false
 
                     val hasDeaths = _gameState.value?.player?.board?.any { it.isDying } == true ||
                             _gameState.value?.opponent?.board?.any { it.isDying } == true
