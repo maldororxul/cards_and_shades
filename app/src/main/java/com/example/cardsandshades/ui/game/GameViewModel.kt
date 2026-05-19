@@ -302,9 +302,9 @@ class GameViewModel : ViewModel() {
             currentState?.let { state ->
                 if (state.currentTurn == Turn.PLAYER) {
                     val updatedState = state.copy()
-                    com.example.cardsandshades.engine.GameEngine.endTurn(updatedState)
+                    GameEngine.endTurn(updatedState)
 
-                    // ИСПРАВЛЕНИЕ БАГА: В момент передачи хода к ИИ, мы будим его СТАРЫЕ карты на столе
+                    // БЕЗОПАСНЫЙ ФИКС: В момент передачи хода к ИИ, мы будим его СТАРЫЕ карты на столе
                     val activeOpponent = updatedState.opponent.copy(
                         board = updatedState.opponent.board.map { card ->
                             card.copy(isSleeping = false, hasAttackedThisTurn = false)
@@ -476,15 +476,16 @@ class GameViewModel : ViewModel() {
             _gameState.update { currentState ->
                 currentState?.let { state ->
                     val updatedState = state.copy()
-                    com.example.cardsandshades.engine.GameEngine.endTurn(updatedState)
+                    GameEngine.endTurn(updatedState)
 
-                    // ФИКС: Наступил ход игрока — гарантированно будим все его карты на столе!
-                    updatedState.player.board.forEach {
-                        it.isSleeping = false
-                        it.hasAttackedThisTurn = false
-                    }
+                    // БЕЗОПАСНЫЙ ФИКС: Ход вернулся к игроку — будим все ваши карты на столе для нового раунда
+                    val activePlayer = updatedState.player.copy(
+                        board = updatedState.player.board.map { card ->
+                            card.copy(isSleeping = false, hasAttackedThisTurn = false)
+                        }.toMutableList()
+                    )
 
-                    updatedState
+                    updatedState.copy(player = activePlayer)
                 }
             }
         }
