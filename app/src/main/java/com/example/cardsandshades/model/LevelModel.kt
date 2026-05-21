@@ -8,13 +8,8 @@ data class LevelModel(
     val opponentStartMana: Int,
     val difficultyDescription: String,
     val opponentDeckPreset: List<String>,
-    val rewardGold: Int,
-    val rewardCrystals: Int = 0,
-    val rewardDustCommon: Int = 0,
-    val rewardDustRare: Int = 0,
-    val rewardDustEpic: Int = 0,
-    val rewardDustLegendary: Int = 0,
-    val rewardCardName: String? = null
+    val firstTimeReward: RewardSetModel,
+    val repeatReward: RewardSetModel
 )
 
 data class ChapterModel(

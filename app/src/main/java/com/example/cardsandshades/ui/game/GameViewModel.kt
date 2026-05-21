@@ -8,12 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.cardsandshades.catalog.CardCatalog
 import com.example.cardsandshades.engine.GameEngine
-import com.example.cardsandshades.model.CardModel
-import com.example.cardsandshades.model.GameState
-import com.example.cardsandshades.model.LevelModel
-import com.example.cardsandshades.model.PlayerModel
-import com.example.cardsandshades.model.Turn
-import com.example.cardsandshades.model.UserProfile
+import com.example.cardsandshades.model.*
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -131,18 +126,21 @@ class GameViewModel : ViewModel() {
         opponentTurnJob?.cancel()
         if (isPlayerWin) {
             currentLevel?.let { level ->
+                val isFirstTime = level.id >= UserProfile.maxUnlockedLevel.value
+                val rewards = if (isFirstTime) level.firstTimeReward else level.repeatReward
+
                 // 1. Начисляем золото и кристаллы
-                UserProfile.gold.value += level.rewardGold
-                UserProfile.crystals.value += level.rewardCrystals
+                UserProfile.gold.value += rewards.gold
+                UserProfile.crystals.value += rewards.crystals
                 
                 // 2. Начисляем пыль
-                UserProfile.dustCommon.value += level.rewardDustCommon
-                UserProfile.dustRare.value += level.rewardDustRare
-                UserProfile.dustEpic.value += level.rewardDustEpic
-                UserProfile.dustLegendary.value += level.rewardDustLegendary
+                UserProfile.dustCommon.value += rewards.dustCommon
+                UserProfile.dustRare.value += rewards.dustRare
+                UserProfile.dustEpic.value += rewards.dustEpic
+                UserProfile.dustLegendary.value += rewards.dustLegendary
 
                 // 3. Выдаем призовую ККИ-карту
-                level.rewardCardName?.let { cardName ->
+                rewards.cardName?.let { cardName ->
                     CardCatalog.createCardInstance(cardName)?.let { prizeCard ->
                         UserProfile.collection.add(prizeCard)
                     }

@@ -1,0 +1,7 @@
+backgrounds:
+  campaign: "bg_campaign_map"
+  collection: "bg_collection_dark"
+  shop: "bg_market_dynamic"
+  forge: "bg_blacksmith_fire"
+  rewards: "bg_temple_light"
+  game: "bg_battle_arena"

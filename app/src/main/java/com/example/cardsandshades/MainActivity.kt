@@ -4,6 +4,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -29,6 +31,7 @@ import com.example.cardsandshades.ui.game.GameScreen
 import com.example.cardsandshades.ui.game.GameViewModel
 import com.example.cardsandshades.ui.components.GameText
 import com.example.cardsandshades.ui.theme.GameTypography
+import com.example.cardsandshades.ui.components.GameBackground
 
 class MainActivity : ComponentActivity() {
     private val gameViewModel: GameViewModel by viewModels()
@@ -40,6 +43,8 @@ class MainActivity : ComponentActivity() {
         com.example.cardsandshades.catalog.CardCatalog.init(this)
         com.example.cardsandshades.catalog.CampaignCatalog.init(this)
         com.example.cardsandshades.catalog.RewardsCatalog.init(this)
+        com.example.cardsandshades.catalog.BoosterCatalog.init(this)
+        com.example.cardsandshades.catalog.BackgroundCatalog.init(this)
         UserProfile.initDatabase(this)
 
         // 1. Разрешаем приложению отрисовываться под системными панелями
@@ -60,31 +65,40 @@ class MainActivity : ComponentActivity() {
                     var currentScreen by remember { mutableStateOf("campaign") }
 
                     Box(modifier = Modifier.fillMaxSize()) {
-                        // КОНТЕНТ ТЕКУЩЕГО ЭКРАНА
-                        Box(modifier = Modifier.fillMaxSize()) {
-                            when (currentScreen) {
-                                "campaign" -> {
-                                    CampaignScreen(
-                                        onLevelSelect = { selectedLevel ->
-                                            gameViewModel.startNewGame(selectedLevel)
-                                            currentScreen = "game"
-                                        }
-                                    )
-                                }
-                                "game" -> {
-                                    GameScreen(viewModel = gameViewModel, onBackToMenu = { currentScreen = "campaign" })
-                                }
-                                "shop" -> {
-                                    com.example.cardsandshades.ui.booster.BoosterScreen()
-                                }
-                                "collection" -> {
-                                    com.example.cardsandshades.ui.collection.CollectionScreen()
-                                }
-                                "rewards" -> {
-                                    com.example.cardsandshades.ui.rewards.RewardsScreen()
-                                }
-                                "forge" -> {
-                                    com.example.cardsandshades.ui.forge.ForgeScreen()
+                        // КОНТЕНТ ТЕКУЩЕГО ЭКРАНА С АНИМАЦИЕЙ
+                        AnimatedContent(
+                            targetState = currentScreen,
+                            transitionSpec = {
+                                fadeIn(animationSpec = tween(500)) togetherWith 
+                                fadeOut(animationSpec = tween(500))
+                            },
+                            label = "screen_transition"
+                        ) { screen ->
+                            GameBackground(screenId = screen) {
+                                when (screen) {
+                                    "campaign" -> {
+                                        CampaignScreen(
+                                            onLevelSelect = { selectedLevel ->
+                                                gameViewModel.startNewGame(selectedLevel)
+                                                currentScreen = "game"
+                                            }
+                                        )
+                                    }
+                                    "game" -> {
+                                        GameScreen(viewModel = gameViewModel, onBackToMenu = { currentScreen = "campaign" })
+                                    }
+                                    "shop" -> {
+                                        com.example.cardsandshades.ui.booster.BoosterScreen()
+                                    }
+                                    "collection" -> {
+                                        com.example.cardsandshades.ui.collection.CollectionScreen()
+                                    }
+                                    "rewards" -> {
+                                        com.example.cardsandshades.ui.rewards.RewardsScreen()
+                                    }
+                                    "forge" -> {
+                                        com.example.cardsandshades.ui.forge.ForgeScreen()
+                                    }
                                 }
                             }
                         }

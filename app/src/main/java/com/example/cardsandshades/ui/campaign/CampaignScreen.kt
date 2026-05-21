@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.sp
 import com.example.cardsandshades.catalog.CampaignCatalog
 import com.example.cardsandshades.model.ChapterModel
 import com.example.cardsandshades.model.LevelModel
+import com.example.cardsandshades.model.RewardSetModel
 import com.example.cardsandshades.model.UserProfile
 import com.example.cardsandshades.ui.components.GameText
 import com.example.cardsandshades.ui.components.GameButton
@@ -32,12 +33,16 @@ fun CampaignScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFF121212))
             .padding(16.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             if (selectedChapter != null) {
-                GameButton(text = "⬅️", onClick = { selectedChapter = null }, containerColor = Color.DarkGray, modifier = Modifier.size(50.dp, 40.dp))
+                GameButton(
+                    text = "⬅️", 
+                    onClick = { selectedChapter = null }, 
+                    containerColor = Color.DarkGray, 
+                    modifier = Modifier.size(50.dp, 40.dp)
+                )
                 Spacer(modifier = Modifier.width(12.dp))
             }
             GameText(
@@ -68,10 +73,12 @@ fun CampaignScreen(
             LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 items(selectedChapter!!.levels) { level ->
                     val isUnlocked = level.id <= unlockedLevel
+                    val isCompleted = level.id < unlockedLevel
                     
                     LevelItem(
                         level = level,
                         isUnlocked = isUnlocked,
+                        isCompleted = isCompleted,
                         onClick = { if (isUnlocked) onLevelSelect(level) }
                     )
                 }
@@ -88,7 +95,7 @@ private fun ChapterItem(chapter: ChapterModel, isUnlocked: Boolean, onClick: () 
         modifier = Modifier
             .fillMaxWidth()
             .border(1.dp, if (isUnlocked) Color(0xFF673AB7) else Color.DarkGray, RoundedCornerShape(12.dp))
-            .background(if (isUnlocked) Color(0xFF1E1E1E) else Color(0xFF141414))
+            .background(if (isUnlocked) Color(0xFF1E1E1E).copy(alpha = 0.8f) else Color(0xFF141414).copy(alpha = 0.8f))
             .clickable(enabled = isUnlocked) { onClick() }
             .padding(20.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -108,12 +115,12 @@ private fun ChapterItem(chapter: ChapterModel, isUnlocked: Boolean, onClick: () 
 }
 
 @Composable
-private fun LevelItem(level: LevelModel, isUnlocked: Boolean, onClick: () -> Unit) {
+private fun LevelItem(level: LevelModel, isUnlocked: Boolean, isCompleted: Boolean, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .border(1.dp, if (isUnlocked) Color(0xFF388E3C) else Color.DarkGray, RoundedCornerShape(12.dp))
-            .background(if (isUnlocked) Color(0xFF1E1E1E) else Color(0xFF141414))
+            .background(if (isUnlocked) Color(0xFF1E1E1E).copy(alpha = 0.8f) else Color(0xFF141414).copy(alpha = 0.8f))
             .clickable(enabled = isUnlocked) { onClick() }
             .padding(16.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -129,11 +136,37 @@ private fun LevelItem(level: LevelModel, isUnlocked: Boolean, onClick: () -> Uni
             if (isUnlocked) {
                 Spacer(modifier = Modifier.height(4.dp))
                 GameText(text = level.difficultyDescription, color = Color.Gray, fontSize = 12.sp)
+                
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                // ОТОБРАЖЕНИЕ НАГРАД
+                val currentRewards = if (isCompleted) level.repeatReward else level.firstTimeReward
+                if (!currentRewards.isEmpty) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        GameText(text = "Награда: ", fontSize = 11.sp, color = Color.LightGray)
+                        RewardIcons(currentRewards)
+                    }
+                }
             }
         }
         
         if (!isUnlocked) {
             GameText("🔒", fontSize = 18.sp)
+        } else if (isCompleted) {
+            GameText("✅", fontSize = 18.sp)
         }
+    }
+}
+
+@Composable
+private fun RewardIcons(rewards: RewardSetModel) {
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        if (rewards.gold > 0) GameText("🪙${rewards.gold}", fontSize = 11.sp, color = Color.Yellow)
+        if (rewards.crystals > 0) GameText("💎${rewards.crystals}", fontSize = 11.sp, color = Color(0xFF03A9F4))
+        if (rewards.dustCommon > 0) GameText("⚪${rewards.dustCommon}", fontSize = 11.sp, color = Color.Gray)
+        if (rewards.dustRare > 0) GameText("🔵${rewards.dustRare}", fontSize = 11.sp, color = Color(0xFF1E88E5))
+        if (rewards.dustEpic > 0) GameText("🟣${rewards.dustEpic}", fontSize = 11.sp, color = Color(0xFF8E24AA))
+        if (rewards.dustLegendary > 0) GameText("🟡${rewards.dustLegendary}", fontSize = 11.sp, color = Color(0xFFFDD835))
+        if (rewards.cardName != null) GameText("🃏${rewards.cardName}", fontSize = 11.sp, color = Color(0xFF00E676))
     }
 }

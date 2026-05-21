@@ -9,7 +9,11 @@ chapters:
         opponentStartMana: 1
         difficultyDescription: "Легкий бой. Познакомьтесь с основами."
         opponentDeckPreset: ["Тень-новобранец", "Тень-новобранец", "Проворный бес"]
-        rewardGold: 100
+        firstTimeReward:
+          gold: 100
+          card: "Проворный бес"
+        repeatReward:
+          gold: 20
       - id: 2
         name: "Засада в кустах"
         opponentName: "Громила орков"
@@ -17,7 +21,11 @@ chapters:
         opponentStartMana: 1
         difficultyDescription: "Враг использует грубую силу."
         opponentDeckPreset: ["Тень-новобранец", "Каменный страж"]
-        rewardGold: 120
+        firstTimeReward:
+          gold: 120
+          dust_common: 20
+        repeatReward:
+          gold: 30
       - id: 3
         name: "Шепот леса"
         opponentName: "Лесной дух"
@@ -25,34 +33,11 @@ chapters:
         opponentStartMana: 1
         difficultyDescription: "Остерегайтесь магических атак."
         opponentDeckPreset: ["Адепт тайной магии", "Эльфийский лучник"]
-        rewardGold: 150
-        rewardCrystals: 5
-      - id: 4
-        name: "Каменный рубеж"
-        opponentName: "Живой доспех"
-        opponentMaxHp: 25
-        opponentStartMana: 1
-        difficultyDescription: "Много Танков на поле."
-        opponentDeckPreset: ["Каменный страж", "Оруженосец Света"]
-        rewardGold: 180
-      - id: 5
-        name: "Тропа мертвых"
-        opponentName: "Некромант"
-        opponentMaxHp: 28
-        opponentStartMana: 2
-        difficultyDescription: "Враг призывает Зомби."
-        opponentDeckPreset: ["Гниющий зомби", "Тень-новобранец"]
-        rewardGold: 200
-        rewardDustCommon: 40
-      - id: 6
-        name: "Храм Света"
-        opponentName: "Жрец Солнца"
-        opponentMaxHp: 30
-        opponentStartMana: 2
-        difficultyDescription: "Сильные исцеляющие эффекты."
-        opponentDeckPreset: ["Оруженосец Света", "Дух-наставник"]
-        rewardGold: 250
-        rewardCardName: "Оруженосец Света"
+        firstTimeReward:
+          gold: 150
+          crystals: 10
+        repeatReward:
+          gold: 40
       - id: 7
         name: "Логово Тени"
         opponentName: "Теневой лорд"
@@ -60,8 +45,14 @@ chapters:
         opponentStartMana: 2
         difficultyDescription: "Босс первой главы."
         opponentDeckPreset: ["Король Теней", "Теневой жнец", "Вампир-аристократ"]
-        rewardGold: 500
-        rewardCrystals: 20
+        firstTimeReward:
+          gold: 500
+          crystals: 50
+          dust_rare: 50
+          card: "Король Теней"
+        repeatReward:
+          gold: 100
+          dust_common: 10
   - id: 2
     name: "Глава 2: Проклятая Цитадель"
     levels:
@@ -72,16 +63,11 @@ chapters:
         opponentStartMana: 2
         difficultyDescription: "Очень высокая сложность."
         opponentDeckPreset: ["Вестник бури", "Проклятый паладин"]
-        rewardGold: 300
-      - id: 14
-        name: "Сердце тьмы"
-        opponentName: "Архимаг Маллок"
-        opponentMaxHp: 60
-        opponentStartMana: 3
-        difficultyDescription: "Финальный босс второй главы."
-        opponentDeckPreset: ["Архимаг пустоты", "Дракон Пустоты"]
-        rewardGold: 1000
-        rewardCrystals: 100
+        firstTimeReward:
+          gold: 300
+          crystals: 20
+        repeatReward:
+          gold: 60
   - id: 3
     name: "Глава 3: Трон Пустоты"
     levels:
@@ -92,4 +78,8 @@ chapters:
         opponentStartMana: 3
         difficultyDescription: "Легендарные битвы."
         opponentDeckPreset: ["Дракон Пустоты", "Архимаг пустоты"]
-        rewardGold: 500
+        firstTimeReward:
+          gold: 1000
+          crystals: 100
+        repeatReward:
+          gold: 200

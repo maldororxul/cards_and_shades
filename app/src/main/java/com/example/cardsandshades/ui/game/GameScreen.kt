@@ -210,13 +210,15 @@ fun GameScreen(
             )
 
             // ЭКРАН ЗАВЕРШЕНИЯ ИГРЫ
+            val unlockedLevel by UserProfile.maxUnlockedLevel.collectAsState()
+            val isFirstTimeWin = (viewModel.currentLevel?.id ?: 0) >= unlockedLevel
+            val rewards = if (isFirstTimeWin) viewModel.currentLevel?.firstTimeReward else viewModel.currentLevel?.repeatReward
+
             GameOverOverlay(
                 isGameOver = state.isGameOver,
                 winnerName = state.winnerName,
                 playerName = state.player.name,
-                // ПЕРЕДАЕМ ДАННЫЕ НАГРАДЫ ТЕКУЩЕГО УРОВНЯ В ВЕРСТКУ
-                rewardGold = viewModel.currentLevel?.rewardGold ?: 50,
-                rewardCardName = viewModel.currentLevel?.rewardCardName,
+                rewards = rewards,
                 onExitClick = { isPlayerWin ->
                     viewModel.claimRewardsAndExit(isPlayerWin)
                     UserProfile.save(context)

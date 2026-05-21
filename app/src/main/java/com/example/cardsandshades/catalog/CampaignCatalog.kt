@@ -3,6 +3,7 @@ package com.example.cardsandshades.catalog
 import android.content.Context
 import com.example.cardsandshades.model.ChapterModel
 import com.example.cardsandshades.model.LevelModel
+import com.example.cardsandshades.model.RewardSetModel
 import org.yaml.snakeyaml.Yaml
 
 object CampaignCatalog {
@@ -29,16 +30,24 @@ object CampaignCatalog {
                         opponentStartMana = levelMap["opponentStartMana"] as Int,
                         difficultyDescription = levelMap["difficultyDescription"] as String,
                         opponentDeckPreset = levelMap["opponentDeckPreset"] as List<String>,
-                        rewardGold = levelMap["rewardGold"] as Int,
-                        rewardCrystals = levelMap["rewardCrystals"] as? Int ?: 0,
-                        rewardDustCommon = levelMap["rewardDustCommon"] as? Int ?: 0,
-                        rewardDustRare = levelMap["rewardDustRare"] as? Int ?: 0,
-                        rewardDustEpic = levelMap["rewardDustEpic"] as? Int ?: 0,
-                        rewardDustLegendary = levelMap["rewardDustLegendary"] as? Int ?: 0,
-                        rewardCardName = levelMap["rewardCardName"] as? String
+                        firstTimeReward = parseReward(levelMap["firstTimeReward"] as? Map<String, Any>),
+                        repeatReward = parseReward(levelMap["repeatReward"] as? Map<String, Any>)
                     )
                 }
             )
         }
+    }
+
+    private fun parseReward(rewardMap: Map<String, Any>?): RewardSetModel {
+        if (rewardMap == null) return RewardSetModel()
+        return RewardSetModel(
+            gold = rewardMap["gold"] as? Int ?: 0,
+            crystals = rewardMap["crystals"] as? Int ?: 0,
+            dustCommon = rewardMap["dust_common"] as? Int ?: 0,
+            dustRare = rewardMap["dust_rare"] as? Int ?: 0,
+            dustEpic = rewardMap["dust_epic"] as? Int ?: 0,
+            dustLegendary = rewardMap["dust_legendary"] as? Int ?: 0,
+            cardName = rewardMap["card"] as? String
+        )
     }
 }
