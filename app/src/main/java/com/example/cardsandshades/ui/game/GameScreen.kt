@@ -90,7 +90,7 @@ fun GameScreen(
     com.example.cardsandshades.ui.components.DragAndDropContainer(modifier = modifier) {
         Box(modifier = Modifier.fillMaxSize()) {
             Column(
-                modifier = Modifier.fillMaxSize().background(Color(0xFF141414)).padding(12.dp),
+                modifier = Modifier.fillMaxSize().padding(12.dp),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
                 // ВРАГ: Передаем значения из viewModel напрямую в аргументы

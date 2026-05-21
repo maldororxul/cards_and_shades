@@ -10,9 +10,10 @@ import com.example.cardsandshades.model.CardModel
 @Composable
 fun GameBackground(
     screenId: String,
+    overrideRes: String? = null,
     content: @Composable () -> Unit
 ) {
-    val bgResName = BackgroundCatalog.getBackgroundForScreen(screenId)
+    val bgResName = overrideRes ?: BackgroundCatalog.getBackgroundForScreen(screenId)
     
     Box(modifier = Modifier.fillMaxSize()) {
         if (bgResName != null) {

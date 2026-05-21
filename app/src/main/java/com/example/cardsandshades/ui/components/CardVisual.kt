@@ -26,8 +26,7 @@ fun CardVisual(
 
     Box(
         modifier = modifier
-            .fillMaxSize()
-            .background(Color(0xFF1A1A1A)),
+            .fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
         if (!resName.isNullOrEmpty()) {
@@ -79,7 +78,8 @@ fun CardVisual(
 @Composable
 private fun PlaceholderVisual(name: String) {
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize()
+            .background(Color(0xFF1A1A1A)),
         contentAlignment = Alignment.Center
     ) {
         androidx.compose.material3.Text(

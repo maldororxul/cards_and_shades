@@ -12,11 +12,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -32,6 +28,7 @@ import com.example.cardsandshades.ui.game.GameViewModel
 import com.example.cardsandshades.ui.components.GameText
 import com.example.cardsandshades.ui.theme.GameTypography
 import com.example.cardsandshades.ui.components.GameBackground
+import kotlinx.coroutines.delay
 
 class MainActivity : ComponentActivity() {
     private val gameViewModel: GameViewModel by viewModels()
@@ -65,16 +62,28 @@ class MainActivity : ComponentActivity() {
                     var currentScreen by remember { mutableStateOf("campaign") }
 
                     Box(modifier = Modifier.fillMaxSize()) {
+                        var isTransitioning by remember { mutableStateOf(false) }
+                        
+                        // ЭФФЕКТ ЗАТЕМНЕНИЯ ПРИ СМЕНЕ ЭКРАНА
+                        LaunchedEffect(currentScreen) {
+                            isTransitioning = true
+                            delay(200)
+                            isTransitioning = false
+                        }
+
                         // КОНТЕНТ ТЕКУЩЕГО ЭКРАНА С АНИМАЦИЕЙ
                         AnimatedContent(
                             targetState = currentScreen,
                             transitionSpec = {
-                                fadeIn(animationSpec = tween(500)) togetherWith 
-                                fadeOut(animationSpec = tween(500))
+                                fadeIn(animationSpec = tween(400)) togetherWith 
+                                fadeOut(animationSpec = tween(400))
                             },
                             label = "screen_transition"
                         ) { screen ->
-                            GameBackground(screenId = screen) {
+                            // Подбираем фон: для игры — из уровня, для остальных — из каталога
+                            val levelBackground = if (screen == "game") gameViewModel.currentLevel?.backgroundRes else null
+                            
+                            GameBackground(screenId = screen, overrideRes = levelBackground) {
                                 when (screen) {
                                     "campaign" -> {
                                         CampaignScreen(
@@ -101,6 +110,15 @@ class MainActivity : ComponentActivity() {
                                     }
                                 }
                             }
+                        }
+
+                        // ВИЗУАЛЬНЫЙ СЛОЙ ЗАТЕМНЕНИЯ
+                        AnimatedVisibility(
+                            visible = isTransitioning,
+                            enter = fadeIn(tween(200)),
+                            exit = fadeOut(tween(200))
+                        ) {
+                            Box(modifier = Modifier.fillMaxSize().background(Color.Black))
                         }
 
                         // НИЖНЯЯ ПАНЕЛЬ НАВИГАЦИИ (видна везде кроме боя)

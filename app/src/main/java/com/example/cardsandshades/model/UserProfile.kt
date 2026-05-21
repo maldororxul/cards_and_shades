@@ -1,6 +1,8 @@
 package com.example.cardsandshades.model
 
 import android.content.Context
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -10,8 +12,11 @@ import kotlinx.coroutines.launch
 object UserProfile {
     val gold = MutableStateFlow(500)
     val crystals = MutableStateFlow(0)
-    val collection = MutableListFlow(mutableListOf<CardModel>())
-    val selectedDeck = MutableListFlow(mutableListOf<CardModel>()) // Теперь тоже реактивный MutableListFlow
+    
+    // Используем SnapshotStateList для гарантированной реактивности в Compose
+    val collection: SnapshotStateList<CardModel> = mutableStateListOf()
+    val selectedDeck: SnapshotStateList<CardModel> = mutableStateListOf()
+    
     val maxUnlockedLevel = MutableStateFlow(1)
 
     // ПОРОШОК ДЛЯ КРАФТА (по редкостям)
@@ -60,21 +65,16 @@ object UserProfile {
                     
                     if (diff > oneDayMs) {
                         if (diff < 2 * oneDayMs) {
-                            // Последовательный заход
                             var nextDay = loginChainDays.value + 1
-                            if (nextDay > 30) nextDay = 1 // Сброс цикла
+                            if (nextDay > 30) nextDay = 1
                             loginChainDays.value = nextDay
                         } else {
-                            // Пропуск дня - сброс цепочки
                             loginChainDays.value = 1
-                            // Опционально: очищаем claimed если сбрасываем цикл? 
-                            // Лучше: если loginChainDays сбрасывается в 1, очищаем rewardsClaimed если 30 дней прошло или пропуск.
                             rewardsClaimed.value = emptySet()
                         }
                     }
                 }
                 lastLoginTimestamp.value = now
-                save()
 
                 val collectionJson = prefs.getString("collection", "[]") ?: "[]"
                 val deckJson = prefs.getString("deck", "[]") ?: "[]"
@@ -83,7 +83,6 @@ object UserProfile {
                 val loadedCollection: List<CardModel> = gson.fromJson(collectionJson, listType) ?: emptyList()
                 val loadedDeck: List<CardModel> = gson.fromJson(deckJson, listType) ?: emptyList()
 
-                // ИСПРАВЛЕНИЕ: Восстанавливаем ссылки на картинки для карт из старого кэша
                 val rehydratedCollection = loadedCollection.map { card ->
                     if (card.imageResName == null) {
                         val resName = com.example.cardsandshades.catalog.CardCatalog.getVisualData(card.name)
@@ -98,43 +97,31 @@ object UserProfile {
                     } else card
                 }
 
-                collection.clear()
-                collection.addAll(rehydratedCollection)
-                collection.notifyChanges()
+                // Обновляем SnapshotStateList в главном потоке для безопасности
+                launch(Dispatchers.Main) {
+                    collection.clear()
+                    collection.addAll(rehydratedCollection)
 
-                selectedDeck.clear()
-                selectedDeck.addAll(rehydratedDeck)
-                val hasIllegalDuplicates = loadedDeck.groupBy { it.name }.any { it.value.size > 2 }
-                if (hasIllegalDuplicates || loadedDeck.size != 20) {
-                    // Если колода сломана кэшем, принудительно очищаем её для безопасного рендера 0/2
                     selectedDeck.clear()
+                    selectedDeck.addAll(rehydratedDeck)
+                    val hasIllegalDuplicates = loadedDeck.groupBy { it.name }.any { it.value.size > 2 }
+                    if (hasIllegalDuplicates || loadedDeck.size != 20) {
+                        selectedDeck.clear()
+                    }
                 }
-                selectedDeck.notifyChanges()
             } else {
-                // ИСПРАВЛЕНИЕ: Выдаем базовый набор ККИ — гарантированно по 2 копии каждой карты из каталога
                 val startCollection = mutableListOf<CardModel>()
-
-                // Нам нужен доступ к шаблонам карт. Используем трюк: генерируем деку, чтобы вытащить шаблоны,
-                // либо наполняем коллекцию гарантированным набором через генератор.
-                // Чтобы не менять CardCatalog, просто даем игроку большой пул карт (100 штук),
-                // среди которых точно гарантированно будут все копии для сборки.
                 repeat(100) {
                     com.example.cardsandshades.catalog.CardCatalog.generateTestDeck().firstOrNull()?.let {
                         startCollection.add(it)
                     }
                 }
                 
-                // Гарантированно добавляем новые механики в коллекцию для теста
                 com.example.cardsandshades.catalog.CardCatalog.createCardInstance("Вампир-аристократ")?.let { startCollection.add(it) }
                 com.example.cardsandshades.catalog.CardCatalog.createCardInstance("Вампир-аристократ")?.let { startCollection.add(it) }
                 com.example.cardsandshades.catalog.CardCatalog.createCardInstance("Дух-наставник")?.let { startCollection.add(it) }
                 com.example.cardsandshades.catalog.CardCatalog.createCardInstance("Теневой жнец")?.let { startCollection.add(it) }
 
-                collection.clear()
-                collection.addAll(startCollection)
-                collection.notifyChanges()
-
-                // Автоматически собираем первую легальную деку из 20 карт (строго по 2 копии максимум)
                 val validStartDeck = mutableListOf<CardModel>()
                 for (card in startCollection) {
                     if (validStartDeck.size < 20) {
@@ -142,14 +129,16 @@ object UserProfile {
                         if (countInDeck < 2) {
                             validStartDeck.add(card.copy(id = java.util.UUID.randomUUID().toString()))
                         }
-                    } else {
-                        break
-                    }
+                    } else break
                 }
 
-                selectedDeck.clear()
-                selectedDeck.addAll(validStartDeck)
-                selectedDeck.notifyChanges()
+                launch(Dispatchers.Main) {
+                    collection.clear()
+                    collection.addAll(startCollection)
+
+                    selectedDeck.clear()
+                    selectedDeck.addAll(validStartDeck)
+                }
 
                 save(context)
             }
@@ -181,18 +170,15 @@ object UserProfile {
         }
     }
 
-    // РАСПЫЛЕНИЕ ЛИШНИХ КАРТ (более 2-х копий одного типа)
     fun dustExtras(): Int {
         val grouped = collection.groupBy { it.name }
         var totalDusted = 0
-        
         val newCollection = mutableListOf<CardModel>()
         
         grouped.forEach { (name, cards) ->
             if (cards.size > 2) {
                 val extras = cards.size - 2
                 totalDusted += extras
-                
                 val rarity = cards.first().rarity
                 val dustAmount = when (rarity) {
                     Rarity.COMMON -> 5
@@ -200,31 +186,24 @@ object UserProfile {
                     Rarity.EPIC -> 50
                     Rarity.LEGENDARY -> 100
                 }
-                
                 when (rarity) {
                     Rarity.COMMON -> dustCommon.value += extras * dustAmount
                     Rarity.RARE -> dustRare.value += extras * dustAmount
                     Rarity.EPIC -> dustEpic.value += extras * dustAmount
                     Rarity.LEGENDARY -> dustLegendary.value += extras * dustAmount
                 }
-                
                 newCollection.addAll(cards.take(2))
-            } else {
-                newCollection.addAll(cards)
-            }
+            } else newCollection.addAll(cards)
         }
         
         if (totalDusted > 0) {
             collection.clear()
             collection.addAll(newCollection)
-            collection.notifyChanges()
             save()
         }
-        
         return totalDusted
     }
 
-    // КРАФТ СЛУЧАЙНОЙ КАРТЫ ЗА ПЫЛЬ
     fun craftCard(rarity: Rarity): Boolean {
         val cost = when (rarity) {
             Rarity.COMMON -> 40
@@ -232,7 +211,6 @@ object UserProfile {
             Rarity.EPIC -> 400
             Rarity.LEGENDARY -> 1600
         }
-        
         val currentDust = when (rarity) {
             Rarity.COMMON -> dustCommon
             Rarity.RARE -> dustRare
@@ -245,21 +223,37 @@ object UserProfile {
             if (newCard != null) {
                 currentDust.value -= cost
                 collection.add(newCard)
-                collection.notifyChanges()
                 save()
                 return true
             }
         }
         return false
     }
-}
 
-
-// Вспомогательный класс для реактивного обновления списков в Compose
-class MutableListFlow<T>(private val delegate: MutableList<T>) : MutableList<T> by delegate {
-    private val stateFlow = MutableStateFlow(delegate.toList())
-    val status = stateFlow
-    fun notifyChanges() {
-        stateFlow.value = delegate.toList()
+    fun mergeDust(from: Rarity): Boolean {
+        return when (from) {
+            Rarity.COMMON -> {
+                if (dustCommon.value >= 100) {
+                    dustCommon.value -= 100
+                    dustRare.value += 10
+                    save(); true
+                } else false
+            }
+            Rarity.RARE -> {
+                if (dustRare.value >= 100) {
+                    dustRare.value -= 100
+                    dustEpic.value += 10
+                    save(); true
+                } else false
+            }
+            Rarity.EPIC -> {
+                if (dustEpic.value >= 100) {
+                    dustEpic.value -= 100
+                    dustLegendary.value += 10
+                    save(); true
+                } else false
+            }
+            else -> false
+        }
     }
 }

@@ -89,7 +89,6 @@ fun BoosterScreen(
                         if (success) {
                             openedCards = generatePack(booster)
                             UserProfile.collection.addAll(openedCards)
-                            UserProfile.collection.notifyChanges()
                             UserProfile.save()
                             message = "Пак [${booster.name}] открыт!"
                         } else {

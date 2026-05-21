@@ -145,7 +145,6 @@ class GameViewModel : ViewModel() {
                         UserProfile.collection.add(prizeCard)
                     }
                 }
-                UserProfile.collection.notifyChanges()
 
                 // 4. Рассчитываем прогресс
                 if (level.id == UserProfile.maxUnlockedLevel.value) {

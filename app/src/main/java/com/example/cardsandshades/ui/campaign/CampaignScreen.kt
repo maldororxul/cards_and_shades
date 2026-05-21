@@ -21,6 +21,7 @@ import com.example.cardsandshades.model.RewardSetModel
 import com.example.cardsandshades.model.UserProfile
 import com.example.cardsandshades.ui.components.GameText
 import com.example.cardsandshades.ui.components.GameButton
+import androidx.activity.compose.BackHandler
 
 @Composable
 fun CampaignScreen(
@@ -30,6 +31,11 @@ fun CampaignScreen(
     val unlockedLevel by UserProfile.maxUnlockedLevel.collectAsState()
     var selectedChapter by remember { mutableStateOf<ChapterModel?>(null) }
 
+    // ОБРАБОТКА СИСТЕМНОЙ КНОПКИ НАЗАД (Только если выбрана глава)
+    BackHandler(enabled = selectedChapter != null) {
+        selectedChapter = null
+    }
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -37,6 +43,7 @@ fun CampaignScreen(
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             if (selectedChapter != null) {
+                // КНОПКА НАЗАД ВНУТРИ ЭКРАНА
                 GameButton(
                     text = "⬅️", 
                     onClick = { selectedChapter = null }, 

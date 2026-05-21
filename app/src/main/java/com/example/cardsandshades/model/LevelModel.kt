@@ -9,11 +9,13 @@ data class LevelModel(
     val difficultyDescription: String,
     val opponentDeckPreset: List<String>,
     val firstTimeReward: RewardSetModel,
-    val repeatReward: RewardSetModel
+    val repeatReward: RewardSetModel,
+    val backgroundRes: String? = null
 )
 
 data class ChapterModel(
     val id: Int,
     val name: String,
-    val levels: List<LevelModel>
+    val levels: List<LevelModel>,
+    val backgroundRes: String? = null
 )

@@ -1,6 +1,7 @@
 chapters:
   - id: 1
     name: "Глава 1: Тени Забытых Земель"
+    backgroundRes: "bg_campaign_map"
     levels:
       - id: 1
         name: "Пролог: Гоблинский дозор"
@@ -9,6 +10,7 @@ chapters:
         opponentStartMana: 1
         difficultyDescription: "Легкий бой. Познакомьтесь с основами."
         opponentDeckPreset: ["Тень-новобранец", "Тень-новобранец", "Проворный бес"]
+        backgroundRes: "bg_battle_arena"
         firstTimeReward:
           gold: 100
           card: "Проворный бес"
@@ -21,6 +23,7 @@ chapters:
         opponentStartMana: 1
         difficultyDescription: "Враг использует грубую силу."
         opponentDeckPreset: ["Тень-новобранец", "Каменный страж"]
+        backgroundRes: "bg_battle_arena"
         firstTimeReward:
           gold: 120
           dust_common: 20
@@ -33,6 +36,7 @@ chapters:
         opponentStartMana: 1
         difficultyDescription: "Остерегайтесь магических атак."
         opponentDeckPreset: ["Адепт тайной магии", "Эльфийский лучник"]
+        backgroundRes: "bg_battle_arena"
         firstTimeReward:
           gold: 150
           crystals: 10
@@ -45,6 +49,7 @@ chapters:
         opponentStartMana: 2
         difficultyDescription: "Босс первой главы."
         opponentDeckPreset: ["Король Теней", "Теневой жнец", "Вампир-аристократ"]
+        backgroundRes: "bg_battle_arena"
         firstTimeReward:
           gold: 500
           crystals: 50
@@ -55,6 +60,7 @@ chapters:
           dust_common: 10
   - id: 2
     name: "Глава 2: Проклятая Цитадель"
+    backgroundRes: "bg_campaign_map"
     levels:
       - id: 8
         name: "Врата ада"
@@ -63,6 +69,7 @@ chapters:
         opponentStartMana: 2
         difficultyDescription: "Очень высокая сложность."
         opponentDeckPreset: ["Вестник бури", "Проклятый паладин"]
+        backgroundRes: "bg_battle_arena"
         firstTimeReward:
           gold: 300
           crystals: 20
@@ -70,6 +77,7 @@ chapters:
           gold: 60
   - id: 3
     name: "Глава 3: Трон Пустоты"
+    backgroundRes: "bg_campaign_map"
     levels:
       - id: 15
         name: "Пустота"
@@ -78,6 +86,7 @@ chapters:
         opponentStartMana: 3
         difficultyDescription: "Легендарные битвы."
         opponentDeckPreset: ["Дракон Пустоты", "Архимаг пустоты"]
+        backgroundRes: "bg_battle_arena"
         firstTimeReward:
           gold: 1000
           crystals: 100

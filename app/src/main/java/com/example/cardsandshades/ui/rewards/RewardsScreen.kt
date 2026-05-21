@@ -31,7 +31,6 @@ fun RewardsScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFF121212))
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -68,7 +67,7 @@ fun RewardsScreen(
                 val bgColor = when {
                     isClaimed -> Color(0xFF1B5E20).copy(alpha = 0.5f)
                     isCurrent -> Color(0xFF673AB7).copy(alpha = 0.8f)
-                    else -> Color(0xFF1E1E1E)
+                    else -> Color(0xFF1E1E1E).copy(alpha = 0.8f)
                 }
                 
                 val borderColor = if (isCurrent) Color.Yellow else Color.DarkGray

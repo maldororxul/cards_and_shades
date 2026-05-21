@@ -21,6 +21,7 @@ object CampaignCatalog {
             ChapterModel(
                 id = chapterMap["id"] as Int,
                 name = chapterMap["name"] as String,
+                backgroundRes = chapterMap["backgroundRes"] as? String,
                 levels = levelsList.map { levelMap ->
                     LevelModel(
                         id = levelMap["id"] as Int,
@@ -31,7 +32,8 @@ object CampaignCatalog {
                         difficultyDescription = levelMap["difficultyDescription"] as String,
                         opponentDeckPreset = levelMap["opponentDeckPreset"] as List<String>,
                         firstTimeReward = parseReward(levelMap["firstTimeReward"] as? Map<String, Any>),
-                        repeatReward = parseReward(levelMap["repeatReward"] as? Map<String, Any>)
+                        repeatReward = parseReward(levelMap["repeatReward"] as? Map<String, Any>),
+                        backgroundRes = levelMap["backgroundRes"] as? String
                     )
                 }
             )
