@@ -31,19 +31,21 @@ fun CardVisual(
         contentAlignment = Alignment.Center
     ) {
         if (!resName.isNullOrEmpty()) {
-            val folder = if (card.isVideo) "raw" else "drawable"
-            // Принудительно в нижний регистр, так как ресурсы Android только в нем
             val cleanResName = resName.lowercase().trim()
-            val resId = context.resources.getIdentifier(cleanResName, folder, context.packageName)
             
-            if (resId != 0) {
-                if (card.isVideo) {
+            // 1. Пробуем найти RAW ресурс (видео)
+            val rawResId = context.resources.getIdentifier(cleanResName, "raw", context.packageName)
+            
+            // 2. Пробуем найти DRAWABLE ресурс (картинка)
+            val drawableResId = context.resources.getIdentifier(cleanResName, "drawable", context.packageName)
+            
+            when {
+                rawResId != 0 -> {
                     // ПЛЕЕР ДЛЯ MP4 ЖИВЫХ ФОНОВ
                     AndroidView(
                         factory = { ctx ->
                             VideoView(ctx).apply {
-                                // Используем имя пакета из контекста для надежности
-                                val uri = Uri.parse("android.resource://${ctx.packageName}/$resId")
+                                val uri = Uri.parse("android.resource://${ctx.packageName}/$rawResId")
                                 setVideoURI(uri)
                                 setOnPreparedListener { mp ->
                                     mp.isLooping = true
@@ -54,18 +56,19 @@ fun CardVisual(
                         },
                         modifier = Modifier.fillMaxSize()
                     )
-                } else {
+                }
+                drawableResId != 0 -> {
                     // СТАТИЧЕСКАЯ КАРТИНКА ИЗ DRAWABLE
                     Image(
-                        painter = painterResource(id = resId),
+                        painter = painterResource(id = drawableResId),
                         contentDescription = card.name,
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop
                     )
                 }
-            } else {
-                // Если id = 0, значит ресурс не найден по имени
-                PlaceholderVisual(card.name)
+                else -> {
+                    PlaceholderVisual(card.name)
+                }
             }
         } else {
             PlaceholderVisual(card.name)

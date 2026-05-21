@@ -31,7 +31,6 @@ data class CardModel(
     private val effectTags: List<EffectTag>? = emptyList(),
     private val activeBuffs: List<BuffModel>? = emptyList(),
     val imageResName: String? = null,
-    val isVideo: Boolean = false,
 
     var isSleeping: Boolean = true,
     var hasAttackedThisTurn: Boolean = false,

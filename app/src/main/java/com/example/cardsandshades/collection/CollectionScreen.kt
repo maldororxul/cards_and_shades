@@ -115,22 +115,8 @@ fun CollectionScreen(
                                 isPreview = true,
                                 modifier = Modifier
                                     .graphicsLayer { alpha = if (countInDeck >= 2) 0.4f else 1f }
-                                    .pointerInput(cardSample.name) {
-                                        detectTapGestures(
-                                            onTap = {
-                                                if (currentDeck.size < 20 && countInDeck < 2) {
-                                                    currentDeck.add(cardSample.copy(id = java.util.UUID.randomUUID().toString()))
-                                                    errorMessage = "Соберите колоду: ${currentDeck.size}/20 карт"
-                                                } else if (currentDeck.size >= 20) {
-                                                    errorMessage = "❌ Максимум 20 карт в колоде!"
-                                                } else {
-                                                    errorMessage = "❌ Достигнут лимит: максимум 2 копии одной карты!"
-                                                }
-                                            },
-                                            onLongPress = {
-                                                inspectedCard = cardSample
-                                            }
-                                        )
+                                    .clickable {
+                                        inspectedCard = cardSample
                                     }
                             )
 

@@ -20,9 +20,11 @@ import androidx.compose.ui.unit.dp
 import com.example.cardsandshades.model.CardModel
 import com.example.cardsandshades.model.Turn
 import com.example.cardsandshades.model.UserProfile
-import com.example.cardsandshades.ui.components.DragAndDropContainer
 import com.example.cardsandshades.ui.components.DropTarget
 import com.example.cardsandshades.ui.components.CardInspectionDialog
+import androidx.activity.compose.BackHandler
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 
 @Composable
 fun GameScreen(
@@ -34,6 +36,12 @@ fun GameScreen(
     val gameState by viewModel.gameState.collectAsState()
     var selectedCardForAttack by remember { mutableStateOf<CardModel?>(null) }
     var inspectedCard by remember { mutableStateOf<CardModel?>(null) }
+    var showExitDialog by remember { mutableStateOf(false) }
+
+    // Обработка кнопки Назад
+    BackHandler {
+        showExitDialog = true
+    }
 
     var startArrowOffset by remember { mutableStateOf(Offset.Zero) }
     var currentArrowOffset by remember { mutableStateOf(Offset.Zero) }
@@ -59,7 +67,24 @@ fun GameScreen(
         battleLog = if (state.currentTurn == Turn.PLAYER) "Ваш ход! Мана обновлена." else "Ход соперника..."
     }
 
-    DragAndDropContainer(modifier = modifier) {
+    if (showExitDialog) {
+        AlertDialog(
+            onDismissRequest = { showExitDialog = false },
+            title = { Text("Прервать битву?") },
+            text = { Text("Вы потеряете текущий прогресс в этом бою.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showExitDialog = false
+                    onBackToMenu()
+                }) { Text("Да, выйти") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showExitDialog = false }) { Text("Отмена") }
+            }
+        )
+    }
+
+    com.example.cardsandshades.ui.components.DragAndDropContainer(modifier = modifier) {
         Box(modifier = Modifier.fillMaxSize()) {
             Column(
                 modifier = Modifier.fillMaxSize().background(Color(0xFF141414)).padding(12.dp),
@@ -79,7 +104,7 @@ fun GameScreen(
                                 selectedCardForAttack = null
                                 isDrawingArrow = false
                             } else {
-                                battleLog = "❌ Нельзя атаковать лицо, пока у врага есть существа!"
+                                battleLog = "❌ Нельзя атакувать лицо, пока у врага есть существа!"
                             }
                         }
                     }

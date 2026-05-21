@@ -24,15 +24,15 @@ object CardCatalog {
         CardTemplate("Вампир-аристократ", 3, 2, 3, Rarity.EPIC, listOf(EffectTag.LIFESTEAL), imageResName = "card_vampire_aristocrat"),
 
         // === LEGENDARY ===
-        CardTemplate("Король Теней", 4, 6, 5, Rarity.LEGENDARY, imageResName = "card_shadow_king", isVideo = true),
-        CardTemplate("Дракон Пустоты", 7, 9, 8, Rarity.LEGENDARY, listOf(EffectTag.SPLASH), imageResName = "card_void_dragon", isVideo = true),
+        CardTemplate("Король Теней", 4, 6, 5, Rarity.LEGENDARY, imageResName = "card_shadow_king"),
+        CardTemplate("Дракон Пустоты", 7, 9, 8, Rarity.LEGENDARY, listOf(EffectTag.SPLASH), imageResName = "card_void_dragon"),
         CardTemplate("Теневой жнец", 5, 4, 4, Rarity.LEGENDARY, listOf(EffectTag.LIFESTEAL, EffectTag.RUSH), imageResName = "card_shadow_reaper"),
         CardTemplate("Дух-наставник", 2, 1, 1, Rarity.LEGENDARY, listOf(EffectTag.BUFF), imageResName = "card_spirit_mentor")
     )
 
-    fun getVisualData(cardName: String): Pair<String?, Boolean> {
+    fun getVisualData(cardName: String): String? {
         val template = templates.find { it.name == cardName }
-        return Pair(template?.imageResName, template?.isVideo ?: false)
+        return template?.imageResName
     }
 
     fun createCardInstance(templateName: String): CardModel? {
@@ -45,8 +45,7 @@ object CardCatalog {
             baseHealth = template.baseHealth,
             rarity = template.rarity,
             effectTags = template.effectTags,
-            imageResName = template.imageResName,
-            isVideo = template.isVideo
+            imageResName = template.imageResName
         )
     }
 
@@ -63,8 +62,7 @@ object CardCatalog {
                     baseHealth = randomTemplate.baseHealth,
                     rarity = randomTemplate.rarity,
                     effectTags = randomTemplate.effectTags,
-                    imageResName = randomTemplate.imageResName,
-                    isVideo = randomTemplate.isVideo
+                    imageResName = randomTemplate.imageResName
                 )
             )
         }
@@ -122,6 +120,5 @@ private data class CardTemplate(
     val baseHealth: Int,
     val rarity: Rarity,
     val effectTags: List<EffectTag> = emptyList(),
-    val imageResName: String? = null,
-    val isVideo: Boolean = false
+    val imageResName: String? = null
 )

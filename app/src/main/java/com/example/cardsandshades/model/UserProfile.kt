@@ -37,15 +37,15 @@ object UserProfile {
                 // ИСПРАВЛЕНИЕ: Восстанавливаем ссылки на картинки для карт из старого кэша
                 val rehydratedCollection = loadedCollection.map { card ->
                     if (card.imageResName == null) {
-                        val (resName, isVideo) = com.example.cardsandshades.catalog.CardCatalog.getVisualData(card.name)
-                        card.copy(imageResName = resName, isVideo = isVideo)
+                        val resName = com.example.cardsandshades.catalog.CardCatalog.getVisualData(card.name)
+                        card.copy(imageResName = resName)
                     } else card
                 }
                 
                 val rehydratedDeck = loadedDeck.map { card ->
                     if (card.imageResName == null) {
-                        val (resName, isVideo) = com.example.cardsandshades.catalog.CardCatalog.getVisualData(card.name)
-                        card.copy(imageResName = resName, isVideo = isVideo)
+                        val resName = com.example.cardsandshades.catalog.CardCatalog.getVisualData(card.name)
+                        card.copy(imageResName = resName)
                     } else card
                 }
 
