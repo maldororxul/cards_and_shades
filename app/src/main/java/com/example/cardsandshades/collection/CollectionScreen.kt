@@ -3,21 +3,16 @@ package com.example.cardsandshades.ui.collection
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -26,6 +21,8 @@ import com.example.cardsandshades.model.CardModel
 import com.example.cardsandshades.model.UserProfile
 import com.example.cardsandshades.ui.components.CardComponent
 import com.example.cardsandshades.ui.components.CardInspectionDialog
+import com.example.cardsandshades.ui.components.GameButton
+import com.example.cardsandshades.ui.components.GameText
 
 @Composable
 fun CollectionScreen(
@@ -57,7 +54,8 @@ fun CollectionScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Button(
+            GameButton(
+                text = "Сохранить и Выйти",
                 onClick = {
                     if (currentDeck.size == 20) {
                         // Сохраняем собранную колоду в профиль игрока
@@ -70,12 +68,10 @@ fun CollectionScreen(
                         errorMessage = "❌ Нельзя выйти! В колоде должно быть ровно 20 карт."
                     }
                 },
-                colors = ButtonDefaults.buttonColors(containerColor = if (currentDeck.size == 20) Color(0xFF388E3C) else Color.Gray)
-            ) {
-                Text("Сохранить и Выйти")
-            }
+                containerColor = if (currentDeck.size == 20) Color(0xFF388E3C) else Color.Gray
+            )
 
-            Text(
+            GameText(
                 text = errorMessage,
                 color = if (errorMessage.contains("❌")) Color.Red else Color.Yellow,
                 fontSize = 14.sp,
@@ -90,7 +86,7 @@ fun CollectionScreen(
         // Грид-сетка всех карт в коллекции игрока
         if (groupedCards.isEmpty()) {
             Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
-                Text("Ваша коллекция пуста. Зайдите в магазин и откройте бустеры! 📦", color = Color.Gray, textAlign = TextAlign.Center)
+                GameText("Ваша коллекция пуста. Зайдите в магазин и откройте бустеры! 📦", color = Color.Gray, textAlign = TextAlign.Center)
             }
         } else {
             LazyVerticalGrid(
@@ -114,10 +110,10 @@ fun CollectionScreen(
                                 card = cardSample,
                                 isPreview = true,
                                 modifier = Modifier
-                                    .graphicsLayer { alpha = if (countInDeck >= 2) 0.4f else 1f }
-                                    .clickable {
-                                        inspectedCard = cardSample
-                                    }
+                                    .graphicsLayer { alpha = if (countInDeck >= 2) 0.4f else 1f },
+                                onClick = {
+                                    inspectedCard = cardSample
+                                }
                             )
 
                             // Четкий ККИ-счетчик поверх карты
@@ -127,7 +123,7 @@ fun CollectionScreen(
                                     .background(if (countInDeck >= 2) Color(0xFF388E3C) else Color.Black.copy(alpha = 0.75f), RoundedCornerShape(4.dp))
                                     .padding(horizontal = 6.dp, vertical = 2.dp)
                             ) {
-                                Text(
+                                GameText(
                                     text = "В колоде: $countInDeck / 2",
                                     color = Color.White,
                                     fontSize = 10.sp,
@@ -159,7 +155,7 @@ fun CollectionScreen(
                                         },
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Text("-", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                                    GameText("-", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                                 }
                             }
 
@@ -179,7 +175,7 @@ fun CollectionScreen(
                                         },
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Text("+", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                                    GameText("+", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                                 }
                             }
                         }

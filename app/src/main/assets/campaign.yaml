@@ -1,0 +1,57 @@
+levels:
+  - id: 1
+    name: "Пролог: Забытые земли"
+    opponentName: "Гоблин-разведчик"
+    opponentMaxHp: 15
+    opponentStartMana: 1
+    difficultyDescription: "Простой бой. Враг спамит мелкими существами."
+    opponentDeckPreset:
+      - "Тень-новобранец"
+      - "Тень-новобранец"
+      - "Тень-новобранец"
+      - "Тень-новобранец"
+      - "Проворный бес"
+      - "Проворный бес"
+      - "Проворный бес"
+      - "Проворный бес"
+    rewardGold: 100
+    rewardCardName: "Проворный бес"
+  - id: 2
+    name: "Глава 1: Проклятый лес"
+    opponentName: "Лесной Колдун"
+    opponentMaxHp: 25
+    opponentStartMana: 1
+    difficultyDescription: "Враг использует Провокаторов и дальнобойных Стрелков."
+    opponentDeckPreset:
+      - "Каменный страж"
+      - "Каменный страж"
+      - "Эльфийский лучник"
+      - "Эльфийский лучник"
+    rewardGold: 150
+    rewardCardName: "Эльфийский лучник"
+  - id: 3
+    name: "Глава 2: Старая цитадель"
+    opponentName: "Рыцарь смерти"
+    opponentMaxHp: 35
+    opponentStartMana: 2
+    difficultyDescription: "Высокая сложность. Сильные Эпические существа."
+    opponentDeckPreset:
+      - "Оруженосец Света"
+      - "Оруженосец Света"
+      - "Чародей Пустоты"
+      - "Чародей Пустоты"
+    rewardGold: 200
+    rewardCardName: "Чародей Пустоты"
+  - id: 4
+    name: "Финал: Трон Теней"
+    opponentName: "Архимаг Маллок"
+    opponentMaxHp: 50
+    opponentStartMana: 3
+    difficultyDescription: "Босс игры. Мощные Легендарные драконы и АОЕ-магия."
+    opponentDeckPreset:
+      - "Король Теней"
+      - "Король Теней"
+      - "Дракон Пустоты"
+      - "Дракон Пустоты"
+    rewardGold: 500
+    rewardCardName: "Дракон Пустоты"

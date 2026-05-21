@@ -6,9 +6,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,6 +17,8 @@ import com.example.cardsandshades.catalog.CardCatalog
 import com.example.cardsandshades.model.CardModel
 import com.example.cardsandshades.model.UserProfile
 import com.example.cardsandshades.ui.components.CardComponent
+import com.example.cardsandshades.ui.components.GameButton
+import com.example.cardsandshades.ui.components.GameText
 
 @Composable
 fun BoosterScreen(
@@ -44,13 +43,13 @@ fun BoosterScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Button(onClick = onBack) { Text("Назад") }
-            Text("Баланс: $gold 🪙", color = Color.Yellow, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            GameButton(text = "Назад", onClick = onBack, containerColor = Color.Gray)
+            GameText("Баланс: $gold 🪙", color = Color.Yellow, fontSize = 18.sp, fontWeight = FontWeight.Bold)
         }
 
         // Зона карт
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(text = message, color = Color.White, fontSize = 16.sp, modifier = Modifier.padding(bottom = 16.dp))
+            GameText(text = message, color = Color.White, fontSize = 16.sp, modifier = Modifier.padding(bottom = 16.dp))
 
             if (openedCards.isNotEmpty()) {
                 LazyRow(
@@ -70,13 +69,14 @@ fun BoosterScreen(
                         .background(Color(0xFF1E1E1E)),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("📦 Нажмите Купить", color = Color.Gray)
+                    GameText("📦 Нажмите Купить", color = Color.Gray)
                 }
             }
         }
 
         // Кнопка покупки
-        Button(
+        GameButton(
+            text = "Купить Бустер (100 🪙)",
             onClick = {
                 if (gold >= 100) {
                     UserProfile.gold.value -= 100
@@ -93,10 +93,9 @@ fun BoosterScreen(
                     message = "Недостаточно золота! ❌"
                 }
             },
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFDD835)),
+            containerColor = Color(0xFFFDD835),
+            contentColor = Color.Black,
             modifier = Modifier.fillMaxWidth().padding(bottom = 32.dp)
-        ) {
-            Text("Купить Бустер (100 🪙)", color = Color.Black, fontWeight = FontWeight.Bold)
-        }
+        )
     }
 }

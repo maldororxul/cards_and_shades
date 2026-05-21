@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -26,6 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.cardsandshades.model.PlayerModel
+import com.example.cardsandshades.ui.components.GameText
 
 @Composable
 fun OpponentHeaderZone(
@@ -41,13 +41,13 @@ fun OpponentHeaderZone(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(opponent.name, color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            GameText(opponent.name, color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
 
             val heroScale by animateFloatAsState(targetValue = if (isHeroTakingDamage) 1.4f else 1f, animationSpec = tween(200))
 
             Box(contentAlignment = Alignment.Center) {
-                Text(
-                    "HP: ${opponent.currentHp}/${opponent.maxHp} ❤️",
+                GameText(
+                    text = "HP: ${opponent.currentHp}/${opponent.maxHp} ❤️",
                     color = if (isHeroTakingDamage) Color.White else Color(0xFFFF5252),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Black,
@@ -65,7 +65,7 @@ fun OpponentHeaderZone(
 
                 if (isHeroTakingDamage) {
                     val damageYOffset by animateDpAsState(targetValue = (-40).dp, animationSpec = tween(400))
-                    Text(
+                    GameText(
                         text = "-$damageValue",
                         color = Color.Red,
                         fontSize = 28.sp,
@@ -75,6 +75,6 @@ fun OpponentHeaderZone(
                 }
             }
         }
-        Text("Карт в руке: ${opponent.hand.size} | Мана врага: ${opponent.currentMana}/${opponent.maxMana}", color = Color.Gray, fontSize = 12.sp)
+        GameText("Карт в руке: ${opponent.hand.size} | Мана врага: ${opponent.currentMana}/${opponent.maxMana}", color = Color.Gray, fontSize = 12.sp)
     }
 }

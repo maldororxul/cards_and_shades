@@ -62,4 +62,5 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
     implementation("com.google.code.gson:gson:2.14.0")
+    implementation("org.yaml:snakeyaml:2.3")
 }

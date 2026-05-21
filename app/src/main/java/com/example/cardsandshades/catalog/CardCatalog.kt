@@ -1,34 +1,34 @@
 package com.example.cardsandshades.catalog
 
+import android.content.Context
 import com.example.cardsandshades.model.CardModel
-import com.example.cardsandshades.model.Rarity
-import java.util.UUID
 import com.example.cardsandshades.model.EffectTag
+import com.example.cardsandshades.model.Rarity
+import org.yaml.snakeyaml.Yaml
+import java.util.UUID
 
 object CardCatalog {
 
-    private val templates = listOf(
-        // === COMMON ===
-        CardTemplate("Тень-новобранец", 1, 1, 1, Rarity.COMMON, imageResName = "card_shadow_recruit"),
-        CardTemplate("Проворный бес", 2, 2, 2, Rarity.COMMON, listOf(EffectTag.RUSH), imageResName = "card_agile_imp"),
-        CardTemplate("Каменный страж", 3, 1, 5, Rarity.COMMON, listOf(EffectTag.TAUNT), imageResName = "card_stone_guardian"),
+    private var templates: List<CardTemplate> = emptyList()
 
-        // === RARE ===
-        CardTemplate("Огненный элементаль", 2, 3, 2, Rarity.RARE, imageResName = "card_fire_elemental"),
-        CardTemplate("Эльфийский лучник", 3, 2, 3, Rarity.RARE, listOf(EffectTag.RANGED), imageResName = "card_elven_archer"),
-        CardTemplate("Адепт тайной магии", 3, 4, 3, Rarity.RARE, imageResName = "card_arcane_adept"),
+    fun init(context: Context) {
+        val yaml = Yaml()
+        val inputStream = context.assets.open("cards.yaml")
+        val data: Map<String, Any> = yaml.load(inputStream)
+        val cardsList = data["cards"] as List<Map<String, Any>>
 
-        // === EPIC ===
-        CardTemplate("Оруженосец Света", 3, 3, 5, Rarity.EPIC, listOf(EffectTag.TAUNT), imageResName = "card_light_squire"),
-        CardTemplate("Чародей Пустоты", 4, 3, 4, Rarity.EPIC, listOf(EffectTag.SPLASH), imageResName = "card_void_sorcerer"),
-        CardTemplate("Вампир-аристократ", 3, 2, 3, Rarity.EPIC, listOf(EffectTag.LIFESTEAL), imageResName = "card_vampire_aristocrat"),
-
-        // === LEGENDARY ===
-        CardTemplate("Король Теней", 4, 6, 5, Rarity.LEGENDARY, imageResName = "card_shadow_king"),
-        CardTemplate("Дракон Пустоты", 7, 9, 8, Rarity.LEGENDARY, listOf(EffectTag.SPLASH), imageResName = "card_void_dragon"),
-        CardTemplate("Теневой жнец", 5, 4, 4, Rarity.LEGENDARY, listOf(EffectTag.LIFESTEAL, EffectTag.RUSH), imageResName = "card_shadow_reaper"),
-        CardTemplate("Дух-наставник", 2, 1, 1, Rarity.LEGENDARY, listOf(EffectTag.BUFF), imageResName = "card_spirit_mentor")
-    )
+        templates = cardsList.map { cardMap ->
+            CardTemplate(
+                name = cardMap["name"] as String,
+                manaCost = cardMap["manaCost"] as Int,
+                baseAttack = cardMap["baseAttack"] as Int,
+                baseHealth = cardMap["baseHealth"] as Int,
+                rarity = Rarity.valueOf(cardMap["rarity"] as String),
+                effectTags = (cardMap["effectTags"] as? List<String>)?.map { EffectTag.valueOf(it) } ?: emptyList(),
+                imageResName = cardMap["imageResName"] as? String
+            )
+        }
+    }
 
     fun getVisualData(cardName: String): String? {
         val template = templates.find { it.name == cardName }
@@ -51,6 +51,8 @@ object CardCatalog {
 
     fun generateTestDeck(): MutableList<CardModel> {
         val deck = mutableListOf<CardModel>()
+        if (templates.isEmpty()) return deck
+        
         repeat(20) {
             val randomTemplate = templates.random()
             deck.add(
@@ -73,6 +75,7 @@ object CardCatalog {
     // Открытие пака по математической модели вероятностей
     fun openBooster(): List<CardModel> {
         val booster = mutableListOf<CardModel>()
+        if (templates.isEmpty()) return booster
 
         // Генерируем первые 4 карты по стандартным шансам
         repeat(4) {
@@ -110,7 +113,6 @@ object CardCatalog {
         val template = if (filteredTemplates.isNotEmpty()) filteredTemplates.random() else templates.random()
         return createCardInstance(template.name)!!
     }
-
 }
 
 private data class CardTemplate(

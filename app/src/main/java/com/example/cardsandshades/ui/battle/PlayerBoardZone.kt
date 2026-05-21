@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -24,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.cardsandshades.model.CardModel
 import com.example.cardsandshades.ui.components.CardComponent
+import com.example.cardsandshades.ui.components.GameText
 
 @Composable
 fun PlayerBoardZone(
@@ -44,7 +44,7 @@ fun PlayerBoardZone(
         contentAlignment = Alignment.Center
     ) {
         if (boardCards.isEmpty()) {
-            Text("Перетащите карту сюда из руки", color = Color.Gray, fontSize = 12.sp)
+            GameText("Перетащите карту сюда из руки", color = Color.Gray, fontSize = 12.sp)
         } else {
             LazyRow(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
                 items(boardCards, key = { "pl_${it.id}" }) { playerCard ->

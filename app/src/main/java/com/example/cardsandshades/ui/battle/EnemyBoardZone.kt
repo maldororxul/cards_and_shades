@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,7 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.cardsandshades.model.CardModel
 import com.example.cardsandshades.ui.components.CardComponent
-import androidx.compose.runtime.*
+import com.example.cardsandshades.ui.components.GameText
 
 @Composable
 fun EnemyBoardZone(
@@ -37,7 +36,7 @@ fun EnemyBoardZone(
         contentAlignment = Alignment.Center
     ) {
         if (boardCards.isEmpty()) {
-            Text("Поле противника пусто. Его Лицо открыто для атак!", color = Color.DarkGray, fontSize = 12.sp)
+            GameText("Поле противника пусто. Его Лицо открыто для атак!", color = Color.DarkGray, fontSize = 12.sp)
         } else {
             LazyRow(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
                 items(boardCards, key = { "opp_${it.id}" }) { enemyCard ->

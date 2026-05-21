@@ -1,0 +1,88 @@
+cards:
+  - name: "Тень-новобранец"
+    manaCost: 1
+    baseAttack: 1
+    baseHealth: 1
+    rarity: "COMMON"
+    imageResName: "card_shadow_recruit"
+  - name: "Проворный бес"
+    manaCost: 2
+    baseAttack: 2
+    baseHealth: 2
+    rarity: "COMMON"
+    effectTags: ["RUSH"]
+    imageResName: "card_agile_imp"
+  - name: "Каменный страж"
+    manaCost: 3
+    baseAttack: 1
+    baseHealth: 5
+    rarity: "COMMON"
+    effectTags: ["TAUNT"]
+    imageResName: "card_stone_guardian"
+  - name: "Огненный элементаль"
+    manaCost: 2
+    baseAttack: 3
+    baseHealth: 2
+    rarity: "RARE"
+    imageResName: "card_fire_elemental"
+  - name: "Эльфийский лучник"
+    manaCost: 3
+    baseAttack: 2
+    baseHealth: 3
+    rarity: "RARE"
+    effectTags: ["RANGED"]
+    imageResName: "card_elven_archer"
+  - name: "Адепт тайной магии"
+    manaCost: 3
+    baseAttack: 4
+    baseHealth: 3
+    rarity: "RARE"
+    imageResName: "card_arcane_adept"
+  - name: "Оруженосец Света"
+    manaCost: 3
+    baseAttack: 3
+    baseHealth: 5
+    rarity: "EPIC"
+    effectTags: ["TAUNT"]
+    imageResName: "card_light_squire"
+  - name: "Чародей Пустоты"
+    manaCost: 4
+    baseAttack: 3
+    baseHealth: 4
+    rarity: "EPIC"
+    effectTags: ["SPLASH"]
+    imageResName: "card_void_sorcerer"
+  - name: "Вампир-аристократ"
+    manaCost: 3
+    baseAttack: 2
+    baseHealth: 3
+    rarity: "EPIC"
+    effectTags: ["LIFESTEAL"]
+    imageResName: "card_vampire_aristocrat"
+  - name: "Король Теней"
+    manaCost: 4
+    baseAttack: 6
+    baseHealth: 5
+    rarity: "LEGENDARY"
+    imageResName: "card_shadow_king"
+  - name: "Дракон Пустоты"
+    manaCost: 7
+    baseAttack: 9
+    baseHealth: 8
+    rarity: "LEGENDARY"
+    effectTags: ["SPLASH"]
+    imageResName: "card_void_dragon"
+  - name: "Теневой жнец"
+    manaCost: 5
+    baseAttack: 4
+    baseHealth: 4
+    rarity: "LEGENDARY"
+    effectTags: ["LIFESTEAL", "RUSH"]
+    imageResName: "card_shadow_reaper"
+  - name: "Дух-наставник"
+    manaCost: 2
+    baseAttack: 1
+    baseHealth: 1
+    rarity: "LEGENDARY"
+    effectTags: ["BUFF"]
+    imageResName: "card_spirit_mentor"

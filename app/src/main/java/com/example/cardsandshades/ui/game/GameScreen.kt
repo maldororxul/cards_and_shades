@@ -9,7 +9,6 @@ import PlayerControlsZone
 import RenderAttackArrows
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -17,14 +16,16 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.cardsandshades.model.CardModel
 import com.example.cardsandshades.model.Turn
 import com.example.cardsandshades.model.UserProfile
 import com.example.cardsandshades.ui.components.DropTarget
 import com.example.cardsandshades.ui.components.CardInspectionDialog
+import com.example.cardsandshades.ui.components.GameText
+import com.example.cardsandshades.ui.components.GameButton
+import com.example.cardsandshades.ui.components.GameDialog
 import androidx.activity.compose.BackHandler
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.TextButton
 
 @Composable
 fun GameScreen(
@@ -56,7 +57,7 @@ fun GameScreen(
 
     if (gameState == null) {
         Box(modifier = Modifier.fillMaxSize().background(Color.Black), contentAlignment = Alignment.Center) {
-            Text("Загрузка боя...", color = Color.White)
+            GameText("Загрузка боя...", color = Color.White)
         }
         return
     }
@@ -68,18 +69,20 @@ fun GameScreen(
     }
 
     if (showExitDialog) {
-        AlertDialog(
-            onDismissRequest = { showExitDialog = false },
-            title = { Text("Прервать битву?") },
-            text = { Text("Вы потеряете текущий прогресс в этом бою.") },
+        GameDialog(
+            onDismiss = { showExitDialog = false },
+            title = "Прервать битву?",
+            content = {
+                GameText("Вы потеряете текущий прогресс в этом бою.", color = Color.Gray, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+            },
             confirmButton = {
-                TextButton(onClick = {
+                GameButton(text = "Да, выйти", onClick = {
                     showExitDialog = false
                     onBackToMenu()
-                }) { Text("Да, выйти") }
+                }, containerColor = Color(0xFFD32F2F))
             },
             dismissButton = {
-                TextButton(onClick = { showExitDialog = false }) { Text("Отмена") }
+                GameButton(text = "Отмена", onClick = { showExitDialog = false }, containerColor = Color.Gray)
             }
         )
     }
@@ -104,7 +107,7 @@ fun GameScreen(
                                 selectedCardForAttack = null
                                 isDrawingArrow = false
                             } else {
-                                battleLog = "❌ Нельзя атакувать лицо, пока у врага есть существа!"
+                                battleLog = "❌ Нельзя атаковать лицо, пока у врага есть существа!"
                             }
                         }
                     }

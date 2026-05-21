@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -16,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.cardsandshades.catalog.CampaignCatalog
 import com.example.cardsandshades.model.LevelModel
+import com.example.cardsandshades.ui.components.GameText
 
 @Composable
 fun CampaignScreen(
@@ -28,7 +28,7 @@ fun CampaignScreen(
             .background(Color(0xFF121212))
             .padding(16.dp)
     ) {
-        Text(
+        GameText(
             text = "Карта Кампании",
             color = Color.White,
             fontSize = 28.sp,
@@ -48,19 +48,19 @@ fun CampaignScreen(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
-                        Text(
+                        GameText(
                             text = "${level.id}. ${level.name}",
                             color = Color.White,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.SemiBold
                         )
                         Spacer(modifier = Modifier.height(4.dp))
-                        Text(
+                        GameText(
                             text = "Противник: ${level.opponentName} (${level.opponentMaxHp} HP)",
                             color = Color.LightGray,
                             fontSize = 14.sp
                         )
-                        Text(
+                        GameText(
                             text = level.difficultyDescription,
                             color = Color.Gray,
                             fontSize = 12.sp
