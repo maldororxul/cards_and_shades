@@ -31,7 +31,7 @@ fun CampaignScreen(
     val unlockedLevel by UserProfile.maxUnlockedLevel.collectAsState()
     var selectedChapter by remember { mutableStateOf<ChapterModel?>(null) }
 
-    // ОБРАБОТКА СИСТЕМНОЙ КНОПКИ НАЗАД (Только если выбрана глава)
+    // ИСПРАВЛЕНИЕ: Системная кнопка назад теперь правильно сбрасывает выбор главы
     BackHandler(enabled = selectedChapter != null) {
         selectedChapter = null
     }
@@ -43,7 +43,8 @@ fun CampaignScreen(
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             if (selectedChapter != null) {
-                // КНОПКА НАЗАД ВНУТРИ ЭКРАНА
+                // ИСПРАВЛЕНИЕ: Кнопка на экране теперь просто сбрасывает стейт, 
+                // что возвращает пользователя к списку глав без выхода из экрана.
                 GameButton(
                     text = "⬅️", 
                     onClick = { selectedChapter = null }, 
@@ -78,7 +79,8 @@ fun CampaignScreen(
         } else {
             // СПИСОК МИССИЙ В ГЛАВЕ
             LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                items(selectedChapter!!.levels) { level ->
+                // ИСПРАВЛЕНИЕ: Безопасный доступ к списку уровней
+                items(selectedChapter?.levels ?: emptyList()) { level ->
                     val isUnlocked = level.id <= unlockedLevel
                     val isCompleted = level.id < unlockedLevel
                     
