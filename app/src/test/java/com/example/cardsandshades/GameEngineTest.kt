@@ -85,4 +85,24 @@ class GameEngineTest {
         assertTrue(state.isGameOver)
         assertEquals("Opponent", state.winnerName)
     }
+
+    @Test
+    fun testDustingLogic() {
+        // This test requires a mocked context or a way to access UserProfile without DB
+        // Since UserProfile is an object with flows, we can test it directly
+        UserProfile.collection.clear()
+        
+        val card1 = CardModel("1", "Imp", 1, 1, 1, Rarity.COMMON)
+        val card2 = CardModel("2", "Imp", 1, 1, 1, Rarity.COMMON)
+        val card3 = CardModel("3", "Imp", 1, 1, 1, Rarity.COMMON) // Extra
+        
+        UserProfile.collection.addAll(listOf(card1, card2, card3))
+        UserProfile.dustCommon.value = 0
+        
+        val totalDusted = UserProfile.dustExtras()
+        
+        assertEquals(1, totalDusted)
+        assertEquals(2, UserProfile.collection.size)
+        assertEquals(5, UserProfile.dustCommon.value)
+    }
 }

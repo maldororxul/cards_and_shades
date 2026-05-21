@@ -47,6 +47,7 @@ fun GameButton(
     modifier: Modifier = Modifier,
     containerColor: Color = Color(0xFF388E3C),
     contentColor: Color = Color.White,
+    fontSize: androidx.compose.ui.unit.TextUnit = 16.sp,
     enabled: Boolean = true
 ) {
     Button(
@@ -66,7 +67,7 @@ fun GameButton(
             text = text,
             color = contentColor,
             fontWeight = FontWeight.Bold,
-            fontSize = 16.sp
+            fontSize = fontSize
         )
     }
 }

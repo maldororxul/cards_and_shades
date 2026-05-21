@@ -176,8 +176,12 @@ fun CardComponent(
                 .width(105.dp)
                 .height(150.dp)
                 .border(borderThickness, if (card.isTakingDamage) Color.Red else borderColor, RoundedCornerShape(8.dp))
-                .clickable {
-                    if (onClick != null) onClick() else showInspectDialog = true
+                .clickable(enabled = !isPreview || onClick != null) {
+                    if (onClick != null) {
+                        onClick()
+                    } else {
+                        showInspectDialog = true
+                    }
                 },
             shape = RoundedCornerShape(8.dp),
             colors = CardDefaults.cardColors(containerColor = Color(0xFF212121))

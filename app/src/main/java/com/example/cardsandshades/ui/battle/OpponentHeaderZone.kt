@@ -75,6 +75,10 @@ fun OpponentHeaderZone(
                 }
             }
         }
-        GameText("Карт в руке: ${opponent.hand.size} | Мана врага: ${opponent.currentMana}/${opponent.maxMana}", color = Color.Gray, fontSize = 12.sp)
+        GameText(
+            text = "В руке: ${opponent.hand.size} | В колоде: ${opponent.deck.size} | Мана: ${opponent.currentMana}/${opponent.maxMana}",
+            color = Color.Gray,
+            fontSize = 12.sp
+        )
     }
 }

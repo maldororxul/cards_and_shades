@@ -52,7 +52,11 @@ fun PlayerControlsZone(
         ) {
             Column {
                 GameText(player.name, color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                GameText("Ваша мана: ${player.currentMana}/${player.maxMana} 💧", color = Color(0xFF29B6F6), fontSize = 14.sp)
+                GameText(
+                    text = "Мана: ${player.currentMana}/${player.maxMana} 💧 | В колоде: ${player.deck.size}",
+                    color = Color(0xFF29B6F6),
+                    fontSize = 14.sp
+                )
             }
 
             val playerHeroScale by animateFloatAsState(targetValue = if (isHeroTakingDamage) 1.4f else 1f, animationSpec = tween(200))

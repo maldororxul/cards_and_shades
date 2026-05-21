@@ -18,6 +18,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.cardsandshades.model.CardModel
+import com.example.cardsandshades.model.Rarity
 import com.example.cardsandshades.model.UserProfile
 import com.example.cardsandshades.ui.components.CardComponent
 import com.example.cardsandshades.ui.components.CardInspectionDialog
@@ -36,9 +37,18 @@ fun CollectionScreen(
     var errorMessage by remember { mutableStateOf("Соберите колоду: ${currentDeck.size}/20 карт") }
     var inspectedCard by remember { mutableStateOf<CardModel?>(null) }
 
+    val dustC by UserProfile.dustCommon.collectAsState()
+    val dustR by UserProfile.dustRare.collectAsState()
+    val dustE by UserProfile.dustEpic.collectAsState()
+    val dustL by UserProfile.dustLegendary.collectAsState()
+
     // Группируем карты в коллекции по имени, чтобы показывать количество дубликатов
     val groupedCards = remember(userCards) {
         userCards.groupBy { it.name }.map { group -> group.value.first() to group.value.size }
+    }
+    
+    val totalExtras = remember(userCards) {
+        userCards.groupBy { it.name }.values.sumOf { if (it.size > 2) it.size - 2 else 0 }
     }
 
     Column(
@@ -49,36 +59,62 @@ fun CollectionScreen(
         verticalArrangement = Arrangement.SpaceBetween
     ) {
         // Хедер экрана
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            GameButton(
-                text = "Сохранить и Выйти",
-                onClick = {
-                    if (currentDeck.size == 20) {
-                        // Сохраняем собранную колоду в профиль игрока
-                        UserProfile.selectedDeck.clear()
-                        UserProfile.selectedDeck.addAll(currentDeck)
-                        UserProfile.selectedDeck.notifyChanges()
-                        UserProfile.save()
-                        onBack()
-                    } else {
-                        errorMessage = "❌ Нельзя выйти! В колоде должно быть ровно 20 карт."
-                    }
-                },
-                containerColor = if (currentDeck.size == 20) Color(0xFF388E3C) else Color.Gray
-            )
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                GameButton(
+                    text = "Назад и Сохранить",
+                    onClick = {
+                        if (currentDeck.size == 20) {
+                            UserProfile.selectedDeck.clear()
+                            UserProfile.selectedDeck.addAll(currentDeck)
+                            UserProfile.selectedDeck.notifyChanges()
+                            UserProfile.save()
+                            onBack()
+                        } else {
+                            errorMessage = "❌ Нужно ровно 20 карт!"
+                        }
+                    },
+                    containerColor = if (currentDeck.size == 20) Color(0xFF388E3C) else Color.Gray
+                )
 
-            GameText(
-                text = errorMessage,
-                color = if (errorMessage.contains("❌")) Color.Red else Color.Yellow,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
-                textAlign = TextAlign.End,
-                modifier = Modifier.weight(1f).padding(start = 16.dp)
-            )
+                GameText(
+                    text = errorMessage,
+                    color = if (errorMessage.contains("❌")) Color.Red else Color.Yellow,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    textAlign = TextAlign.End,
+                    modifier = Modifier.weight(1f).padding(start = 16.dp)
+                )
+            }
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            // ПАНЕЛЬ ПОРОШКА
+            Row(
+                modifier = Modifier.fillMaxWidth().background(Color(0xFF1E1E1E), RoundedCornerShape(8.dp)).padding(8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    DustInfo(Color.Gray, dustC)
+                    DustInfo(Color(0xFF1E88E5), dustR)
+                    DustInfo(Color(0xFF8E24AA), dustE)
+                    DustInfo(Color(0xFFFDD835), dustL)
+                }
+                
+                if (totalExtras > 0) {
+                    GameButton(
+                        text = "Распылить лишние ($totalExtras)",
+                        onClick = { UserProfile.dustExtras() },
+                        containerColor = Color(0xFF5D4037),
+                        fontSize = 12.sp
+                    )
+                }
+            }
         }
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -86,7 +122,7 @@ fun CollectionScreen(
         // Грид-сетка всех карт в коллекции игрока
         if (groupedCards.isEmpty()) {
             Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
-                GameText("Ваша коллекция пуста. Зайдите в магазин и откройте бустеры! 📦", color = Color.Gray, textAlign = TextAlign.Center)
+                GameText("Ваша коллекция пуста. Зайдите в магазин! 📦", color = Color.Gray, textAlign = TextAlign.Center)
             }
         } else {
             LazyVerticalGrid(
@@ -124,7 +160,7 @@ fun CollectionScreen(
                                     .padding(horizontal = 6.dp, vertical = 2.dp)
                             ) {
                                 GameText(
-                                    text = "В колоде: $countInDeck / 2",
+                                    text = "$countInDeck / 2",
                                     color = Color.White,
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.Bold
@@ -132,7 +168,9 @@ fun CollectionScreen(
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(4.dp))
+                        GameText("В наличии: $count", fontSize = 10.sp, color = Color.Gray)
+                        Spacer(modifier = Modifier.height(4.dp))
 
                         // ПОНЯТНЫЕ КНОПКИ УПРАВЛЕНИЯ ПОД КАРТОЙ
                         Row(
@@ -160,18 +198,14 @@ fun CollectionScreen(
                             }
 
                             // Кнопка ПЛЮС (Добавить в колоду)
-                            if (countInDeck < 2) {
+                            if (countInDeck < 2 && currentDeck.size < 20 && count > countInDeck) {
                                 Box(
                                     modifier = Modifier
                                         .size(28.dp)
-                                        .background(if (currentDeck.size < 20) Color(0xFF4CAF50) else Color.Gray, RoundedCornerShape(14.dp))
+                                        .background(Color(0xFF4CAF50), RoundedCornerShape(14.dp))
                                         .clickable {
-                                            if (currentDeck.size < 20) {
-                                                currentDeck.add(cardSample.copy(id = java.util.UUID.randomUUID().toString()))
-                                                errorMessage = "Соберите колоду: ${currentDeck.size}/20 карт"
-                                            } else {
-                                                errorMessage = "❌ Максимум 20 карт в колоде!"
-                                            }
+                                            currentDeck.add(cardSample.copy(id = java.util.UUID.randomUUID().toString()))
+                                            errorMessage = "Соберите колоду: ${currentDeck.size}/20 карт"
                                         },
                                     contentAlignment = Alignment.Center
                                 ) {
@@ -187,5 +221,14 @@ fun CollectionScreen(
 
     if (inspectedCard != null) {
         CardInspectionDialog(card = inspectedCard!!, onDismiss = { inspectedCard = null })
+    }
+}
+
+@Composable
+private fun DustInfo(color: Color, amount: Int) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Box(modifier = Modifier.size(8.dp).background(color, RoundedCornerShape(4.dp)))
+        Spacer(modifier = Modifier.width(4.dp))
+        GameText(text = amount.toString(), fontSize = 12.sp, color = color)
     }
 }

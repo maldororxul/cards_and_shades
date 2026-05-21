@@ -13,6 +13,12 @@ object UserProfile {
     val selectedDeck = MutableListFlow(mutableListOf<CardModel>()) // Теперь тоже реактивный MutableListFlow
     val maxUnlockedLevel = MutableStateFlow(1)
 
+    // ПОРОШОК ДЛЯ КРАФТА (по редкостям)
+    val dustCommon = MutableStateFlow(0)
+    val dustRare = MutableStateFlow(0)
+    val dustEpic = MutableStateFlow(0)
+    val dustLegendary = MutableStateFlow(0)
+
     private const val PREFS_NAME = "cards_and_shades_prefs"
     private val scope = CoroutineScope(Dispatchers.IO)
     private val gson = Gson()
@@ -26,6 +32,11 @@ object UserProfile {
             if (prefs.contains("gold")) {
                 gold.value = prefs.getInt("gold", 500)
                 maxUnlockedLevel.value = prefs.getInt("maxUnlockedLevel", 1)
+                
+                dustCommon.value = prefs.getInt("dustCommon", 0)
+                dustRare.value = prefs.getInt("dustRare", 0)
+                dustEpic.value = prefs.getInt("dustEpic", 0)
+                dustLegendary.value = prefs.getInt("dustLegendary", 0)
 
                 val collectionJson = prefs.getString("collection", "[]") ?: "[]"
                 val deckJson = prefs.getString("deck", "[]") ?: "[]"
@@ -114,11 +125,60 @@ object UserProfile {
             prefs.edit().apply {
                 putInt("gold", gold.value)
                 putInt("maxUnlockedLevel", maxUnlockedLevel.value)
+                
+                putInt("dustCommon", dustCommon.value)
+                putInt("dustRare", dustRare.value)
+                putInt("dustEpic", dustEpic.value)
+                putInt("dustLegendary", dustLegendary.value)
+
                 putString("collection", gson.toJson(collection.toList()))
                 putString("deck", gson.toJson(selectedDeck.toList()))
                 apply()
             }
         }
+    }
+
+    // РАСПЫЛЕНИЕ ЛИШНИХ КАРТ (более 2-х копий одного типа)
+    fun dustExtras(): Int {
+        val grouped = collection.groupBy { it.name }
+        var totalDusted = 0
+        
+        val newCollection = mutableListOf<CardModel>()
+        
+        grouped.forEach { (name, cards) ->
+            if (cards.size > 2) {
+                val extras = cards.size - 2
+                totalDusted += extras
+                
+                val rarity = cards.first().rarity
+                val dustAmount = when (rarity) {
+                    Rarity.COMMON -> 5
+                    Rarity.RARE -> 20
+                    Rarity.EPIC -> 50
+                    Rarity.LEGENDARY -> 100
+                }
+                
+                when (rarity) {
+                    Rarity.COMMON -> dustCommon.value += extras * dustAmount
+                    Rarity.RARE -> dustRare.value += extras * dustAmount
+                    Rarity.EPIC -> dustEpic.value += extras * dustAmount
+                    Rarity.LEGENDARY -> dustLegendary.value += extras * dustAmount
+                }
+                
+                newCollection.addAll(cards.take(2))
+            } else {
+                newCollection.addAll(cards)
+            }
+        }
+        
+        if (totalDusted > 0) {
+            collection.clear()
+            collection.addAll(newCollection)
+            collection.notifyChanges()
+            save()
+        }
+        
+        return totalDusted
     }
 }
 
