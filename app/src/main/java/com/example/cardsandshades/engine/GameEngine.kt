@@ -21,17 +21,18 @@ object GameEngine {
         // ООП-сброс состояний сна и атак для всех существ на столе в начале их хода
         activePlayer.board.forEach { it.resetTurnState() }
 
-        drawCard(activePlayer)
+        drawCard(activePlayer, state)
     }
 
     // 2. Добор карты из колоды в руку
-    fun drawCard(player: PlayerModel) {
+    fun drawCard(player: PlayerModel, state: GameState) {
         if (player.deck.isNotEmpty()) {
             val card = player.deck.removeAt(0)
             player.hand.add(card)
         } else {
             // Если колода пуста — игрок получает урон от «усталости»
             player.currentHp -= 2
+            checkWinCondition(state)
         }
     }
 
@@ -96,37 +97,6 @@ object GameEngine {
 
         // Пост-эффекты атаки (например, Маг бьет по соседям)
         attacker.activeEffects.forEach { it.onAfterAttack(state, attacker, target) }
-    }
-
-    // 4. Бой: Атака карты на карту противника (Взаимный урон)
-    fun attackCard(state: GameState, attacker: CardModel, target: CardModel) {
-        val activePlayer = if (state.currentTurn == Turn.PLAYER) state.player else state.opponent
-        val enemyPlayer = if (state.currentTurn == Turn.PLAYER) state.opponent else state.player
-
-        if (!activePlayer.board.contains(attacker) || !enemyPlayer.board.contains(target)) return
-
-        // Одновременный обмен уроном
-        target.currentHealth -= attacker.currentAttack
-        attacker.currentHealth -= target.currentAttack
-
-        // Удаление погибших карт со стола
-        if (target.isDead) enemyPlayer.board.remove(target)
-        if (attacker.isDead) activePlayer.board.remove(attacker)
-
-        checkWinCondition(state)
-    }
-
-    // 5. Атака напрямую в «лицо» героя, если у врага пустой стол
-    fun attackHero(state: GameState, attacker: CardModel): Boolean {
-        val activePlayer = if (state.currentTurn == Turn.PLAYER) state.player else state.opponent
-        val enemyPlayer = if (state.currentTurn == Turn.PLAYER) state.opponent else state.player
-
-        // Атаковать лицо можно только если у противника нет защитников на столе
-        if (enemyPlayer.board.isNotEmpty()) return false
-
-        enemyPlayer.currentHp -= attacker.currentAttack
-        checkWinCondition(state)
-        return true
     }
 
     // 6. Передача хода

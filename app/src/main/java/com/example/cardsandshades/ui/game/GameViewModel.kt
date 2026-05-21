@@ -1,6 +1,7 @@
 package com.example.cardsandshades.ui.game
 
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
@@ -38,12 +39,12 @@ class GameViewModel : ViewModel() {
 
     var playerHeroTakingDamage by mutableStateOf(false)
         private set
-    var playerHeroDamageValue by mutableStateOf(0)
+    var playerHeroDamageValue by mutableIntStateOf(0)
         private set
 
     var opponentHeroTakingDamage by mutableStateOf(false)
         private set
-    var opponentHeroDamageValue by mutableStateOf(0)
+    var opponentHeroDamageValue by mutableIntStateOf(0)
         private set
 
     // Убрали принудительный вызов из init, чтобы игра не крашилась при старте до выбора уровня
@@ -101,8 +102,8 @@ class GameViewModel : ViewModel() {
 
         // Раздаем стартовые карты
         repeat(4) {
-            GameEngine.drawCard(initialState.player)
-            GameEngine.drawCard(initialState.opponent)
+            GameEngine.drawCard(initialState.player, initialState)
+            GameEngine.drawCard(initialState.opponent, initialState)
         }
 
         // Начисляем стартовую ману для первого хода
@@ -364,7 +365,7 @@ class GameViewModel : ViewModel() {
                     // ИСПРАВЛЕНИЕ БАГА: ИИ ищет цели строго через ККИ-валидатор движка GameEngine
                     // Это гарантирует, что ИИ никогда не выберет заблокированную Провокацией карту!
                     val validEnemyCards = playerBoard.filter { enemyCard ->
-                        com.example.cardsandshades.engine.GameEngine.canAttackTarget(currentGameState, activeAttacker, enemyCard)
+                        GameEngine.canAttackTarget(currentGameState, activeAttacker, enemyCard)
                     }
 
                     // Включаем стрелку прицеливания для ИИ
@@ -377,7 +378,7 @@ class GameViewModel : ViewModel() {
                         isOpponentTargetingHero = false
                     } else {
                         // Если легальных существ для атаки нет, проверяем, можно ли ударить в лицо
-                        val canStrikeHero = com.example.cardsandshades.engine.GameEngine.canAttackHero(currentGameState, activeAttacker)
+                        val canStrikeHero = GameEngine.canAttackHero(currentGameState, activeAttacker)
                         if (canStrikeHero && playerBoard.isEmpty()) {
                             opponentTargetId = null
                             isOpponentTargetingHero = true
