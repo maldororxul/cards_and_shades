@@ -52,13 +52,19 @@ object UserProfile {
 
                 // Нам нужен доступ к шаблонам карт. Используем трюк: генерируем деку, чтобы вытащить шаблоны,
                 // либо наполняем коллекцию гарантированным набором через генератор.
-                // Чтобы не менять CardCatalog, просто даем игроку большой пул карт (80 штук),
+                // Чтобы не менять CardCatalog, просто даем игроку большой пул карт (100 штук),
                 // среди которых точно гарантированно будут все копии для сборки.
-                repeat(80) {
+                repeat(100) {
                     com.example.cardsandshades.catalog.CardCatalog.generateTestDeck().firstOrNull()?.let {
                         startCollection.add(it)
                     }
                 }
+                
+                // Гарантированно добавляем новые механики в коллекцию для теста
+                com.example.cardsandshades.catalog.CardCatalog.createCardInstance("Вампир-аристократ")?.let { startCollection.add(it) }
+                com.example.cardsandshades.catalog.CardCatalog.createCardInstance("Вампир-аристократ")?.let { startCollection.add(it) }
+                com.example.cardsandshades.catalog.CardCatalog.createCardInstance("Дух-наставник")?.let { startCollection.add(it) }
+                com.example.cardsandshades.catalog.CardCatalog.createCardInstance("Теневой жнец")?.let { startCollection.add(it) }
 
                 collection.clear()
                 collection.addAll(startCollection)

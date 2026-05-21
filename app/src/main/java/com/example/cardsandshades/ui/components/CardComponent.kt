@@ -110,6 +110,16 @@ fun CardInspectionDialog(
                         "Обычное существо.\nНе имеет скрытых магических сил."
                     }
 
+                    if (card.buffs.isNotEmpty()) {
+                        Text(
+                            text = "Активные баффы:\n" + card.buffs.joinToString("\n") { "💪 ${it.name}: +${it.attackBonus}/+${it.healthBonus} (${it.duration} ходов)" },
+                            color = Color(0xFF4CAF50),
+                            fontSize = 13.sp,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(top = 16.dp)
+                        )
+                    }
+
                     Text(
                         text = effectsDescription,
                         color = Color.LightGray,
@@ -281,12 +291,21 @@ private fun BoxScope.CardContent(card: CardModel, borderColor: Color) {
         }
     }
 
-    Box(modifier = Modifier.size(20.dp).background(Color(0xFFD32F2F), RoundedCornerShape(4.dp)).align(Alignment.BottomStart), contentAlignment = Alignment.Center) {
+    val attackBgColor = if (card.currentAttack > card.baseAttack) Color(0xFF388E3C) else Color(0xFFD32F2F)
+    Box(modifier = Modifier.size(20.dp).background(attackBgColor, RoundedCornerShape(4.dp)).align(Alignment.BottomStart), contentAlignment = Alignment.Center) {
         Text(text = card.currentAttack.toString(), color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold)
     }
 
-    val healthBgColor = if (card.currentHealth < card.baseHealth) Color(0xFF7B1FA2) else Color(0xFF388E3C)
-    Box(modifier = Modifier.size(20.dp).background(healthBgColor, RoundedCornerShape(4.dp)).align(Alignment.BottomEnd), contentAlignment = Alignment.Center) {
+    val healthBgColor = when {
+        card.currentHealth < card.baseHealth -> Color(0xFF7B1FA2) // Ранен
+        card.currentHealth > card.baseHealth -> Color(0xFF388E3C) // Баффнут
+        else -> Color(0xFF388E3C) // Норма (тот же зеленый, что и бафф, но можно отличить по цифре)
+    }
+    // Для здоровья в ККИ обычно: зеленый = бафф или фулл хп, красный/фиолетовый = ранение.
+    // Давайте сделаем: если выше базы - ярко-зеленый, если база - обычный зеленый, если ниже - фиолетовый.
+    val actualHealthBg = if (card.currentHealth > card.baseHealth) Color(0xFF4CAF50) else healthBgColor
+
+    Box(modifier = Modifier.size(20.dp).background(actualHealthBg, RoundedCornerShape(4.dp)).align(Alignment.BottomEnd), contentAlignment = Alignment.Center) {
         Text(text = card.currentHealth.toString(), color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold)
     }
 }

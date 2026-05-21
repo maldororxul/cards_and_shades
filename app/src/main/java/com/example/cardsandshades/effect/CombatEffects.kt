@@ -2,12 +2,13 @@ package com.example.cardsandshades.effect
 
 import com.example.cardsandshades.model.CardModel
 import com.example.cardsandshades.model.GameState
+import com.example.cardsandshades.model.PlayerModel
 
 // ⚔️ РЫВОК: Карта не спит при призыве
 class RushEffect : CardEffect {
     override val name = "Рывок"
     override val description = "Может атаковать сразу в ход призыва."
-    override fun onSummon(card: CardModel) {
+    override fun onSummon(state: GameState, owner: PlayerModel, card: CardModel) {
         card.isSleeping = false
     }
 }
@@ -38,16 +39,52 @@ class SplashEffect : CardEffect {
         if (targetIndex != -1) {
             // Урон соседу слева
             if (targetIndex > 0) {
-                enemyBoard[targetIndex - 1].currentHealth -= 1
-                enemyBoard[targetIndex - 1].lastDamageTaken = 1
-                enemyBoard[targetIndex - 1].isTakingDamage = true
+                val neighbor = enemyBoard[targetIndex - 1]
+                neighbor.currentHealth -= 1
+                neighbor.lastDamageTaken = 1
+                neighbor.isTakingDamage = true
+                attacker.activeEffects.forEach { it.onDamageDealt(state, attacker, 1) }
             }
             // Урон соседу справа
             if (targetIndex < enemyBoard.lastIndex) {
-                enemyBoard[targetIndex + 1].currentHealth -= 1
-                enemyBoard[targetIndex + 1].lastDamageTaken = 1
-                enemyBoard[targetIndex + 1].isTakingDamage = true
+                val neighbor = enemyBoard[targetIndex + 1]
+                neighbor.currentHealth -= 1
+                neighbor.lastDamageTaken = 1
+                neighbor.isTakingDamage = true
+                attacker.activeEffects.forEach { it.onDamageDealt(state, attacker, 1) }
             }
+        }
+    }
+}
+
+// 🦇 ВАМПИРИЗМ: Лечит героя при нанесении урона
+class LifestealEffect : CardEffect {
+    override val name = "Вампиризм"
+    override val description = "Лечит вашего героя на величину нанесенного урона."
+    override fun onDamageDealt(state: GameState, attacker: CardModel, amount: Int) {
+        val owner = if (state.player.board.any { it.id == attacker.id }) state.player else state.opponent
+        owner.currentHp = (owner.currentHp + amount).coerceAtMost(owner.maxHp)
+    }
+}
+
+// ✨ БАФФ (БОНУС): Дает +2/+2 случайному союзнику на 2 хода при выходе
+class BuffEffect : CardEffect {
+    override val name = "Благословение"
+    override val description = "При призыве дает +2/+2 случайному союзнику на 2 хода."
+    override fun onSummon(state: GameState, owner: PlayerModel, card: CardModel) {
+        val allies = owner.board.filter { it.id != card.id }
+        if (allies.isNotEmpty()) {
+            val target = allies.random()
+            val buff = com.example.cardsandshades.model.BuffModel(
+                id = java.util.UUID.randomUUID().toString(),
+                name = "Усиление",
+                attackBonus = 2,
+                healthBonus = 2,
+                duration = 2
+            )
+            target.addBuff(buff)
+            target.currentAttack += buff.attackBonus
+            target.currentHealth += buff.healthBonus
         }
     }
 }

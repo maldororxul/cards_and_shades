@@ -21,10 +21,13 @@ object CardCatalog {
         // === EPIC ===
         CardTemplate("Оруженосец Света", 3, 3, 5, Rarity.EPIC, listOf(EffectTag.TAUNT)),
         CardTemplate("Чародей Пустоты", 4, 3, 4, Rarity.EPIC, listOf(EffectTag.SPLASH)),
+        CardTemplate("Вампир-аристократ", 3, 2, 3, Rarity.EPIC, listOf(EffectTag.LIFESTEAL)),
 
         // === LEGENDARY ===
         CardTemplate("Король Теней", 4, 6, 5, Rarity.LEGENDARY),
-        CardTemplate("Дракон Пустоты", 7, 9, 8, Rarity.LEGENDARY, listOf(EffectTag.SPLASH))
+        CardTemplate("Дракон Пустоты", 7, 9, 8, Rarity.LEGENDARY, listOf(EffectTag.SPLASH)),
+        CardTemplate("Теневой жнец", 5, 4, 4, Rarity.LEGENDARY, listOf(EffectTag.LIFESTEAL, EffectTag.RUSH)),
+        CardTemplate("Дух-наставник", 2, 1, 1, Rarity.LEGENDARY, listOf(EffectTag.BUFF))
     )
 
     fun createCardInstance(templateName: String): CardModel? {

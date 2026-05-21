@@ -18,8 +18,19 @@ object GameEngine {
         if (activePlayer.maxMana < MAX_MANA_CAP) activePlayer.maxMana += 1
         activePlayer.currentMana = activePlayer.maxMana
 
-        // ООП-сброс состояний сна и атак для всех существ на столе в начале их хода
-        activePlayer.board.forEach { it.resetTurnState() }
+        // ОБРАБОТКА БАФФОВ: Снижаем длительность и снимаем просроченные
+        activePlayer.board.forEach { card ->
+            val expired = card.buffs.filter { it.duration <= 0 }
+            expired.forEach { buff ->
+                card.currentAttack -= buff.attackBonus
+                card.currentHealth -= buff.healthBonus
+                if (card.currentHealth <= 0) card.currentHealth = 1 // Защита от смерти при снятии баффа
+            }
+            card.removeBuffs(expired)
+            card.buffs.forEach { it.duration -= 1 }
+
+            card.resetTurnState()
+        }
 
         drawCard(activePlayer, state)
     }
@@ -40,14 +51,19 @@ object GameEngine {
     fun playCard(state: GameState, card: CardModel): Boolean {
         val activePlayer = if (state.currentTurn == Turn.PLAYER) state.player else state.opponent
         if (activePlayer.currentMana >= card.manaCost && activePlayer.board.size < MAX_BOARD_SIZE) {
-            activePlayer.currentMana -= card.manaCost
-            activePlayer.hand.remove(card)
+            // ИСПРАВЛЕНИЕ: Удаляем карту строго по ID, чтобы не было дублей или фантомных карт
+            val wasRemoved = activePlayer.hand.removeIf { it.id == card.id }
+            
+            if (wasRemoved) {
+                activePlayer.currentMana -= card.manaCost
 
-            // ТРИГГЕР: Активируем эффекты при призыве (например, Рывок сразу разбудит карту)
-            card.activeEffects.forEach { it.onSummon(card) }
+                // ТРИГГЕР: Активируем эффекты при призыве
+                card.activeEffects.forEach { it.onSummon(state, activePlayer, card) }
 
-            activePlayer.board.add(card)
-            return true
+                activePlayer.board.add(card)
+                checkAutoWinCondition(state)
+                return true
+            }
         }
         return false
     }
@@ -95,8 +111,28 @@ object GameEngine {
         target.lastDamageTaken = damageToTarget
         attacker.lastDamageTaken = counterDamageToAttacker
 
+        // Триггеры нанесения урона (например, Вампиризм)
+        attacker.activeEffects.forEach { it.onDamageDealt(state, attacker, damageToTarget) }
+        target.activeEffects.forEach { it.onDamageDealt(state, target, counterDamageToAttacker) }
+
         // Пост-эффекты атаки (например, Маг бьет по соседям)
         attacker.activeEffects.forEach { it.onAfterAttack(state, attacker, target) }
+
+        checkWinCondition(state)
+        checkAutoWinCondition(state)
+    }
+
+    // Логика атаки героя, вынесенная в движок для учета эффектов
+    fun attackHero(state: GameState, attacker: CardModel) {
+        attacker.hasAttackedThisTurn = true
+        val enemy = if (state.currentTurn == Turn.PLAYER) state.opponent else state.player
+        enemy.currentHp -= attacker.currentAttack
+
+        // Триггеры нанесения урона (Вампиризм)
+        attacker.activeEffects.forEach { it.onDamageDealt(state, attacker, attacker.currentAttack) }
+
+        checkWinCondition(state)
+        checkAutoWinCondition(state)
     }
 
     // 6. Передача хода
@@ -119,6 +155,29 @@ object GameEngine {
         } else if (state.player.isDead) {
             state.isGameOver = true
             state.winnerName = state.opponent.name
+        }
+    }
+
+    // 8. Авто-победа/поражение, если у одной стороны нет шансов
+    fun checkAutoWinCondition(state: GameState) {
+        if (state.isGameOver) return
+
+        // Если у игрока нет карт в руке и на столе, а у врага есть летал на столе
+        if (state.player.hand.isEmpty() && state.player.board.isEmpty() && state.player.deck.isEmpty()) {
+            val opponentLethal = state.opponent.board.sumOf { it.currentAttack }
+            if (opponentLethal >= state.player.currentHp) {
+                state.isGameOver = true
+                state.winnerName = state.opponent.name
+            }
+        }
+
+        // Если у врага нет карт в руке и на столе, а у игрока летал
+        if (state.opponent.hand.isEmpty() && state.opponent.board.isEmpty() && state.opponent.deck.isEmpty()) {
+            val playerLethal = state.player.board.sumOf { it.currentAttack }
+            if (playerLethal >= state.opponent.currentHp) {
+                state.isGameOver = true
+                state.winnerName = state.player.name
+            }
         }
     }
 }

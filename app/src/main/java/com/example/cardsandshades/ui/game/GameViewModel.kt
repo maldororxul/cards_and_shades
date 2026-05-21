@@ -265,8 +265,9 @@ class GameViewModel : ViewModel() {
                 _gameState.update { currentState ->
                     currentState?.deepCopy()?.apply {
                         val aCard = player.board.find { it.id == attacker.id }
-                        aCard?.hasAttackedThisTurn = true
-                        opponent.currentHp -= aCard?.currentAttack ?: 0
+                        if (aCard != null) {
+                            GameEngine.attackHero(this, aCard)
+                        }
                     }
                 }
 
@@ -370,10 +371,9 @@ class GameViewModel : ViewModel() {
                                     com.example.cardsandshades.engine.GameEngine.calculateCombat(this, nextAttacker, nextTarget)
                                 }
                             } else {
-                                nextAttacker.hasAttackedThisTurn = true
                                 playerHeroDamageValue = nextAttacker.currentAttack
                                 playerHeroTakingDamage = true
-                                player.currentHp -= nextAttacker.currentAttack
+                                com.example.cardsandshades.engine.GameEngine.attackHero(this, nextAttacker)
                             }
                         }
                     }

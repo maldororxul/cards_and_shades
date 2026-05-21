@@ -14,9 +14,9 @@ data class PlayerModel(
 
     fun deepCopy(): PlayerModel {
         return this.copy(
-            deck = this.deck.map { it.copy() }.toMutableList(),
-            hand = this.hand.map { it.copy() }.toMutableList(),
-            board = this.board.map { it.copy() }.toMutableList()
+            deck = this.deck.map { it.deepCopy() }.toMutableList(),
+            hand = this.hand.map { it.deepCopy() }.toMutableList(),
+            board = this.board.map { it.deepCopy() }.toMutableList()
         )
     }
 }

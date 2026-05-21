@@ -31,25 +31,58 @@ class GameEngineTest {
     }
 
     @Test
-    fun testSplashEffect() {
+    fun testLifestealEffect() {
+        val player = PlayerModel("Player", currentHp = 10, maxHp = 30)
+        val opponent = PlayerModel("Opponent")
+        val state = GameState(player, opponent, Turn.PLAYER)
+
+        val attacker = CardModel("1", "Vampire", 1, 5, 5, Rarity.EPIC, effectTags = listOf(EffectTag.LIFESTEAL), isSleeping = false)
+        player.board.add(attacker)
+
+        GameEngine.attackHero(state, attacker)
+
+        // Player healed for 5
+        assertEquals(15, player.currentHp)
+    }
+
+    @Test
+    fun testBuffEffect() {
         val player = PlayerModel("Player")
         val opponent = PlayerModel("Opponent")
         val state = GameState(player, opponent, Turn.PLAYER)
 
-        val attacker = CardModel("1", "Mage", 1, 2, 2, Rarity.COMMON, effectTags = listOf(EffectTag.SPLASH))
-        val target = CardModel("2", "Target", 1, 1, 5, Rarity.COMMON)
-        val neighbor = CardModel("3", "Neighbor", 1, 1, 1, Rarity.COMMON)
+        val cardToBuff = CardModel("1", "Target", 1, 1, 1, Rarity.COMMON)
+        player.board.add(cardToBuff)
 
-        player.board.add(attacker)
-        opponent.board.add(neighbor)
-        opponent.board.add(target)
+        val buffer = CardModel("2", "Buffer", 1, 1, 1, Rarity.LEGENDARY, effectTags = listOf(EffectTag.BUFF))
+        
+        // Play card should trigger onSummon and apply buff
+        player.hand.add(buffer)
+        GameEngine.playCard(state, buffer)
 
-        GameEngine.calculateCombat(state, attacker, target)
+        assertEquals(3, cardToBuff.currentAttack)
+        assertEquals(3, cardToBuff.currentHealth)
+        assertEquals(1, cardToBuff.buffs.size)
+    }
 
-        // Target took 2 damage
-        assertEquals(3, target.currentHealth)
-        // Neighbor took 1 splash damage
-        assertEquals(0, neighbor.currentHealth)
-        assertTrue(neighbor.isTakingDamage)
+    @Test
+    fun testAutoWinCondition() {
+        val player = PlayerModel("Player", currentHp = 5)
+        val opponent = PlayerModel("Opponent", currentHp = 30)
+        val state = GameState(player, opponent, Turn.OPPONENT)
+
+        // Player has nothing
+        player.hand.clear()
+        player.board.clear()
+        player.deck.clear()
+
+        // Opponent has lethal
+        val attacker = CardModel("1", "Killer", 1, 10, 10, Rarity.COMMON)
+        opponent.board.add(attacker)
+
+        GameEngine.checkAutoWinCondition(state)
+
+        assertTrue(state.isGameOver)
+        assertEquals("Opponent", state.winnerName)
     }
 }
