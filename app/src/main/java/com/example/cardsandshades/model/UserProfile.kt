@@ -16,8 +16,10 @@ object UserProfile {
     private const val PREFS_NAME = "cards_and_shades_prefs"
     private val scope = CoroutineScope(Dispatchers.IO)
     private val gson = Gson()
+    private var appContext: Context? = null
 
     fun initDatabase(context: Context) {
+        appContext = context.applicationContext
         scope.launch {
             val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
@@ -84,9 +86,10 @@ object UserProfile {
         }
     }
 
-    fun save(context: Context) {
+    fun save(context: Context? = null) {
+        val targetContext = context?.applicationContext ?: appContext ?: return
         scope.launch {
-            val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            val prefs = targetContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
             prefs.edit().apply {
                 putInt("gold", gold.value)
                 putInt("maxUnlockedLevel", maxUnlockedLevel.value)

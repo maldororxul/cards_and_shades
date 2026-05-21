@@ -86,6 +86,7 @@ fun BoosterScreen(
                     // Добавляем карты в общую коллекцию игрока
                     UserProfile.collection.addAll(newCards)
                     UserProfile.collection.notifyChanges()
+                    UserProfile.save()
 
                     message = "Вы получили 5 карт!"
                 } else {

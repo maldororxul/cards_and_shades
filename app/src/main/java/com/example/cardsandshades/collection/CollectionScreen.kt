@@ -59,6 +59,8 @@ fun CollectionScreen(
                         // Сохраняем собранную колоду в профиль игрока
                         UserProfile.selectedDeck.clear()
                         UserProfile.selectedDeck.addAll(currentDeck)
+                        UserProfile.selectedDeck.notifyChanges()
+                        UserProfile.save()
                         onBack()
                     } else {
                         errorMessage = "❌ Нельзя выйти! В колоде должно быть ровно 20 карт."

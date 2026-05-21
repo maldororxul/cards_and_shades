@@ -72,7 +72,14 @@ class GameViewModel : ViewModel() {
         }
 
         // ИСПРАВЛЕНИЕ: Собираем уникальную тематическую колоду для ИИ на основе пресета уровня
-        val opponentDeck = level.opponentDeckPreset.map { cardName ->
+        // Если в пресете мало карт — повторяем их до 20 штук для полноценной игры
+        val opponentDeckNames = mutableListOf<String>()
+        if (level.opponentDeckPreset.isNotEmpty()) {
+            while (opponentDeckNames.size < 20) {
+                opponentDeckNames.addAll(level.opponentDeckPreset)
+            }
+        }
+        val opponentDeck = opponentDeckNames.take(20).map { cardName ->
             // Ищем карту в каталоге по имени. Если не нашли (опечатка) — подставляем Тень-новобранца
             (CardCatalog.createCardInstance(cardName) ?: CardCatalog.createCardInstance("Тень-новобранец")!!).apply { reset() }
         }.toMutableList()
@@ -136,6 +143,8 @@ class GameViewModel : ViewModel() {
                 if (level.id == UserProfile.maxUnlockedLevel.value) {
                     UserProfile.maxUnlockedLevel.value = level.id + 1
                 }
+                // СОХРАНЕНИЕ: После получения наград обязательно сбрасываем состояние на диск
+                UserProfile.save()
             }
         }
         _gameState.value = null
@@ -190,16 +199,16 @@ class GameViewModel : ViewModel() {
                 updateCardAnimation(attacker.id, isAttacking = false)
                 delay(500)
 
-                // 3. Анимация смерти (падения) И СБРОС ТРЯСКИ ДЛЯ ВЫЖИВШИХ
+                // 3. Анимация смерти (падения) И СБРОС ТРЯСКИ ДЛЯ ВСЕХ УЧАСТНИКОВ (включая жертв Splash)
                 _gameState.update { currentState ->
                     currentState?.deepCopy()?.apply {
-                        player.board.find { it.id == attacker.id }?.let {
-                            it.isTakingDamage = false
-                            if (it.currentHealth <= 0) it.isDying = true
+                        player.board.forEach { card ->
+                            card.isTakingDamage = false
+                            if (card.currentHealth <= 0) card.isDying = true
                         }
-                        opponent.board.find { it.id == target.id }?.let {
-                            it.isTakingDamage = false
-                            if (it.currentHealth <= 0) it.isDying = true
+                        opponent.board.forEach { card ->
+                            card.isTakingDamage = false
+                            if (card.currentHealth <= 0) card.isDying = true
                         }
                     }
                 }
@@ -284,11 +293,6 @@ class GameViewModel : ViewModel() {
             currentState?.deepCopy()?.apply {
                 if (currentTurn == Turn.PLAYER) {
                     GameEngine.endTurn(this)
-                    // Пробуждаем карты противника
-                    opponent.board.forEach { card ->
-                        card.isSleeping = false
-                        card.hasAttackedThisTurn = false
-                    }
                 }
             } ?: currentState
         }
@@ -327,7 +331,8 @@ class GameViewModel : ViewModel() {
                 val currentGameState = _gameState.value ?: break
                 val activeAttacker = currentGameState.opponent.board.find { it.id == attacker.id } ?: continue
 
-                if (!GameEngine.canAttackHero(currentGameState, activeAttacker)) continue
+                // ОШИБКА: ИИ не должен скипать ход, если не может атаковать героя (например, из-за Таунта)
+                if (activeAttacker.isSleeping || activeAttacker.hasAttackedThisTurn) continue
 
                 val playerBoard = currentGameState.player.board
                 val validEnemyCards = playerBoard.filter { enemyCard ->
@@ -380,13 +385,13 @@ class GameViewModel : ViewModel() {
 
                 _gameState.update { currentState ->
                     currentState?.deepCopy()?.apply {
-                        player.board.find { it.id == opponentTargetId }?.let {
-                            it.isTakingDamage = false
-                            if (it.currentHealth <= 0) it.isDying = true
+                        player.board.forEach { card ->
+                            card.isTakingDamage = false
+                            if (card.currentHealth <= 0) card.isDying = true
                         }
-                        opponent.board.find { it.id == activeAttacker.id }?.let {
-                            it.isTakingDamage = false
-                            if (it.currentHealth <= 0) it.isDying = true
+                        opponent.board.forEach { card ->
+                            card.isTakingDamage = false
+                            if (card.currentHealth <= 0) card.isDying = true
                         }
                     }
                 }
@@ -420,10 +425,6 @@ class GameViewModel : ViewModel() {
         _gameState.update { currentState ->
             currentState?.deepCopy()?.apply {
                 GameEngine.endTurn(this)
-                player.board.forEach { card ->
-                    card.isSleeping = false
-                    card.hasAttackedThisTurn = false
-                }
             }
         }
     }
