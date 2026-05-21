@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -24,6 +25,149 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.cardsandshades.model.CardModel
 import com.example.cardsandshades.model.Rarity
+
+@Composable
+fun CardInspectionDialog(
+    card: CardModel,
+    onDismiss: () -> Unit
+) {
+    val borderColor = when (card.rarity) {
+        Rarity.COMMON -> Color.Gray
+        Rarity.RARE -> Color(0xFF1E88E5)
+        Rarity.EPIC -> Color(0xFF8E24AA)
+        Rarity.LEGENDARY -> Color(0xFFFDD835)
+    }
+
+    Dialog(onDismissRequest = onDismiss) {
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            shape = RoundedCornerShape(16.dp),
+            color = Color(0xFF1A1A1A)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+                    .padding(24.dp)
+            ) {
+                // Мана-кост в углу
+                Box(
+                    modifier = Modifier
+                        .size(44.dp)
+                        .background(Color(0xFF0288D1), RoundedCornerShape(22.dp))
+                        .align(Alignment.TopStart),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        card.manaCost.toString(),
+                        color = Color.White,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        card.name,
+                        color = Color.White,
+                        fontSize = 26.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        card.rarity.name,
+                        color = borderColor,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    // Изображение или иконка (заглушка)
+                    Box(
+                        modifier = Modifier
+                            .size(120.dp)
+                            .background(Color(0xFF212121), RoundedCornerShape(12.dp))
+                            .border(1.dp, Color.DarkGray, RoundedCornerShape(12.dp)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("🖼️", fontSize = 48.sp)
+                    }
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    val effectsDescription = if (card.activeTags.isNotEmpty()) {
+                        card.activeEffects.joinToString("\n\n") { "✨ ${it.name}\n${it.description}" }
+                    } else {
+                        "Обычное существо.\nНе имеет скрытых магических сил."
+                    }
+
+                    Text(
+                        text = effectsDescription,
+                        color = Color.LightGray,
+                        fontSize = 15.sp,
+                        textAlign = TextAlign.Center,
+                        lineHeight = 20.sp
+                    )
+
+                    Spacer(modifier = Modifier.height(32.dp))
+                }
+
+                // Статы внизу
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.BottomCenter),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(44.dp)
+                                .background(Color(0xFFD32F2F), RoundedCornerShape(8.dp)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                card.currentAttack.toString(),
+                                color = Color.White,
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Атака", color = Color.Gray, fontSize = 12.sp)
+                    }
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("Здоровье", color = Color.Gray, fontSize = 12.sp)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Box(
+                            modifier = Modifier
+                                .size(44.dp)
+                                .background(Color(0xFF388E3C), RoundedCornerShape(8.dp)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                card.currentHealth.toString(),
+                                color = Color.White,
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
 
 @Composable
 fun CardComponent(
@@ -80,7 +224,7 @@ fun CardComponent(
                 .width(105.dp)
                 .height(150.dp)
                 .border(borderThickness, if (card.isTakingDamage) Color.Red else borderColor, RoundedCornerShape(8.dp))
-                .clickable(enabled = !isPreview) {
+                .clickable {
                     if (onClick == {}) showInspectDialog = true else onClick()
                 },
             shape = RoundedCornerShape(8.dp),
@@ -107,67 +251,7 @@ fun CardComponent(
     }
 
     if (showInspectDialog) {
-        Dialog(onDismissRequest = { showInspectDialog = false }) {
-            Card(
-                modifier = Modifier.width(240.dp).height(360.dp).border(4.dp, borderColor, RoundedCornerShape(16.dp)),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF1A1A1A))
-            ) {
-                Box(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-                    Box(
-                        modifier = Modifier.size(36.dp).background(Color(0xFF0288D1), RoundedCornerShape(18.dp)).align(Alignment.TopCenter),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(card.manaCost.toString(), color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                    }
-
-                    Column(
-                        modifier = Modifier.align(Alignment.Center),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(card.name, color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(card.rarity.name, color = borderColor, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        val effectsDescription = if (card.activeTags.isNotEmpty()) {
-                            card.activeEffects.joinToString("\n") { "✨ ${it.name}: ${it.description}" }
-                        } else {
-                            "Обычное существо. Не имеет скрытых магических сил."
-                        }
-
-                        if (card.activeTags.isNotEmpty()) {
-                            Text(
-                                text = "[${card.activeEffects.first().name}]",
-                                color = Color.Yellow,
-                                fontSize = 9.sp,
-                                fontWeight = FontWeight.Light,
-                                modifier = Modifier.padding(top = 4.dp)
-                            )
-                        }
-
-                        Text(
-                            text = effectsDescription,
-                            color = Color.LightGray,
-                            fontSize = 13.sp,
-                            textAlign = TextAlign.Center
-                        )
-                    }
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth().align(Alignment.BottomCenter),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Box(modifier = Modifier.size(36.dp).background(Color(0xFFD32F2F), RoundedCornerShape(8.dp)), contentAlignment = Alignment.Center) {
-                            Text(card.currentAttack.toString(), color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                        }
-                        Box(modifier = Modifier.size(36.dp).background(Color(0xFF388E3C), RoundedCornerShape(8.dp)), contentAlignment = Alignment.Center) {
-                            Text(card.currentHealth.toString(), color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                        }
-                    }
-                }
-            }
-        }
+        CardInspectionDialog(card = card, onDismiss = { showInspectDialog = false })
     }
 }
 

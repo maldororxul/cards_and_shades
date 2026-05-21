@@ -3,6 +3,7 @@ package com.example.cardsandshades.ui.collection
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -16,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -23,6 +25,7 @@ import androidx.compose.ui.unit.sp
 import com.example.cardsandshades.model.CardModel
 import com.example.cardsandshades.model.UserProfile
 import com.example.cardsandshades.ui.components.CardComponent
+import com.example.cardsandshades.ui.components.CardInspectionDialog
 
 @Composable
 fun CollectionScreen(
@@ -34,6 +37,7 @@ fun CollectionScreen(
     // Временный список для сборки колоды (максимум 20 карт)
     val currentDeck = remember { mutableStateListOf<CardModel>().apply { addAll(UserProfile.selectedDeck) } }
     var errorMessage by remember { mutableStateOf("Соберите колоду: ${currentDeck.size}/20 карт") }
+    var inspectedCard by remember { mutableStateOf<CardModel?>(null) }
 
     // Группируем карты в коллекции по имени, чтобы показывать количество дубликатов
     val groupedCards = remember(userCards) {
@@ -98,9 +102,6 @@ fun CollectionScreen(
                 items(groupedCards) { (cardSample, count) ->
                     val countInDeck = currentDeck.count { it.name == cardSample.name }
 
-                    // Флаг: можно ли еще добавить эту карту в колоду
-                    val canAddMore = countInDeck < 2 && currentDeck.size < 20
-
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier
@@ -112,18 +113,24 @@ fun CollectionScreen(
                             CardComponent(
                                 card = cardSample,
                                 isPreview = true,
-                                // Меняем прозрачность всей карты, если лимит в колоде уже достигнут
                                 modifier = Modifier
                                     .graphicsLayer { alpha = if (countInDeck >= 2) 0.4f else 1f }
-                                    .clickable {
-                                        if (currentDeck.size >= 20) {
-                                            errorMessage = "❌ Максимум 20 карт в колоде!"
-                                        } else if (countInDeck >= 2) {
-                                            errorMessage = "❌ Достигнут лимит: максимум 2 копии одной карты!"
-                                        } else {
-                                            currentDeck.add(cardSample.copy(id = java.util.UUID.randomUUID().toString()))
-                                            errorMessage = "Соберите колоду: ${currentDeck.size}/20 карт"
-                                        }
+                                    .pointerInput(cardSample.name) {
+                                        detectTapGestures(
+                                            onTap = {
+                                                if (currentDeck.size < 20 && countInDeck < 2) {
+                                                    currentDeck.add(cardSample.copy(id = java.util.UUID.randomUUID().toString()))
+                                                    errorMessage = "Соберите колоду: ${currentDeck.size}/20 карт"
+                                                } else if (currentDeck.size >= 20) {
+                                                    errorMessage = "❌ Максимум 20 карт в колоде!"
+                                                } else {
+                                                    errorMessage = "❌ Достигнут лимит: максимум 2 копии одной карты!"
+                                                }
+                                            },
+                                            onLongPress = {
+                                                inspectedCard = cardSample
+                                            }
+                                        )
                                     }
                             )
 
@@ -194,5 +201,9 @@ fun CollectionScreen(
                 }
             }
         }
+    }
+
+    if (inspectedCard != null) {
+        CardInspectionDialog(card = inspectedCard!!, onDismiss = { inspectedCard = null })
     }
 }

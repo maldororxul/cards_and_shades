@@ -17,8 +17,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
@@ -29,9 +28,10 @@ import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.ViewModel
+import com.example.cardsandshades.model.CardModel
 import com.example.cardsandshades.model.PlayerModel
 import com.example.cardsandshades.ui.components.CardComponent
+import com.example.cardsandshades.ui.components.CardInspectionDialog
 import com.example.cardsandshades.ui.components.DragTarget
 
 @Composable
@@ -43,6 +43,8 @@ fun PlayerControlsZone(
     onPlayerHeroPositioned: (Offset) -> Unit,
     onEndTurnClick: () -> Unit
 ) {
+    var inspectedCard by remember { mutableStateOf<CardModel?>(null) }
+
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier.fillMaxWidth().background(Color(0xFF141A1E), RoundedCornerShape(8.dp)).padding(8.dp),
@@ -99,10 +101,18 @@ fun PlayerControlsZone(
 
         LazyRow(modifier = Modifier.fillMaxWidth().height(150.dp), horizontalArrangement = Arrangement.Start) {
             items(player.hand, key = { "hand_${it.id}" }) { card ->
-                DragTarget(card = card, modifier = Modifier.padding(4.dp)) {
-                    CardComponent(card = card)
+                DragTarget(
+                    card = card,
+                    modifier = Modifier.padding(4.dp),
+                    onTap = { inspectedCard = card }
+                ) {
+                    CardComponent(card = card, isPreview = true)
                 }
             }
         }
+    }
+
+    if (inspectedCard != null) {
+        CardInspectionDialog(card = inspectedCard!!, onDismiss = { inspectedCard = null })
     }
 }

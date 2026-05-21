@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.cardsandshades.model.CardModel
 import com.example.cardsandshades.ui.components.CardComponent
+import androidx.compose.runtime.*
 
 @Composable
 fun EnemyBoardZone(

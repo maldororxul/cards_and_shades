@@ -71,6 +71,7 @@ fun DragAndDropContainer(
 fun DragTarget(
     card: CardModel,
     modifier: Modifier = Modifier,
+    onTap: () -> Unit = {},
     content: @Composable () -> Unit
 ) {
     val currentDragTargetInfo = LocalDragTargetInfo.current
@@ -109,6 +110,11 @@ fun DragTarget(
                                 initialFingerGlobalPosition.y + accumulatedDrag.y
                             )
                         }
+                    }
+
+                    // Если перемещение было незначительным — засчитываем как TAP
+                    if (!isVerticalDragActive && abs(accumulatedDrag.y) < 10f && abs(accumulatedDrag.x) < 10f) {
+                        onTap()
                     }
 
                     // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Обрабатываем сброс прямо в момент отпускания пальца

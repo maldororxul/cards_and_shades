@@ -22,6 +22,7 @@ import com.example.cardsandshades.model.Turn
 import com.example.cardsandshades.model.UserProfile
 import com.example.cardsandshades.ui.components.DragAndDropContainer
 import com.example.cardsandshades.ui.components.DropTarget
+import com.example.cardsandshades.ui.components.CardInspectionDialog
 
 @Composable
 fun GameScreen(
@@ -32,6 +33,7 @@ fun GameScreen(
     val context = LocalContext.current
     val gameState by viewModel.gameState.collectAsState()
     var selectedCardForAttack by remember { mutableStateOf<CardModel?>(null) }
+    var inspectedCard by remember { mutableStateOf<CardModel?>(null) }
 
     var startArrowOffset by remember { mutableStateOf(Offset.Zero) }
     var currentArrowOffset by remember { mutableStateOf(Offset.Zero) }
@@ -88,11 +90,15 @@ fun GameScreen(
                     boardCards = state.opponent.board,
                     onCardPositioned = { id, offset -> enemyCardsOffsets[id] = offset },
                     onCardClick = { enemyCard ->
-                        selectedCardForAttack?.let { attacker ->
+                        if (selectedCardForAttack != null) {
+                            val attacker = selectedCardForAttack!!
                             viewModel.attackEnemyCard(attacker, enemyCard)
                             battleLog = "⚔️ ${attacker.name} атаковал ${enemyCard.name}!"
                             selectedCardForAttack = null
                             isDrawingArrow = false
+                        } else {
+                            // Если никто не выбран для атаки — открываем инфо карты
+                            inspectedCard = enemyCard
                         }
                     }
                 )
@@ -118,24 +124,28 @@ fun GameScreen(
                             if (selectedCardForAttack?.id == id) startArrowOffset = offset
                         },
                         onCardClick = { card, offset ->
-                            // ИСПРАВЛЕНИЕ: Вся ККИ-валидация теперь здесь, где есть доступ к state и Turn
                             if (state.currentTurn == Turn.PLAYER && !state.isAnimating) {
-                                val canAttack = com.example.cardsandshades.engine.GameEngine.canAttackHero(state, card)
-
                                 if (selectedCardForAttack?.id == card.id) {
-                                    // Отмена выделения работает всегда
+                                    // Второе нажатие на выбранную карту открывает детали
+                                    inspectedCard = card
                                     selectedCardForAttack = null
                                     isDrawingArrow = false
-                                } else if (canAttack) {
-                                    // Выделяем карту и строим стрелку, только если она не спит и не атаковала
-                                    selectedCardForAttack = card
-                                    startArrowOffset = offset
-                                    currentArrowOffset = offset
-                                    isDrawingArrow = true
-                                    battleLog = "🎯 Выбрана ${card.name}. Нажмите на карту врага или его HP!"
                                 } else {
-                                    battleLog = "❌ ${card.name} не может атаковать! Существо спит или уже ходило в этот ход."
+                                    val canAttack = com.example.cardsandshades.engine.GameEngine.canAttackHero(state, card)
+                                    if (canAttack) {
+                                        selectedCardForAttack = card
+                                        startArrowOffset = offset
+                                        currentArrowOffset = offset
+                                        isDrawingArrow = true
+                                        battleLog = "🎯 Выбрана ${card.name}. Нажмите на карту врага или его HP!"
+                                    } else {
+                                        // Если не может атаковать — просто смотрим детали
+                                        inspectedCard = card
+                                    }
                                 }
+                            } else {
+                                // В чужой ход — только просмотр
+                                inspectedCard = card
                             }
                         }
                     )
@@ -185,6 +195,10 @@ fun GameScreen(
                     onBackToMenu()
                 }
             )
+
+            if (inspectedCard != null) {
+                CardInspectionDialog(card = inspectedCard!!, onDismiss = { inspectedCard = null })
+            }
         }
     }
 }
