@@ -34,12 +34,27 @@ object UserProfile {
                 val loadedCollection: List<CardModel> = gson.fromJson(collectionJson, listType) ?: emptyList()
                 val loadedDeck: List<CardModel> = gson.fromJson(deckJson, listType) ?: emptyList()
 
+                // ИСПРАВЛЕНИЕ: Восстанавливаем ссылки на картинки для карт из старого кэша
+                val rehydratedCollection = loadedCollection.map { card ->
+                    if (card.imageResName == null) {
+                        val (resName, isVideo) = com.example.cardsandshades.catalog.CardCatalog.getVisualData(card.name)
+                        card.copy(imageResName = resName, isVideo = isVideo)
+                    } else card
+                }
+                
+                val rehydratedDeck = loadedDeck.map { card ->
+                    if (card.imageResName == null) {
+                        val (resName, isVideo) = com.example.cardsandshades.catalog.CardCatalog.getVisualData(card.name)
+                        card.copy(imageResName = resName, isVideo = isVideo)
+                    } else card
+                }
+
                 collection.clear()
-                collection.addAll(loadedCollection)
+                collection.addAll(rehydratedCollection)
                 collection.notifyChanges()
 
                 selectedDeck.clear()
-                selectedDeck.addAll(loadedDeck)
+                selectedDeck.addAll(rehydratedDeck)
                 val hasIllegalDuplicates = loadedDeck.groupBy { it.name }.any { it.value.size > 2 }
                 if (hasIllegalDuplicates || loadedDeck.size != 20) {
                     // Если колода сломана кэшем, принудительно очищаем её для безопасного рендера 0/2

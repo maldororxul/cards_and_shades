@@ -9,26 +9,31 @@ object CardCatalog {
 
     private val templates = listOf(
         // === COMMON ===
-        CardTemplate("Тень-новобранец", 1, 1, 1, Rarity.COMMON),
-        CardTemplate("Проворный бес", 2, 2, 2, Rarity.COMMON, listOf(EffectTag.RUSH)),
-        CardTemplate("Каменный страж", 3, 1, 5, Rarity.COMMON, listOf(EffectTag.TAUNT)),
+        CardTemplate("Тень-новобранец", 1, 1, 1, Rarity.COMMON, imageResName = "card_shadow_recruit"),
+        CardTemplate("Проворный бес", 2, 2, 2, Rarity.COMMON, listOf(EffectTag.RUSH), imageResName = "card_agile_imp"),
+        CardTemplate("Каменный страж", 3, 1, 5, Rarity.COMMON, listOf(EffectTag.TAUNT), imageResName = "card_stone_guardian"),
 
         // === RARE ===
-        CardTemplate("Огненный элементаль", 2, 3, 2, Rarity.RARE),
-        CardTemplate("Эльфийский лучник", 3, 2, 3, Rarity.RARE, listOf(EffectTag.RANGED)),
-        CardTemplate("Адепт тайной магии", 3, 4, 3, Rarity.RARE),
+        CardTemplate("Огненный элементаль", 2, 3, 2, Rarity.RARE, imageResName = "card_fire_elemental"),
+        CardTemplate("Эльфийский лучник", 3, 2, 3, Rarity.RARE, listOf(EffectTag.RANGED), imageResName = "card_elven_archer"),
+        CardTemplate("Адепт тайной магии", 3, 4, 3, Rarity.RARE, imageResName = "card_arcane_adept"),
 
         // === EPIC ===
-        CardTemplate("Оруженосец Света", 3, 3, 5, Rarity.EPIC, listOf(EffectTag.TAUNT)),
-        CardTemplate("Чародей Пустоты", 4, 3, 4, Rarity.EPIC, listOf(EffectTag.SPLASH)),
-        CardTemplate("Вампир-аристократ", 3, 2, 3, Rarity.EPIC, listOf(EffectTag.LIFESTEAL)),
+        CardTemplate("Оруженосец Света", 3, 3, 5, Rarity.EPIC, listOf(EffectTag.TAUNT), imageResName = "card_light_squire"),
+        CardTemplate("Чародей Пустоты", 4, 3, 4, Rarity.EPIC, listOf(EffectTag.SPLASH), imageResName = "card_void_sorcerer"),
+        CardTemplate("Вампир-аристократ", 3, 2, 3, Rarity.EPIC, listOf(EffectTag.LIFESTEAL), imageResName = "card_vampire_aristocrat"),
 
         // === LEGENDARY ===
-        CardTemplate("Король Теней", 4, 6, 5, Rarity.LEGENDARY),
-        CardTemplate("Дракон Пустоты", 7, 9, 8, Rarity.LEGENDARY, listOf(EffectTag.SPLASH)),
-        CardTemplate("Теневой жнец", 5, 4, 4, Rarity.LEGENDARY, listOf(EffectTag.LIFESTEAL, EffectTag.RUSH)),
-        CardTemplate("Дух-наставник", 2, 1, 1, Rarity.LEGENDARY, listOf(EffectTag.BUFF))
+        CardTemplate("Король Теней", 4, 6, 5, Rarity.LEGENDARY, imageResName = "card_shadow_king", isVideo = true),
+        CardTemplate("Дракон Пустоты", 7, 9, 8, Rarity.LEGENDARY, listOf(EffectTag.SPLASH), imageResName = "card_void_dragon", isVideo = true),
+        CardTemplate("Теневой жнец", 5, 4, 4, Rarity.LEGENDARY, listOf(EffectTag.LIFESTEAL, EffectTag.RUSH), imageResName = "card_shadow_reaper"),
+        CardTemplate("Дух-наставник", 2, 1, 1, Rarity.LEGENDARY, listOf(EffectTag.BUFF), imageResName = "card_spirit_mentor")
     )
+
+    fun getVisualData(cardName: String): Pair<String?, Boolean> {
+        val template = templates.find { it.name == cardName }
+        return Pair(template?.imageResName, template?.isVideo ?: false)
+    }
 
     fun createCardInstance(templateName: String): CardModel? {
         val template = templates.find { it.name == templateName } ?: return null
@@ -39,7 +44,9 @@ object CardCatalog {
             baseAttack = template.baseAttack,
             baseHealth = template.baseHealth,
             rarity = template.rarity,
-            effectTags = template.effectTags
+            effectTags = template.effectTags,
+            imageResName = template.imageResName,
+            isVideo = template.isVideo
         )
     }
 
@@ -55,7 +62,9 @@ object CardCatalog {
                     baseAttack = randomTemplate.baseAttack,
                     baseHealth = randomTemplate.baseHealth,
                     rarity = randomTemplate.rarity,
-                    effectTags = randomTemplate.effectTags
+                    effectTags = randomTemplate.effectTags,
+                    imageResName = randomTemplate.imageResName,
+                    isVideo = randomTemplate.isVideo
                 )
             )
         }
@@ -112,5 +121,7 @@ private data class CardTemplate(
     val baseAttack: Int,
     val baseHealth: Int,
     val rarity: Rarity,
-    val effectTags: List<EffectTag> = emptyList()
+    val effectTags: List<EffectTag> = emptyList(),
+    val imageResName: String? = null,
+    val isVideo: Boolean = false
 )

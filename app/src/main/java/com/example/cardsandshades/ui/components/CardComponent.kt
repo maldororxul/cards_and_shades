@@ -16,6 +16,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -91,15 +92,17 @@ fun CardInspectionDialog(
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // Изображение или иконка (заглушка)
+                    // ИЗОБРАЖЕНИЕ ИЛИ ВИДЕО КАРТЫ
                     Box(
                         modifier = Modifier
-                            .size(120.dp)
+                            .fillMaxWidth()
+                            .height(320.dp) // Вертикальная ориентация для деталей
                             .background(Color(0xFF212121), RoundedCornerShape(12.dp))
-                            .border(1.dp, Color.DarkGray, RoundedCornerShape(12.dp)),
+                            .border(1.dp, Color.DarkGray, RoundedCornerShape(12.dp))
+                            .clip(RoundedCornerShape(12.dp)),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text("🖼️", fontSize = 48.sp)
+                        CardVisual(card = card)
                     }
 
                     Spacer(modifier = Modifier.height(24.dp))
@@ -241,6 +244,14 @@ fun CardComponent(
             colors = CardDefaults.cardColors(containerColor = Color(0xFF212121))
         ) {
             Box(modifier = Modifier.fillMaxSize()) {
+                // ФОН КАРТЫ (АРТ)
+                Box(modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(8.dp))) {
+                    CardVisual(card = card)
+                }
+                
+                // ЗАТЕМНЕНИЕ ДЛЯ ЧИТАЕМОСТИ ТЕКСТА
+                Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.3f)))
+
                 CardContent(card = card, borderColor = borderColor)
 
                 if (card.isTakingDamage && card.lastDamageTaken > 0) {
