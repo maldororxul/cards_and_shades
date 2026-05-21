@@ -11,4 +11,12 @@ data class PlayerModel(
     val board: MutableList<CardModel> = mutableListOf() // Максимум 5 карт на столе
 ) {
     val isDead: Boolean get() = currentHp <= 0
+
+    fun deepCopy(): PlayerModel {
+        return this.copy(
+            deck = this.deck.map { it.copy() }.toMutableList(),
+            hand = this.hand.map { it.copy() }.toMutableList(),
+            board = this.board.map { it.copy() }.toMutableList()
+        )
+    }
 }

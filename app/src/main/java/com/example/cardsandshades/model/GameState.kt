@@ -8,7 +8,14 @@ data class GameState(
     var isGameOver: Boolean = false,
     var winnerName: String? = null,
     var isAnimating: Boolean = false // Блокирует клики во время боя
-)
+) {
+    fun deepCopy(): GameState {
+        return this.copy(
+            player = this.player.deepCopy(),
+            opponent = this.opponent.deepCopy()
+        )
+    }
+}
 
 enum class Turn {
     PLAYER, OPPONENT

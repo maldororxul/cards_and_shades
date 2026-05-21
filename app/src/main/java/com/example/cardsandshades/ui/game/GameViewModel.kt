@@ -14,11 +14,13 @@ import com.example.cardsandshades.model.LevelModel
 import com.example.cardsandshades.model.PlayerModel
 import com.example.cardsandshades.model.Turn
 import com.example.cardsandshades.model.UserProfile
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 
@@ -26,6 +28,8 @@ class GameViewModel : ViewModel() {
 
     private val _gameState = MutableStateFlow<GameState?>(null)
     val gameState: StateFlow<GameState?> = _gameState.asStateFlow()
+
+    private var opponentTurnJob: Job? = null
 
     var currentLevel: LevelModel? = null
         private set
@@ -54,6 +58,7 @@ class GameViewModel : ViewModel() {
 
     // Инициализация матча для конкретного уровня кампании
     fun startNewGame(level: LevelModel) {
+        opponentTurnJob?.cancel()
         currentLevel = level
 
         // ИСПРАВЛЕНИЕ: Берем сохраненную деку игрока из профиля и полностью восстанавливаем ей статы
@@ -113,6 +118,7 @@ class GameViewModel : ViewModel() {
     }
 
     fun claimRewardsAndExit(isPlayerWin: Boolean) {
+        opponentTurnJob?.cancel()
         if (isPlayerWin) {
             currentLevel?.let { level ->
                 // 1. Начисляем золото, прописанное в наградах уровня
@@ -143,23 +149,15 @@ class GameViewModel : ViewModel() {
     fun playCard(card: CardModel): Boolean {
         var isPlayed = false
         _gameState.update { currentState ->
-            currentState?.let { state ->
-                if (state.currentTurn == Turn.PLAYER) {
-                    val updatedPlayer = state.player.copy(
-                        hand = state.player.hand.toMutableList(),
-                        board = state.player.board.toMutableList()
-                    )
-                    val updatedState = state.copy(player = updatedPlayer)
-
-                    // Находим карту по ID именно в актуальной руке игрока из стейта
-                    val cardInHand = updatedPlayer.hand.find { it.id == card.id }
-                    if (cardInHand != null && updatedPlayer.currentMana >= cardInHand.manaCost && updatedPlayer.board.size < 5) {
-                        com.example.cardsandshades.engine.GameEngine.playCard(updatedState, cardInHand)
+            currentState?.deepCopy()?.apply {
+                if (currentTurn == Turn.PLAYER) {
+                    val cardInHand = player.hand.find { it.id == card.id }
+                    if (cardInHand != null && player.currentMana >= cardInHand.manaCost && player.board.size < 5) {
+                        com.example.cardsandshades.engine.GameEngine.playCard(this, cardInHand)
                         isPlayed = true
-                        updatedState
-                    } else state
-                } else state
-            }
+                    }
+                }
+            } ?: currentState
         }
         return isPlayed
     }
@@ -171,72 +169,60 @@ class GameViewModel : ViewModel() {
 
         viewModelScope.launch {
             _gameState.update { it?.copy(isAnimating = true) }
+            try {
+                // 1. Анимация рывка атакующего вперед
+                updateCardAnimation(attacker.id, isAttacking = true)
+                delay(200)
 
-            // 1. Анимация рывка атакующего вперед
-            updateCardAnimation(attacker.id, isAttacking = true)
-            delay(200)
+                // 2. Встречный удар: Делегируем чистый расчет урона в GameEngine для работы Стрелков
+                _gameState.update { currentState ->
+                    currentState?.deepCopy()?.apply {
+                        val aCard = player.board.find { it.id == attacker.id }
+                        val tCard = opponent.board.find { it.id == target.id }
 
-            // 2. Встречный удар: Делегируем чистый расчет урона в GameEngine для работы Стрелков
-            _gameState.update { currentState ->
-                currentState?.let { s ->
-                    val pBoard = s.player.board.map { it.copy() }.toMutableList()
-                    val oBoard = s.opponent.board.map { it.copy() }.toMutableList()
-
-                    val aCard = pBoard.find { it.id == attacker.id }
-                    val tCard = oBoard.find { it.id == target.id }
-
-                    if (aCard != null && tCard != null) {
-                        tCard.isTakingDamage = true
-                        aCard.isTakingDamage = true
-
-                        // ИСПРАВЛЕНИЕ: Вызываем ООП-метод движка, чтобы применилось свойство Стрелка (без ответки)
-                        com.example.cardsandshades.engine.GameEngine.calculateCombat(s, aCard, tCard)
-                    }
-                    s.copy(player = s.player.copy(board = pBoard), opponent = s.opponent.copy(board = oBoard))
-                }
-            }
-            updateCardAnimation(attacker.id, isAttacking = false)
-            delay(500) // Даем время рассмотреть цифры урона перед их исчезновением
-
-            // 3. Анимация смерти (падения) И СБРОС ТРЯСКИ ДЛЯ ВЫЖИВШИХ
-            _gameState.update { currentState ->
-                currentState?.let { s ->
-                    val pBoard = s.player.board.map { it.copy() }.toMutableList()
-                    val oBoard = s.opponent.board.map { it.copy() }.toMutableList()
-
-                    pBoard.find { it.id == attacker.id }?.let {
-                        it.isTakingDamage = false // ИСПРАВЛЕНИЕ: Сбрасываем флаг, убирая цифру урона
-                        if (it.currentHealth <= 0) it.isDying = true
-                    }
-                    oBoard.find { it.id == target.id }?.let {
-                        it.isTakingDamage = false // ИСПРАВЛЕНИЕ: Сбрасываем флаг, убирая цифру урона
-                        if (it.currentHealth <= 0) it.isDying = true
-                    }
-                    s.copy(player = s.player.copy(board = pBoard), opponent = s.opponent.copy(board = oBoard))
-                }
-            }
-
-            val hasDeaths = _gameState.value?.player?.board?.any { it.isDying } == true ||
-                    _gameState.value?.opponent?.board?.any { it.isDying } == true
-            if (hasDeaths) delay(400)
-
-            // 4. Окончательное удаление карт со стола
-            _gameState.update { currentState ->
-                currentState?.let { s ->
-                    val pBoard = s.player.board.filter { it.currentHealth > 0 }.toMutableList()
-                    val oBoard = s.opponent.board.filter { it.currentHealth > 0 }.toMutableList()
-
-                    s.copy(
-                        player = s.player.copy(board = pBoard),
-                        opponent = s.opponent.copy(board = oBoard),
-                        isAnimating = false
-                    ).apply {
-                        if (player.currentHp <= 0 || opponent.currentHp <= 0) {
-                            this.isGameOver = true
-                            this.winnerName = if (opponent.currentHp <= 0) player.name else opponent.name
+                        if (aCard != null && tCard != null) {
+                            tCard.isTakingDamage = true
+                            aCard.isTakingDamage = true
+                            com.example.cardsandshades.engine.GameEngine.calculateCombat(this, aCard, tCard)
                         }
                     }
                 }
+                updateCardAnimation(attacker.id, isAttacking = false)
+                delay(500)
+
+                // 3. Анимация смерти (падения) И СБРОС ТРЯСКИ ДЛЯ ВЫЖИВШИХ
+                _gameState.update { currentState ->
+                    currentState?.deepCopy()?.apply {
+                        player.board.find { it.id == attacker.id }?.let {
+                            it.isTakingDamage = false
+                            if (it.currentHealth <= 0) it.isDying = true
+                        }
+                        opponent.board.find { it.id == target.id }?.let {
+                            it.isTakingDamage = false
+                            if (it.currentHealth <= 0) it.isDying = true
+                        }
+                    }
+                }
+
+                val hasDeaths = _gameState.value?.player?.board?.any { it.isDying } == true ||
+                        _gameState.value?.opponent?.board?.any { it.isDying } == true
+                if (hasDeaths) delay(400)
+
+                // 4. Окончательное удаление карт со стола
+                _gameState.update { currentState ->
+                    currentState?.deepCopy()?.apply {
+                        player.board.removeAll { it.currentHealth <= 0 }
+                        opponent.board.removeAll { it.currentHealth <= 0 }
+                        isAnimating = false
+
+                        if (player.currentHp <= 0 || opponent.currentHp <= 0) {
+                            isGameOver = true
+                            winnerName = if (opponent.currentHp <= 0) player.name else opponent.name
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                _gameState.update { it?.copy(isAnimating = false) }
             }
         }
     }
@@ -256,41 +242,38 @@ class GameViewModel : ViewModel() {
         val state = _gameState.value ?: return
         if (state.isAnimating || state.currentTurn != Turn.PLAYER) return
 
-        // Проверяем жесткое ограничение перед ударом в лицо
         if (!GameEngine.canAttackHero(state, attacker)) return
 
         viewModelScope.launch {
             _gameState.update { it?.copy(isAnimating = true) }
+            try {
+                updateCardAnimation(attacker.id, isAttacking = true)
+                delay(200)
 
-            updateCardAnimation(attacker.id, isAttacking = true)
-            delay(200)
+                opponentHeroDamageValue = attacker.currentAttack
+                opponentHeroTakingDamage = true
 
-            opponentHeroDamageValue = attacker.currentAttack
-            opponentHeroTakingDamage = true
-
-            _gameState.update { currentState ->
-                currentState?.let { s ->
-                    val pBoard = s.player.board.map { it.copy() }.toMutableList()
-                    // Тратим ход карты при ударе в лицо
-                    pBoard.find { it.id == attacker.id }?.hasAttackedThisTurn = true
-
-                    s.copy(
-                        player = s.player.copy(board = pBoard),
-                        opponent = s.opponent.copy(currentHp = s.opponent.currentHp - attacker.currentAttack)
-                    )
+                _gameState.update { currentState ->
+                    currentState?.deepCopy()?.apply {
+                        val aCard = player.board.find { it.id == attacker.id }
+                        aCard?.hasAttackedThisTurn = true
+                        opponent.currentHp -= aCard?.currentAttack ?: 0
+                    }
                 }
-            }
 
-            updateCardAnimation(attacker.id, isAttacking = false)
-            delay(500)
+                updateCardAnimation(attacker.id, isAttacking = false)
+                delay(500)
 
-            opponentHeroTakingDamage = false
-            _gameState.update { it?.copy(isAnimating = false) }
+                opponentHeroTakingDamage = false
+                _gameState.update { it?.copy(isAnimating = false) }
 
-            _gameState.value?.let { s ->
-                if (s.opponent.currentHp <= 0) {
-                    _gameState.update { it?.copy(isGameOver = true, winnerName = s.player.name) }
+                _gameState.value?.let { s ->
+                    if (s.opponent.currentHp <= 0) {
+                        _gameState.update { it?.copy(isGameOver = true, winnerName = s.player.name) }
+                    }
                 }
+            } catch (e: Exception) {
+                _gameState.update { it?.copy(isAnimating = false) }
             }
         }
     }
@@ -298,199 +281,148 @@ class GameViewModel : ViewModel() {
 
     fun endTurn() {
         _gameState.update { currentState ->
-            currentState?.let { state ->
-                if (state.currentTurn == Turn.PLAYER) {
-                    val updatedState = state.copy()
-                    GameEngine.endTurn(updatedState)
-
-                    // БЕЗОПАСНЫЙ ФИКС: В момент передачи хода к ИИ, мы будим его СТАРЫЕ карты на столе
-                    val activeOpponent = updatedState.opponent.copy(
-                        board = updatedState.opponent.board.map { card ->
-                            card.copy(isSleeping = false, hasAttackedThisTurn = false)
-                        }.toMutableList()
-                    )
-
-                    updatedState.copy(opponent = activeOpponent)
-                } else state
-            }
+            currentState?.deepCopy()?.apply {
+                if (currentTurn == Turn.PLAYER) {
+                    GameEngine.endTurn(this)
+                    // Пробуждаем карты противника
+                    opponent.board.forEach { card ->
+                        card.isSleeping = false
+                        card.hasAttackedThisTurn = false
+                    }
+                }
+            } ?: currentState
         }
 
         val state = _gameState.value
         if (state != null && state.currentTurn == Turn.OPPONENT && !state.isGameOver) {
-            executeOpponentTurn()
+            opponentTurnJob?.cancel()
+            opponentTurnJob = executeOpponentTurn()
         }
     }
 
-    private fun executeOpponentTurn() {
-        viewModelScope.launch {
-            delay(1000)
+    private fun executeOpponentTurn(): Job = viewModelScope.launch {
+        delay(1000)
+        if (!isActive) return@launch
 
-            // ФАЗА ИИ 1: Розыгрыш карт
-            _gameState.update { currentState ->
-                currentState?.let { state ->
-                    val updatedOpponent = state.opponent.copy(
-                        hand = state.opponent.hand.toMutableList(),
-                        board = state.opponent.board.toMutableList()
-                    )
-                    val updatedState = state.copy(opponent = updatedOpponent)
-                    val cardsInHand = updatedOpponent.hand.toList()
-
-                    for (card in cardsInHand) {
-                        com.example.cardsandshades.engine.GameEngine.playCard(updatedState, card)
-                    }
-                    updatedState
+        // ФАЗА ИИ 1: Розыгрыш карт
+        _gameState.update { currentState ->
+            currentState?.deepCopy()?.apply {
+                val cardsInHand = opponent.hand.toList()
+                for (card in cardsInHand) {
+                    com.example.cardsandshades.engine.GameEngine.playCard(this, card)
                 }
             }
+        }
 
-            delay(500)
+        delay(500)
+        if (!isActive) return@launch
 
-            // ФАЗА ИИ 2: Атака с пошаговой визуализацией
-            // ФАЗА ИИ 2: Атака со строгими правилами ККИ и пошаговой визуализацией
-            val state = _gameState.value
-            if (state != null && !state.isGameOver) {
-                val attackerCards = state.opponent.board.toList()
+        // ФАЗА ИИ 2: Атака со строгими правилами ККИ
+        val state = _gameState.value
+        if (state != null && !state.isGameOver) {
+            val attackerCards = state.opponent.board.toList()
 
-                for (attacker in attackerCards) {
-                    // 1. Проверяем, живо ли еще существо ИИ на столе
-                    val activeAttacker = _gameState.value?.opponent?.board?.find { it.id == attacker.id } ?: continue
+            for (attacker in attackerCards) {
+                if (!isActive) break
+                val currentGameState = _gameState.value ?: break
+                val activeAttacker = currentGameState.opponent.board.find { it.id == attacker.id } ?: continue
 
-                    // 2. Проверяем, может ли вообще эта карта ходить (не спит ли)
-                    val canAIAttack = com.example.cardsandshades.engine.GameEngine.canAttackHero(_gameState.value!!, activeAttacker)
-                    if (!canAIAttack) continue
+                if (!GameEngine.canAttackHero(currentGameState, activeAttacker)) continue
 
-                    // Динамически считываем живой стол игрока на текущий шаг цикла
-                    val currentGameState = _gameState.value ?: continue
-                    val playerBoard = currentGameState.player.board
+                val playerBoard = currentGameState.player.board
+                val validEnemyCards = playerBoard.filter { enemyCard ->
+                    GameEngine.canAttackTarget(currentGameState, activeAttacker, enemyCard)
+                }
 
-                    // ИСПРАВЛЕНИЕ БАГА: ИИ ищет цели строго через ККИ-валидатор движка GameEngine
-                    // Это гарантирует, что ИИ никогда не выберет заблокированную Провокацией карту!
-                    val validEnemyCards = playerBoard.filter { enemyCard ->
-                        GameEngine.canAttackTarget(currentGameState, activeAttacker, enemyCard)
-                    }
-
-                    // Включаем стрелку прицеливания для ИИ
-                    opponentAttackerId = activeAttacker.id
-
-                    if (validEnemyCards.isNotEmpty()) {
-                        // Если есть легальные цели среди существ (включая Танков, их движок подсунет первыми) — бьем случайное из них
-                        val target = validEnemyCards.random()
-                        opponentTargetId = target.id
-                        isOpponentTargetingHero = false
-                    } else {
-                        // Если легальных существ для атаки нет, проверяем, можно ли ударить в лицо
-                        val canStrikeHero = GameEngine.canAttackHero(currentGameState, activeAttacker)
-                        if (canStrikeHero && playerBoard.isEmpty()) {
-                            opponentTargetId = null
-                            isOpponentTargetingHero = true
-                        } else {
-                            // Если стол не пуст, но атаковать никого нельзя (например, все закрыто маскировкой или баг флагов) — пропускаем эту карту
-                            opponentAttackerId = null
-                            continue
-                        }
-                    }
-
-                    delay(1000) // Игрок видит стрелку ИИ
-
-                    // Анимация рывка существа ИИ вперед
-                    updateCardAnimation(activeAttacker.id, isAttacking = true)
-                    delay(200)
-
-                    // Встречный удар: фиксация урона, тряска и вылет цифр
-                    _gameState.update { currentState ->
-                        currentState?.let { s ->
-                            val pBoard = s.player.board.map { it.copy() }.toMutableList()
-                            val oBoard = s.opponent.board.map { it.copy() }.toMutableList()
-
-                            val nextAttacker = oBoard.find { it.id == activeAttacker.id }
-
-                            if (nextAttacker != null) {
-                                if (!isOpponentTargetingHero) {
-                                    val nextTarget = pBoard.find { it.id == opponentTargetId }
-                                    if (nextTarget != null) {
-                                        nextTarget.isTakingDamage = true
-                                        nextAttacker.isTakingDamage = true
-
-                                        // Вызываем ООП-расчет движка
-                                        com.example.cardsandshades.engine.GameEngine.calculateCombat(s, nextAttacker, nextTarget)
-                                    }
-                                } else {
-                                    nextAttacker.hasAttackedThisTurn = true
-                                    playerHeroDamageValue = nextAttacker.currentAttack
-                                    playerHeroTakingDamage = true
-                                    val updatedPlayerModel = s.player.copy(currentHp = s.player.currentHp - nextAttacker.currentAttack)
-                                    return@update s.copy(player = updatedPlayerModel)
-                                }
-                            }
-                            s.copy(player = s.player.copy(board = pBoard), opponent = s.opponent.copy(board = oBoard))
-                        }
-                    }
-
-                    // Выключаем анимации текущей атаки
-                    updateCardAnimation(activeAttacker.id, isAttacking = false)
-
-                    delay(500) // Даем рассмотреть цифры урона
-                    playerHeroTakingDamage = false
-
-                    // Анимация смерти для погибших существ
-                    _gameState.update { currentState ->
-                        currentState?.let { s ->
-                            val pBoard = s.player.board.map { it.copy() }.toMutableList()
-                            val oBoard = s.opponent.board.map { it.copy() }.toMutableList()
-
-                            pBoard.find { it.id == opponentTargetId }?.let {
-                                it.isTakingDamage = false
-                                if (it.currentHealth <= 0) it.isDying = true
-                            }
-                            oBoard.find { it.id == activeAttacker.id }?.let {
-                                it.isTakingDamage = false
-                                if (it.currentHealth <= 0) it.isDying = true
-                            }
-                            s.copy(player = s.player.copy(board = pBoard), opponent = s.opponent.copy(board = oBoard))
-                        }
-                    }
-
-                    opponentAttackerId = null
-                    opponentTargetId = null
+                opponentAttackerId = activeAttacker.id
+                if (validEnemyCards.isNotEmpty()) {
+                    val target = validEnemyCards.random()
+                    opponentTargetId = target.id
                     isOpponentTargetingHero = false
+                } else if (GameEngine.canAttackHero(currentGameState, activeAttacker)) {
+                    opponentTargetId = null
+                    isOpponentTargetingHero = true
+                } else {
+                    opponentAttackerId = null
+                    continue
+                }
 
-                    val hasDeaths = _gameState.value?.player?.board?.any { it.isDying } == true ||
-                            _gameState.value?.opponent?.board?.any { it.isDying } == true
-                    if (hasDeaths) delay(400)
+                delay(1000)
+                if (!isActive) break
 
-                    // Окончательное удаление погибших существ со стола
-                    _gameState.update { currentState ->
-                        currentState?.let { s ->
-                            val pBoard = s.player.board.filter { it.currentHealth > 0 }.toMutableList()
-                            val oBoard = s.opponent.board.filter { it.currentHealth > 0 }.toMutableList()
+                updateCardAnimation(activeAttacker.id, isAttacking = true)
+                delay(200)
 
-                            s.copy(player = s.player.copy(board = pBoard), opponent = s.opponent.copy(board = oBoard)).apply {
-                                if (player.currentHp <= 0 || opponent.currentHp <= 0) {
-                                    this.isGameOver = true
-                                    this.winnerName = if (opponent.currentHp <= 0) player.name else opponent.name
+                _gameState.update { currentState ->
+                    currentState?.deepCopy()?.apply {
+                        val nextAttacker = opponent.board.find { it.id == activeAttacker.id }
+                        if (nextAttacker != null) {
+                            if (!isOpponentTargetingHero) {
+                                val nextTarget = player.board.find { it.id == opponentTargetId }
+                                if (nextTarget != null) {
+                                    nextTarget.isTakingDamage = true
+                                    nextAttacker.isTakingDamage = true
+                                    com.example.cardsandshades.engine.GameEngine.calculateCombat(this, nextAttacker, nextTarget)
                                 }
+                            } else {
+                                nextAttacker.hasAttackedThisTurn = true
+                                playerHeroDamageValue = nextAttacker.currentAttack
+                                playerHeroTakingDamage = true
+                                player.currentHp -= nextAttacker.currentAttack
                             }
                         }
                     }
-                    delay(400)
                 }
+
+                updateCardAnimation(activeAttacker.id, isAttacking = false)
+                delay(500)
+                playerHeroTakingDamage = false
+
+                _gameState.update { currentState ->
+                    currentState?.deepCopy()?.apply {
+                        player.board.find { it.id == opponentTargetId }?.let {
+                            it.isTakingDamage = false
+                            if (it.currentHealth <= 0) it.isDying = true
+                        }
+                        opponent.board.find { it.id == activeAttacker.id }?.let {
+                            it.isTakingDamage = false
+                            if (it.currentHealth <= 0) it.isDying = true
+                        }
+                    }
+                }
+
+                opponentAttackerId = null
+                opponentTargetId = null
+                isOpponentTargetingHero = false
+
+                val hasDeaths = _gameState.value?.player?.board?.any { it.isDying } == true ||
+                        _gameState.value?.opponent?.board?.any { it.isDying } == true
+                if (hasDeaths) delay(400)
+
+                _gameState.update { currentState ->
+                    currentState?.deepCopy()?.apply {
+                        player.board.removeAll { it.currentHealth <= 0 }
+                        opponent.board.removeAll { it.currentHealth <= 0 }
+                        if (player.currentHp <= 0 || opponent.currentHp <= 0) {
+                            isGameOver = true
+                            winnerName = if (opponent.currentHp <= 0) player.name else opponent.name
+                        }
+                    }
+                }
+                delay(400)
             }
+        }
 
-            delay(600)
+        if (!isActive) return@launch
+        delay(600)
 
-            // ФАЗА ИИ 3: Передача хода игроку
-            _gameState.update { currentState ->
-                currentState?.let { state ->
-                    val updatedState = state.copy()
-                    GameEngine.endTurn(updatedState)
-
-                    // БЕЗОПАСНЫЙ ФИКС: Ход вернулся к игроку — будим все ваши карты на столе для нового раунда
-                    val activePlayer = updatedState.player.copy(
-                        board = updatedState.player.board.map { card ->
-                            card.copy(isSleeping = false, hasAttackedThisTurn = false)
-                        }.toMutableList()
-                    )
-
-                    updatedState.copy(player = activePlayer)
+        // ФАЗА ИИ 3: Передача хода игроку
+        _gameState.update { currentState ->
+            currentState?.deepCopy()?.apply {
+                GameEngine.endTurn(this)
+                player.board.forEach { card ->
+                    card.isSleeping = false
+                    card.hasAttackedThisTurn = false
                 }
             }
         }
