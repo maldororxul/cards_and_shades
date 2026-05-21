@@ -97,9 +97,13 @@ object CardCatalog {
             else -> Rarity.COMMON         // 70%
         }
 
-        val filteredTemplates = templates.filter { it.rarity == targetRarity }
-        val template = if (filteredTemplates.isNotEmpty()) filteredTemplates.random() else templates.random()
-        return createCardInstance(template.name)!!
+        return generateRandomCardByRarityOnly(targetRarity)!!
+    }
+
+    fun generateRandomCardByRarityOnly(rarity: Rarity): CardModel? {
+        val filteredTemplates = templates.filter { it.rarity == rarity }
+        val template = if (filteredTemplates.isNotEmpty()) filteredTemplates.random() else templates.randomOrNull()
+        return if (template != null) createCardInstance(template.name) else null
     }
 
     private fun generateGuaranteedRareOrHigher(): CardModel {

@@ -86,3 +86,52 @@ cards:
     rarity: "LEGENDARY"
     effectTags: ["BUFF"]
     imageResName: "card_spirit_mentor"
+  - name: "Гниющий зомби"
+    manaCost: 1
+    baseAttack: 2
+    baseHealth: 1
+    rarity: "COMMON"
+    effectTags: ["RUSH"]
+    imageResName: "card_rotting_zombie"
+  - name: "Ледяная дева"
+    manaCost: 4
+    baseAttack: 3
+    baseHealth: 6
+    rarity: "RARE"
+    effectTags: ["TAUNT"]
+    imageResName: "card_ice_maiden"
+  - name: "Проклятый паладин"
+    manaCost: 4
+    baseAttack: 4
+    baseHealth: 4
+    rarity: "EPIC"
+    effectTags: ["LIFESTEAL"]
+    imageResName: "card_cursed_paladin"
+  - name: "Вестник бури"
+    manaCost: 5
+    baseAttack: 4
+    baseHealth: 5
+    rarity: "EPIC"
+    effectTags: ["SPLASH"]
+    imageResName: "card_storm_herald"
+  - name: "Древний энт"
+    manaCost: 6
+    baseAttack: 4
+    baseHealth: 8
+    rarity: "LEGENDARY"
+    effectTags: ["TAUNT", "BUFF"]
+    imageResName: "card_ancient_ent"
+  - name: "Призрачный жнец"
+    manaCost: 5
+    baseAttack: 4
+    baseHealth: 3
+    rarity: "LEGENDARY"
+    effectTags: ["RANGED", "LIFESTEAL"]
+    imageResName: "card_ghost_reaper"
+  - name: "Архимаг пустоты"
+    manaCost: 8
+    baseAttack: 6
+    baseHealth: 7
+    rarity: "LEGENDARY"
+    effectTags: ["SPLASH", "BUFF"]
+    imageResName: "card_void_archmage"

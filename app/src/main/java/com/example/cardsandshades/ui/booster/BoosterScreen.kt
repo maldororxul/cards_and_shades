@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.cardsandshades.catalog.CardCatalog
 import com.example.cardsandshades.model.CardModel
+import com.example.cardsandshades.model.Rarity
 import com.example.cardsandshades.model.UserProfile
 import com.example.cardsandshades.ui.components.CardComponent
 import com.example.cardsandshades.ui.components.GameButton
@@ -26,8 +27,9 @@ fun BoosterScreen(
     modifier: Modifier = Modifier
 ) {
     val gold by UserProfile.gold.collectAsState()
+    val crystals by UserProfile.crystals.collectAsState()
     var openedCards by remember { mutableStateOf<List<CardModel>>(emptyList()) }
-    var message by remember { mutableStateOf("Купите пак за 100 🪙") }
+    var message by remember { mutableStateOf("Выберите набор карт!") }
 
     Column(
         modifier = modifier
@@ -44,7 +46,10 @@ fun BoosterScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             GameButton(text = "Назад", onClick = onBack, containerColor = Color.Gray)
-            GameText("Баланс: $gold 🪙", color = Color.Yellow, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            Column(horizontalAlignment = Alignment.End) {
+                GameText("Золото: $gold 🪙", color = Color.Yellow, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                GameText("Кристаллы: $crystals 💎", color = Color(0xFF03A9F4), fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            }
         }
 
         // Зона карт
@@ -69,33 +74,78 @@ fun BoosterScreen(
                         .background(Color(0xFF1E1E1E)),
                     contentAlignment = Alignment.Center
                 ) {
-                    GameText("📦 Нажмите Купить", color = Color.Gray)
+                    GameText("📦 Выберите пак ниже", color = Color.Gray)
                 }
             }
         }
 
-        // Кнопка покупки
-        GameButton(
-            text = "Купить Бустер (100 🪙)",
-            onClick = {
-                if (gold >= 100) {
-                    UserProfile.gold.value -= 100
-                    val newCards = CardCatalog.openBooster()
-                    openedCards = newCards
-
-                    // Добавляем карты в общую коллекцию игрока
-                    UserProfile.collection.addAll(newCards)
-                    UserProfile.collection.notifyChanges()
-                    UserProfile.save()
-
-                    message = "Вы получили 5 карт!"
-                } else {
-                    message = "Недостаточно золота! ❌"
-                }
-            },
-            containerColor = Color(0xFFFDD835),
-            contentColor = Color.Black,
-            modifier = Modifier.fillMaxWidth().padding(bottom = 32.dp)
-        )
+        // Выбор паков
+        Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            // ОБЫЧНЫЙ (100 золота)
+            GameButton(
+                text = "Обычный пак (100 🪙)",
+                onClick = {
+                    if (gold >= 100) {
+                        UserProfile.gold.value -= 100
+                        openedCards = CardCatalog.openBooster()
+                        UserProfile.collection.addAll(openedCards)
+                        UserProfile.collection.notifyChanges()
+                        UserProfile.save()
+                        message = "Получено 5 карт!"
+                    } else message = "Недостаточно золота!"
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
+            
+            // ПРЕМИУМ (250 золота - выше шанс на Epic)
+            GameButton(
+                text = "Премиум пак (250 🪙)",
+                onClick = {
+                    if (gold >= 250) {
+                        UserProfile.gold.value -= 250
+                        val pack = mutableListOf<CardModel>()
+                        repeat(3) { pack.add(generateByRarity(listOf(Rarity.COMMON, Rarity.RARE))) }
+                        pack.add(generateByRarity(listOf(Rarity.RARE, Rarity.EPIC)))
+                        pack.add(generateByRarity(listOf(Rarity.RARE, Rarity.EPIC, Rarity.LEGENDARY)))
+                        
+                        openedCards = pack
+                        UserProfile.collection.addAll(openedCards)
+                        UserProfile.collection.notifyChanges()
+                        UserProfile.save()
+                        message = "Редкие карты получены!"
+                    } else message = "Недостаточно золота!"
+                },
+                containerColor = Color(0xFF673AB7),
+                modifier = Modifier.fillMaxWidth()
+            )
+            
+            // КРИСТАЛЛЬНЫЙ (50 кристаллов - Гарант Epic/Leg)
+            GameButton(
+                text = "Кристальный пак (50 💎)",
+                onClick = {
+                    if (crystals >= 50) {
+                        UserProfile.crystals.value -= 50
+                        val pack = mutableListOf<CardModel>()
+                        repeat(2) { pack.add(generateByRarity(listOf(Rarity.RARE, Rarity.EPIC))) }
+                        pack.add(generateByRarity(listOf(Rarity.EPIC)))
+                        pack.add(generateByRarity(listOf(Rarity.EPIC, Rarity.LEGENDARY)))
+                        pack.add(generateByRarity(listOf(Rarity.LEGENDARY)))
+                        
+                        openedCards = pack
+                        UserProfile.collection.addAll(openedCards)
+                        UserProfile.collection.notifyChanges()
+                        UserProfile.save()
+                        message = "Легендарные силы ваши!"
+                    } else message = "Недостаточно кристаллов!"
+                },
+                containerColor = Color(0xFF0288D1),
+                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
+            )
+        }
     }
+}
+
+private fun generateByRarity(allowed: List<Rarity>): CardModel {
+    val rarity = allowed.random()
+    return CardCatalog.generateRandomCardByRarityOnly(rarity) ?: CardCatalog.generateRandomCardByRarityOnly(Rarity.COMMON)!!
 }

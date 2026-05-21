@@ -9,6 +9,7 @@ import kotlinx.coroutines.launch
 
 object UserProfile {
     val gold = MutableStateFlow(500)
+    val crystals = MutableStateFlow(0)
     val collection = MutableListFlow(mutableListOf<CardModel>())
     val selectedDeck = MutableListFlow(mutableListOf<CardModel>()) // Теперь тоже реактивный MutableListFlow
     val maxUnlockedLevel = MutableStateFlow(1)
@@ -18,6 +19,11 @@ object UserProfile {
     val dustRare = MutableStateFlow(0)
     val dustEpic = MutableStateFlow(0)
     val dustLegendary = MutableStateFlow(0)
+
+    // ДНЕВНЫЕ НАГРАДЫ
+    val loginChainDays = MutableStateFlow(1)
+    val lastLoginTimestamp = MutableStateFlow(0L)
+    val rewardsClaimed = MutableStateFlow<Set<Int>>(emptySet())
 
     private const val PREFS_NAME = "cards_and_shades_prefs"
     private val scope = CoroutineScope(Dispatchers.IO)
@@ -31,12 +37,44 @@ object UserProfile {
 
             if (prefs.contains("gold")) {
                 gold.value = prefs.getInt("gold", 500)
+                crystals.value = prefs.getInt("crystals", 0)
                 maxUnlockedLevel.value = prefs.getInt("maxUnlockedLevel", 1)
                 
                 dustCommon.value = prefs.getInt("dustCommon", 0)
                 dustRare.value = prefs.getInt("dustRare", 0)
                 dustEpic.value = prefs.getInt("dustEpic", 0)
                 dustLegendary.value = prefs.getInt("dustLegendary", 0)
+
+                loginChainDays.value = prefs.getInt("loginChainDays", 1)
+                lastLoginTimestamp.value = prefs.getLong("lastLoginTimestamp", 0L)
+                val claimedJson = prefs.getString("rewardsClaimed", "[]") ?: "[]"
+                rewardsClaimed.value = gson.fromJson(claimedJson, object : com.google.gson.reflect.TypeToken<Set<Int>>() {}.type) ?: emptySet()
+
+                // ЛОГИКА ДНЕВНОГО ЗАХОДА
+                val now = System.currentTimeMillis()
+                val lastLogin = lastLoginTimestamp.value
+                
+                if (lastLogin > 0) {
+                    val diff = now - lastLogin
+                    val oneDayMs = 24 * 60 * 60 * 1000L
+                    
+                    if (diff > oneDayMs) {
+                        if (diff < 2 * oneDayMs) {
+                            // Последовательный заход
+                            var nextDay = loginChainDays.value + 1
+                            if (nextDay > 30) nextDay = 1 // Сброс цикла
+                            loginChainDays.value = nextDay
+                        } else {
+                            // Пропуск дня - сброс цепочки
+                            loginChainDays.value = 1
+                            // Опционально: очищаем claimed если сбрасываем цикл? 
+                            // Лучше: если loginChainDays сбрасывается в 1, очищаем rewardsClaimed если 30 дней прошло или пропуск.
+                            rewardsClaimed.value = emptySet()
+                        }
+                    }
+                }
+                lastLoginTimestamp.value = now
+                save()
 
                 val collectionJson = prefs.getString("collection", "[]") ?: "[]"
                 val deckJson = prefs.getString("deck", "[]") ?: "[]"
@@ -124,12 +162,17 @@ object UserProfile {
             val prefs = targetContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
             prefs.edit().apply {
                 putInt("gold", gold.value)
+                putInt("crystals", crystals.value)
                 putInt("maxUnlockedLevel", maxUnlockedLevel.value)
                 
                 putInt("dustCommon", dustCommon.value)
                 putInt("dustRare", dustRare.value)
                 putInt("dustEpic", dustEpic.value)
                 putInt("dustLegendary", dustLegendary.value)
+
+                putInt("loginChainDays", loginChainDays.value)
+                putLong("lastLoginTimestamp", lastLoginTimestamp.value)
+                putString("rewardsClaimed", gson.toJson(rewardsClaimed.value))
 
                 putString("collection", gson.toJson(collection.toList()))
                 putString("deck", gson.toJson(selectedDeck.toList()))
@@ -179,6 +222,35 @@ object UserProfile {
         }
         
         return totalDusted
+    }
+
+    // КРАФТ СЛУЧАЙНОЙ КАРТЫ ЗА ПЫЛЬ
+    fun craftCard(rarity: Rarity): Boolean {
+        val cost = when (rarity) {
+            Rarity.COMMON -> 40
+            Rarity.RARE -> 100
+            Rarity.EPIC -> 400
+            Rarity.LEGENDARY -> 1600
+        }
+        
+        val currentDust = when (rarity) {
+            Rarity.COMMON -> dustCommon
+            Rarity.RARE -> dustRare
+            Rarity.EPIC -> dustEpic
+            Rarity.LEGENDARY -> dustLegendary
+        }
+        
+        if (currentDust.value >= cost) {
+            val newCard = com.example.cardsandshades.catalog.CardCatalog.generateRandomCardByRarityOnly(rarity)
+            if (newCard != null) {
+                currentDust.value -= cost
+                collection.add(newCard)
+                collection.notifyChanges()
+                save()
+                return true
+            }
+        }
+        return false
     }
 }
 

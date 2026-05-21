@@ -38,6 +38,7 @@ class MainActivity : ComponentActivity() {
         // Инициализируем каталоги и БД
         com.example.cardsandshades.catalog.CardCatalog.init(this)
         com.example.cardsandshades.catalog.CampaignCatalog.init(this)
+        com.example.cardsandshades.catalog.RewardsCatalog.init(this)
         UserProfile.initDatabase(this)
 
         // 1. Разрешаем приложению отрисовываться под системными панелями
@@ -65,6 +66,13 @@ class MainActivity : ComponentActivity() {
                                     modifier = Modifier.fillMaxWidth().padding(16.dp),
                                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
+                                    GameButton(
+                                        text = "🎁 Награды",
+                                        onClick = { currentScreen = "rewards" },
+                                        modifier = Modifier.weight(1f),
+                                        containerColor = Color(0xFFE91E63)
+                                    )
+
                                     GameButton(
                                         text = "🏪 Магазин",
                                         onClick = { currentScreen = "shop" },
@@ -96,6 +104,9 @@ class MainActivity : ComponentActivity() {
                         }
                         "collection" -> {
                             com.example.cardsandshades.ui.collection.CollectionScreen(onBack = { currentScreen = "campaign" })
+                        }
+                        "rewards" -> {
+                            com.example.cardsandshades.ui.rewards.RewardsScreen(onBack = { currentScreen = "campaign" })
                         }
                     }
                 }
