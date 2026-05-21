@@ -23,7 +23,6 @@ import com.example.cardsandshades.ui.components.GameText
 
 @Composable
 fun RewardsScreen(
-    onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val chainDay by UserProfile.loginChainDays.collectAsState()
@@ -38,10 +37,9 @@ fun RewardsScreen(
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
+            horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            GameButton(text = "Назад", onClick = onBack, containerColor = Color.Gray)
             GameText("Награды за вход", fontSize = 22.sp, fontWeight = FontWeight.Bold)
         }
         

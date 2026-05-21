@@ -27,7 +27,6 @@ import com.example.cardsandshades.ui.components.GameText
 
 @Composable
 fun CollectionScreen(
-    onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val userCards by UserProfile.collection.status.collectAsState()
@@ -66,16 +65,15 @@ fun CollectionScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 GameButton(
-                    text = "Назад и Сохранить",
+                    text = "Сохранить",
                     onClick = {
                         if (currentDeck.size == 20) {
                             UserProfile.selectedDeck.clear()
                             UserProfile.selectedDeck.addAll(currentDeck)
                             UserProfile.selectedDeck.notifyChanges()
                             UserProfile.save()
-                            onBack()
                         } else {
-                            errorMessage = "❌ Нужно ровно 20 карт!"
+                            errorMessage = "❌ Нужно 20 карт!"
                         }
                     },
                     containerColor = if (currentDeck.size == 20) Color(0xFF388E3C) else Color.Gray
@@ -93,17 +91,17 @@ fun CollectionScreen(
             
             Spacer(modifier = Modifier.height(8.dp))
             
-            // ПАНЕЛЬ ПОРОШКА И КРАФТА
+            // ПАНЕЛЬ ПОРОШКА
             Row(
                 modifier = Modifier.fillMaxWidth().background(Color(0xFF1E1E1E), RoundedCornerShape(8.dp)).padding(8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    DustCraftItem(Color.Gray, dustC, 40) { UserProfile.craftCard(Rarity.COMMON) }
-                    DustCraftItem(Color(0xFF1E88E5), dustR, 100) { UserProfile.craftCard(Rarity.RARE) }
-                    DustCraftItem(Color(0xFF8E24AA), dustE, 400) { UserProfile.craftCard(Rarity.EPIC) }
-                    DustCraftItem(Color(0xFFFDD835), dustL, 1600) { UserProfile.craftCard(Rarity.LEGENDARY) }
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    DustInfo(Color.Gray, dustC)
+                    DustInfo(Color(0xFF1E88E5), dustR)
+                    DustInfo(Color(0xFF8E24AA), dustE)
+                    DustInfo(Color(0xFFFDD835), dustL)
                 }
                 
                 if (totalExtras > 0) {
@@ -117,7 +115,7 @@ fun CollectionScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         // Грид-сетка всех карт в коллекции игрока
         if (groupedCards.isEmpty()) {
@@ -169,7 +167,7 @@ fun CollectionScreen(
                         }
 
                         Spacer(modifier = Modifier.height(4.dp))
-                        GameText("В наличии: $count", fontSize = 10.sp, color = Color.Gray)
+                        GameText("Owned: $count", fontSize = 10.sp, color = Color.Gray)
 
                         // ПОНЯТНЫЕ КНОПКИ УПРАВЛЕНИЯ ПОД КАРТОЙ
                         Row(
@@ -216,6 +214,8 @@ fun CollectionScreen(
                 }
             }
         }
+        
+        Spacer(modifier = Modifier.height(70.dp))
     }
 
     if (inspectedCard != null) {
@@ -224,17 +224,10 @@ fun CollectionScreen(
 }
 
 @Composable
-private fun DustCraftItem(color: Color, amount: Int, craftCost: Int, onCraft: () -> Boolean) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { 
-            if (amount >= craftCost) {
-                onCraft()
-            }
-        }) {
-            Box(modifier = Modifier.size(8.dp).background(color, RoundedCornerShape(4.dp)))
-            Spacer(modifier = Modifier.width(4.dp))
-            GameText(text = amount.toString(), fontSize = 11.sp, color = if (amount >= craftCost) Color.Green else color)
-        }
-        GameText(text = "$craftCost", fontSize = 8.sp, color = Color.DarkGray)
+private fun DustInfo(color: Color, amount: Int) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Box(modifier = Modifier.size(8.dp).background(color, RoundedCornerShape(4.dp)))
+        Spacer(modifier = Modifier.width(4.dp))
+        GameText(text = amount.toString(), fontSize = 12.sp, color = color)
     }
 }

@@ -131,10 +131,17 @@ class GameViewModel : ViewModel() {
         opponentTurnJob?.cancel()
         if (isPlayerWin) {
             currentLevel?.let { level ->
-                // 1. Начисляем золото, прописанное в наградах уровня
+                // 1. Начисляем золото и кристаллы
                 UserProfile.gold.value += level.rewardGold
+                UserProfile.crystals.value += level.rewardCrystals
+                
+                // 2. Начисляем пыль
+                UserProfile.dustCommon.value += level.rewardDustCommon
+                UserProfile.dustRare.value += level.rewardDustRare
+                UserProfile.dustEpic.value += level.rewardDustEpic
+                UserProfile.dustLegendary.value += level.rewardDustLegendary
 
-                // 2. Выдаем призовую ККИ-карту в коллекцию (если она указана)
+                // 3. Выдаем призовую ККИ-карту
                 level.rewardCardName?.let { cardName ->
                     CardCatalog.createCardInstance(cardName)?.let { prizeCard ->
                         UserProfile.collection.add(prizeCard)
@@ -142,11 +149,10 @@ class GameViewModel : ViewModel() {
                 }
                 UserProfile.collection.notifyChanges()
 
-                // 3. Рассчитываем прогресс открытия следующих глав
+                // 4. Рассчитываем прогресс
                 if (level.id == UserProfile.maxUnlockedLevel.value) {
                     UserProfile.maxUnlockedLevel.value = level.id + 1
                 }
-                // СОХРАНЕНИЕ: После получения наград обязательно сбрасываем состояние на диск
                 UserProfile.save()
             }
         }

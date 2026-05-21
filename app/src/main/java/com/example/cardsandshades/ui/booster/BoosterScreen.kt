@@ -23,7 +23,6 @@ import com.example.cardsandshades.ui.components.GameText
 
 @Composable
 fun BoosterScreen(
-    onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val gold by UserProfile.gold.collectAsState()
@@ -42,10 +41,9 @@ fun BoosterScreen(
         // Хедер
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
+            horizontalArrangement = Arrangement.End,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            GameButton(text = "Назад", onClick = onBack, containerColor = Color.Gray)
             Column(horizontalAlignment = Alignment.End) {
                 GameText("Золото: $gold 🪙", color = Color.Yellow, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 GameText("Кристаллы: $crystals 💎", color = Color(0xFF03A9F4), fontSize = 16.sp, fontWeight = FontWeight.Bold)
