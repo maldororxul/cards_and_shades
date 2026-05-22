@@ -133,4 +133,8 @@
 
     <string name="battle_finished">Battle Finished</string>
     <string name="effect_normal_desc">effect_normal_desc</string>
+    <string name="effect_active_buffs">effect_active_buffs</string>
+    <string name="stat_attack">stat_attack</string>
+    <string name="stat_health">stat_health</string>
+    <string name="close">close</string>
 </resources>

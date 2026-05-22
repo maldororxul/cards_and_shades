@@ -1,6 +1,6 @@
 package com.example.cardsandshades.ui.components
 
-import androidx.compose.animation.*
+import android.annotation.SuppressLint
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -30,6 +30,7 @@ import com.example.cardsandshades.model.CardModel
 import com.example.cardsandshades.model.Rarity
 import com.example.cardsandshades.utils.getStringResourceByName
 
+@SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 fun CardInspectionDialog(
     card: CardModel,
@@ -106,7 +107,7 @@ fun CardInspectionDialog(
                 }
 
                 if (card.buffs.isNotEmpty()) {
-                    val buffsText = card.buffs.joinToString("\n") { 
+                    val buffsText = card.buffs.joinToString("\n") {
                         context.getString(R.string.buff_format, getStringResourceByName(context, it.name), it.attackBonus, it.healthBonus, it.duration)
                     }
                     GameText(
