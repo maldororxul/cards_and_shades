@@ -3,8 +3,6 @@ package com.example.cardsandshades.ui.forge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -76,41 +74,43 @@ fun ForgeScreen(
 
         Spacer(modifier = Modifier.weight(1f))
 
-        // ПАНЕЛЬ КОВКИ
-        Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            ForgeRow(Rarity.COMMON, Color.Gray, dustC, 40, true) { isMerge ->
-                if (isMerge) {
-                    if (UserProfile.mergeDust(Rarity.COMMON)) message = "Слияние: 100 $commonLabel -> 10 $rareLabel"
-                    else message = mergeFail
-                } else {
-                    if (UserProfile.craftCard(Rarity.COMMON)) {
-                        forgedCard = UserProfile.collection.lastOrNull()
-                        message = craftSuccess.format(commonLabel)
-                    } else message = craftFail
-                }
+    val mergeSuccess = stringResource(R.string.forge_merge_success)
+    
+    // ПАНЕЛЬ КОВКИ
+    Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        ForgeRow(Rarity.COMMON, Color.Gray, dustC, 40, true) { isMerge ->
+            if (isMerge) {
+                if (UserProfile.mergeDust(Rarity.COMMON)) message = mergeSuccess.format(commonLabel, rareLabel)
+                else message = mergeFail
+            } else {
+                if (UserProfile.craftCard(Rarity.COMMON)) {
+                    forgedCard = UserProfile.collection.lastOrNull()
+                    message = craftSuccess.format(commonLabel)
+                } else message = craftFail
             }
-            ForgeRow(Rarity.RARE, Color(0xFF1E88E5), dustR, 100, true) { isMerge ->
-                if (isMerge) {
-                    if (UserProfile.mergeDust(Rarity.RARE)) message = "Слияние: 100 $rareLabel -> 10 $epicLabel"
-                    else message = mergeFail
-                } else {
-                    if (UserProfile.craftCard(Rarity.RARE)) {
-                        forgedCard = UserProfile.collection.lastOrNull()
-                        message = craftSuccess.format(rareLabel)
-                    } else message = craftFail
-                }
+        }
+        ForgeRow(Rarity.RARE, Color(0xFF1E88E5), dustR, 100, true) { isMerge ->
+            if (isMerge) {
+                if (UserProfile.mergeDust(Rarity.RARE)) message = mergeSuccess.format(rareLabel, epicLabel)
+                else message = mergeFail
+            } else {
+                if (UserProfile.craftCard(Rarity.RARE)) {
+                    forgedCard = UserProfile.collection.lastOrNull()
+                    message = craftSuccess.format(rareLabel)
+                } else message = craftFail
             }
-            ForgeRow(Rarity.EPIC, Color(0xFF8E24AA), dustE, 400, true) { isMerge ->
-                if (isMerge) {
-                    if (UserProfile.mergeDust(Rarity.EPIC)) message = "Слияние: 100 $epicLabel -> 10 $legendaryLabel"
-                    else message = mergeFail
-                } else {
-                    if (UserProfile.craftCard(Rarity.EPIC)) {
-                        forgedCard = UserProfile.collection.lastOrNull()
-                        message = craftSuccess.format(epicLabel)
-                    } else message = craftFail
-                }
+        }
+        ForgeRow(Rarity.EPIC, Color(0xFF8E24AA), dustE, 400, true) { isMerge ->
+            if (isMerge) {
+                if (UserProfile.mergeDust(Rarity.EPIC)) message = mergeSuccess.format(epicLabel, legendaryLabel)
+                else message = mergeFail
+            } else {
+                if (UserProfile.craftCard(Rarity.EPIC)) {
+                    forgedCard = UserProfile.collection.lastOrNull()
+                    message = craftSuccess.format(epicLabel)
+                } else message = craftFail
             }
+        }
             ForgeRow(Rarity.LEGENDARY, Color(0xFFFDD835), dustL, 1600, false) {
                 if (UserProfile.craftCard(Rarity.LEGENDARY)) {
                     forgedCard = UserProfile.collection.lastOrNull()

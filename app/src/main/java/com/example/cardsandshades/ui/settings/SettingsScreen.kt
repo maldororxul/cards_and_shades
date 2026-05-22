@@ -91,11 +91,17 @@ fun SettingsScreen(onBack: () -> Unit) {
             Spacer(modifier = Modifier.height(40.dp))
 
             Box {
+                val currentLangName = when(currentLocale) {
+                    "es" -> stringResource(R.string.lang_es)
+                    "ru" -> stringResource(R.string.lang_ru)
+                    else -> stringResource(R.string.lang_en)
+                }
+
                 OutlinedButton(
                     onClick = { expanded = true },
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
                 ) {
-                    Text(text = stringResource(id = R.string.language) + ": " + currentLocale.uppercase())
+                    Text(text = stringResource(R.string.lang_selection_format, stringResource(R.string.language), currentLangName))
                 }
 
                 DropdownMenu(
@@ -103,33 +109,27 @@ fun SettingsScreen(onBack: () -> Unit) {
                     onDismissRequest = { expanded = false },
                     modifier = Modifier.background(Color(0xFF222222))
                 ) {
-                DropdownMenuItem(
-                    text = { Text("English", color = Color.White) },
-                    onClick = {
-                        expanded = false
-                        if (currentLocale != "en") {
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.lang_en), color = Color.White) },
+                        onClick = {
+                            expanded = false
                             changeLocale(context = context, langCode = "en")
                         }
-                    }
-                )
-                DropdownMenuItem(
-                    text = { Text("Español", color = Color.White) },
-                    onClick = {
-                        expanded = false
-                        if (currentLocale != "es") {
+                    )
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.lang_es), color = Color.White) },
+                        onClick = {
+                            expanded = false
                             changeLocale(context = context, langCode = "es")
                         }
-                    }
-                )
-                DropdownMenuItem(
-                    text = { Text("Русский", color = Color.White) },
-                    onClick = {
-                        expanded = false
-                        if (currentLocale != "ru") {
+                    )
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.lang_ru), color = Color.White) },
+                        onClick = {
+                            expanded = false
                             changeLocale(context = context, langCode = "ru")
                         }
-                    }
-                )
+                    )
                 }
             }
         }

@@ -51,7 +51,7 @@ fun CampaignScreen(
                 // ИСПРАВЛЕНИЕ: Кнопка на экране теперь просто сбрасывает стейт, 
                 // что возвращает пользователя к списку глав без выхода из экрана.
                 GameButton(
-                    text = "⬅️", 
+                    text = stringResource(R.string.back_arrow), 
                     onClick = { selectedChapter = null }, 
                     containerColor = Color.DarkGray, 
                     modifier = Modifier.size(50.dp, 40.dp)
@@ -122,9 +122,9 @@ private fun ChapterItem(chapter: ChapterModel, isUnlocked: Boolean, onClick: () 
         }
         
         if (!isUnlocked) {
-            GameText("🔒", fontSize = 20.sp)
+            GameText(stringResource(R.string.locked_icon), fontSize = 20.sp)
         } else {
-            GameText("➡️", fontSize = 20.sp)
+            GameText(stringResource(R.string.unlocked_icon), fontSize = 20.sp)
         }
     }
 }
@@ -167,9 +167,9 @@ private fun LevelItem(level: LevelModel, isUnlocked: Boolean, isCompleted: Boole
         }
         
         if (!isUnlocked) {
-            GameText("🔒", fontSize = 18.sp)
+            GameText(stringResource(R.string.locked_icon), fontSize = 18.sp)
         } else if (isCompleted) {
-            GameText("✅", fontSize = 18.sp)
+            GameText(stringResource(R.string.completed_icon), fontSize = 18.sp)
         }
     }
 }

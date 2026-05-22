@@ -4,9 +4,11 @@ import android.content.Context
 import android.content.res.Configuration
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
-import java.util.Locale
 
 fun changeLocale(context: Context, langCode: String) {
+    val currentLocales = AppCompatDelegate.getApplicationLocales()
+    if (!currentLocales.isEmpty && currentLocales[0]?.language == langCode) return
+
     val appLocale: LocaleListCompat = LocaleListCompat.forLanguageTags(langCode)
     AppCompatDelegate.setApplicationLocales(appLocale)
 }

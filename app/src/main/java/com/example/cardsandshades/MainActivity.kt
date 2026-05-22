@@ -1,7 +1,7 @@
 package com.example.cardsandshades
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.animation.*
@@ -33,7 +33,7 @@ import com.example.cardsandshades.ui.settings.SettingsScreen
 import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.delay
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
     private val gameViewModel: GameViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {

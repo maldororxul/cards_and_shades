@@ -103,7 +103,7 @@ fun RewardsScreen(
                     )
                     
                     if (isClaimed) {
-                        GameText("✅", fontSize = 10.sp)
+                        GameText(stringResource(R.string.completed_icon), fontSize = 10.sp)
                     }
                 }
             }

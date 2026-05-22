@@ -258,4 +258,8 @@
     <string name="effect_blessing_desc">При призыве дает +2/+2 случайному союзнику на 2 хода.</string>
     <string name="effect_buff_name">Усиление</string>
     <string name="buff_format">💪 %1$s: +%2$d/+%3$d (%4$d ходов)</string>
+    <string name="lang_en">English</string>
+    <string name="lang_es">Español</string>
+    <string name="lang_ru">Русский</string>
+    <string name="lang_selection_format">%1$s: %2$s</string>
 </resources>

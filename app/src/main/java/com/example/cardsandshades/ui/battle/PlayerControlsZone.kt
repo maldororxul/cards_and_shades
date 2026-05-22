@@ -53,9 +53,10 @@ fun PlayerControlsZone(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column {
-                GameText(player.name, color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                val context = androidx.compose.ui.platform.LocalContext.current
+                GameText(com.example.cardsandshades.utils.getStringResourceByName(context, player.name), color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 GameText(
-                    text = "${stringResource(R.string.mana)}: ${player.currentMana}/${player.maxMana} 💧 | ${stringResource(R.string.in_deck)}: ${player.deck.size}",
+                    text = stringResource(R.string.opponent_stats, player.hand.size, player.deck.size, player.currentMana, player.maxMana),
                     color = Color(0xFF29B6F6),
                     fontSize = 14.sp
                 )
@@ -66,7 +67,7 @@ fun PlayerControlsZone(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(end = 12.dp)) {
                     GameText(
-                        text = "HP: ${player.currentHp}/${player.maxHp} ❤️",
+                        text = stringResource(R.string.hp_label, player.currentHp, player.maxHp),
                         color = if (isHeroTakingDamage) Color.White else Color(0xFF66BB6A),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
