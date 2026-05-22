@@ -1,5 +1,6 @@
 package com.example.cardsandshades.ui.components
 
+import androidx.compose.animation.*
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -148,8 +149,8 @@ fun CardInspectionDialog(
                 }
             }
         },
-        confirmButton = {
-            GameButton(text = stringResource(R.string.close), onClick = onDismiss, containerColor = Color(0xFF673AB7))
+        confirmButton = { onAction ->
+            GameButton(text = stringResource(R.string.close), onClick = onAction, containerColor = Color(0xFF673AB7))
         }
     )
 }

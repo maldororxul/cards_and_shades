@@ -6,15 +6,24 @@
     <string name="language">Язык</string>
     <string name="save">Сохранить</string>
     <string name="campaign">Кампания</string>
-    <string name="shop">Магазин</string>
+    <string name="shop">Паки</string>
     <string name="collection">Коллекция</string>
     <string name="rewards">Награды</string>
     <string name="forge">Кузница</string>
+    <string name="merge_dust">Слияние пыли</string>
+    <string name="merge_dust_desc">Обменяйте 100 ед. пыли на 10 ед. пыли более высокой редкости.</string>
     <string name="mana">Мана</string>
     <string name="in_deck">В колоде</string>
     <string name="end_turn">Конец Хода</string>
     <string name="player_name">Игрок</string>
     <string name="draw">Ничья</string>
+
+    <string name="fusion_tree">Слияние карт</string>
+    <string name="fusion_desc">Объединяйте копии слабых карт в новые, более редкие!</string>
+    <string name="fusion_recipe_ready">Рецепт готов!</string>
+    <string name="fusion_recipe_missing">Не хватает карт!</string>
+    <string name="fusion_confirm">Создать Карту</string>
+    <string name="fusion_success">Слияние завершено: %s создана!</string>
 
     <!-- Game Over -->
     <string name="battle_finished">Битва Завершена!</string>
@@ -90,38 +99,6 @@
     <string name="booster_no_resources">Недостаточно ресурсов!</string>
     <string name="booster_gold">Золото: %d 🪙</string>
     <string name="booster_crystals">Кристаллы: %d 💎</string>
-
-    <!-- Battle Log -->
-    <string name="battle_start_msg">Ваш ход. Разыграйте карты или атакуйте врага!</string>
-    <string name="battle_your_turn">Ваш ход! Мана обновлена.</string>
-    <string name="battle_opponent_turn">Ход соперника...</string>
-    <string name="battle_attack_hero">💥 Вы атаковали героя врага на %d урона!</string>
-    <string name="battle_attack_hero_fail">❌ Нельзя атаковать лицо, пока у врага есть существа!</string>
-    <string name="battle_card_played">🃏 Вы разыграли карту %s</string>
-    <string name="battle_play_fail">❌ Не удалось разыграть карту! Проверьте ману или место.</string>
-    <string name="battle_card_attack">⚔️ %1$s атаковал %2$s!</string>
-    <string name="battle_loading">Загрузка боя...</string>
-
-    <!-- Rarities -->
-    <string name="rarity_common">ОБЫЧНАЯ</string>
-    <string name="rarity_rare">РЕДКАЯ</string>
-    <string name="rarity_epic">ЭПИЧЕСКАЯ</string>
-    <string name="rarity_legendary">ЛЕГЕНДАРНАЯ</string>
-
-    <!-- Effects -->
-    <string name="effect_normal_desc">Обычное существо.\nНе имеет скрытых магических сил.</string>
-    <string name="effect_active_buffs">Активные баффы:\n%s</string>
-    <string name="stat_attack">Атака</string>
-    <string name="stat_health">Здоровье</string>
-    <string name="close">Закрыть</string>
-
-    <!-- Boosters -->
-    <string name="booster_normal">Обычный пак</string>
-    <string name="booster_normal_desc">Набор из 5 случайных карт. Базовые шансы.</string>
-    <string name="booster_premium">Премиум пак</string>
-    <string name="booster_premium_desc">Набор из 5 карт с повышенным шансом на редкие и эпические карты.</string>
-    <string name="booster_crystal">Кристальный пак</string>
-    <string name="booster_crystal_desc">Набор из 5 карт. Гарантированные эпические карты и высокий шанс на легендарку!</string>
 
     <!-- Chapters and Levels -->
     <string name="chapter_1">Глава 1: Тени Забытых Земель</string>
@@ -242,6 +219,12 @@
     <string name="card_forgotten_titan">Забытый титан</string>
     <string name="card_doom_herald">Вестник рока</string>
     <string name="card_celestial_dragon">Небесный дракон</string>
+
+    <!-- Rarities -->
+    <string name="rarity_common">ОБЫЧНАЯ</string>
+    <string name="rarity_rare">РЕДКАЯ</string>
+    <string name="rarity_epic">ЭПИЧЕСКАЯ</string>
+    <string name="rarity_legendary">ЛЕГЕНДАРНАЯ</string>
 
     <!-- Effects -->
     <string name="effect_rush">Рывок</string>

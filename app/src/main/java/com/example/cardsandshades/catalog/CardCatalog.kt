@@ -24,15 +24,9 @@ object CardCatalog {
                 baseAttack = cardMap["baseAttack"] as Int,
                 baseHealth = cardMap["baseHealth"] as Int,
                 rarity = Rarity.valueOf(cardMap["rarity"] as String),
-                effectTags = (cardMap["effectTags"] as? List<String>)?.map { EffectTag.valueOf(it) } ?: emptyList(),
-                imageResName = cardMap["imageResName"] as? String
+                effectTags = (cardMap["effectTags"] as? List<String>)?.map { EffectTag.valueOf(it) } ?: emptyList()
             )
         }
-    }
-
-    fun getVisualData(cardName: String): String? {
-        val template = templates.find { it.name == cardName }
-        return template?.imageResName
     }
 
     fun createCardInstance(templateName: String): CardModel? {
@@ -44,8 +38,7 @@ object CardCatalog {
             baseAttack = template.baseAttack,
             baseHealth = template.baseHealth,
             rarity = template.rarity,
-            effectTags = template.effectTags,
-            imageResName = template.imageResName
+            effectTags = template.effectTags
         )
     }
 
@@ -63,8 +56,7 @@ object CardCatalog {
                     baseAttack = randomTemplate.baseAttack,
                     baseHealth = randomTemplate.baseHealth,
                     rarity = randomTemplate.rarity,
-                    effectTags = randomTemplate.effectTags,
-                    imageResName = randomTemplate.imageResName
+                    effectTags = randomTemplate.effectTags
                 )
             )
         }
@@ -113,6 +105,5 @@ private data class CardTemplate(
     val baseAttack: Int,
     val baseHealth: Int,
     val rarity: Rarity,
-    val effectTags: List<EffectTag> = emptyList(),
-    val imageResName: String? = null
+    val effectTags: List<EffectTag> = emptyList()
 )

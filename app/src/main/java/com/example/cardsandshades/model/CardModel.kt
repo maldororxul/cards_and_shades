@@ -30,7 +30,6 @@ data class CardModel(
     // Gson может записать сюда null при десериализации старого кэша, если поле отсутствовало
     private val effectTags: List<EffectTag>? = emptyList(),
     private val activeBuffs: List<BuffModel>? = emptyList(),
-    val imageResName: String? = null,
 
     var isSleeping: Boolean = true,
     var hasAttackedThisTurn: Boolean = false,

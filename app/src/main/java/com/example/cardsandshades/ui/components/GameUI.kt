@@ -1,5 +1,7 @@
 package com.example.cardsandshades.ui.components
 
+import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -7,9 +9,18 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -83,44 +94,65 @@ fun GameDialog(
     onDismiss: () -> Unit,
     title: String,
     content: @Composable () -> Unit,
-    confirmButton: (@Composable () -> Unit)? = null,
-    dismissButton: (@Composable () -> Unit)? = null
+    confirmButton: (@Composable (onAction: () -> Unit) -> Unit)? = null,
+    dismissButton: (@Composable (onAction: () -> Unit) -> Unit)? = null
 ) {
-    Dialog(onDismissRequest = onDismiss) {
-        Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-                .border(2.dp, Color(0xFF673AB7), RoundedCornerShape(16.dp)),
-            shape = RoundedCornerShape(16.dp),
-            color = Color(0xFF1A1A1A)
+    var isVisible by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+
+    LaunchedEffect(Unit) {
+        isVisible = true
+    }
+
+    val animateAndDismiss = {
+        scope.launch {
+            isVisible = false
+            delay(200)
+            onDismiss()
+        }
+    }
+
+    Dialog(onDismissRequest = { animateAndDismiss() }) {
+        AnimatedVisibility(
+            visible = isVisible,
+            enter = scaleIn(initialScale = 0.7f) + fadeIn(),
+            exit = scaleOut(targetScale = 0.7f) + fadeOut()
         ) {
-            Column(
+            Surface(
                 modifier = Modifier
-                    .padding(24.dp)
-                    .fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
+                    .fillMaxWidth()
+                    .padding(16.dp)
+                    .border(2.dp, Color(0xFF673AB7), RoundedCornerShape(16.dp)),
+                shape = RoundedCornerShape(16.dp),
+                color = Color(0xFF1A1A1A)
             ) {
-                GameText(
-                    text = title,
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                    textAlign = TextAlign.Center
-                )
-                
-                Spacer(modifier = Modifier.height(16.dp))
-                
-                content()
-                
-                Spacer(modifier = Modifier.height(24.dp))
-                
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
+                Column(
+                    modifier = Modifier
+                        .padding(24.dp)
+                        .fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    dismissButton?.invoke()
-                    confirmButton?.invoke()
+                    GameText(
+                        text = title,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White,
+                        textAlign = TextAlign.Center
+                    )
+                    
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    content()
+                    
+                    Spacer(modifier = Modifier.height(24.dp))
+                    
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        dismissButton?.invoke { animateAndDismiss() }
+                        confirmButton?.invoke { animateAndDismiss() }
+                    }
                 }
             }
         }

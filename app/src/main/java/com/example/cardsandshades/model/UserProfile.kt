@@ -83,27 +83,13 @@ object UserProfile {
                 val loadedCollection: List<CardModel> = gson.fromJson(collectionJson, listType) ?: emptyList()
                 val loadedDeck: List<CardModel> = gson.fromJson(deckJson, listType) ?: emptyList()
 
-                val rehydratedCollection = loadedCollection.map { card ->
-                    if (card.imageResName == null) {
-                        val resName = com.example.cardsandshades.catalog.CardCatalog.getVisualData(card.name)
-                        card.copy(imageResName = resName)
-                    } else card
-                }
-                
-                val rehydratedDeck = loadedDeck.map { card ->
-                    if (card.imageResName == null) {
-                        val resName = com.example.cardsandshades.catalog.CardCatalog.getVisualData(card.name)
-                        card.copy(imageResName = resName)
-                    } else card
-                }
-
                 // Обновляем SnapshotStateList в главном потоке для безопасности
                 launch(Dispatchers.Main) {
                     collection.clear()
-                    collection.addAll(rehydratedCollection)
+                    collection.addAll(loadedCollection)
 
                     selectedDeck.clear()
-                    selectedDeck.addAll(rehydratedDeck)
+                    selectedDeck.addAll(loadedDeck)
                     val hasIllegalDuplicates = loadedDeck.groupBy { it.name }.any { it.value.size > 2 }
                     if (hasIllegalDuplicates || loadedDeck.size != 20) {
                         selectedDeck.clear()

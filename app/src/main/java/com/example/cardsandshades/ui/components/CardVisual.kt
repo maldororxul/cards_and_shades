@@ -22,14 +22,14 @@ fun CardVisual(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    val resName = card.imageResName
+    val resName = card.name
 
     Box(
         modifier = modifier
             .fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
-        if (!resName.isNullOrEmpty()) {
+        if (resName.isNotEmpty()) {
             val cleanResName = resName.lowercase().trim()
             
             // 1. Пробуем найти RAW ресурс (видео)

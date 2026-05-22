@@ -26,7 +26,6 @@ fun GameBackground(
                     baseAttack = 0,
                     baseHealth = 0,
                     rarity = com.example.cardsandshades.model.Rarity.COMMON,
-                    imageResName = bgResName
                 ),
                 modifier = Modifier.fillMaxSize()
             )

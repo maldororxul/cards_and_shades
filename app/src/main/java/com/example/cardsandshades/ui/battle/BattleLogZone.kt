@@ -14,6 +14,7 @@ import com.example.cardsandshades.ui.components.GameText
 
 @Composable
 fun BattleLogZone(battleLog: String) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -21,8 +22,14 @@ fun BattleLogZone(battleLog: String) {
             .padding(6.dp),
         contentAlignment = Alignment.Center
     ) {
+        val cleanLog = if (battleLog.startsWith("card_") || battleLog == "draw") {
+            com.example.cardsandshades.utils.getStringResourceByName(context, battleLog)
+        } else {
+            battleLog
+        }
+        
         GameText(
-            text = battleLog,
+            text = cleanLog,
             color = if (battleLog.contains("❌")) Color.Red else Color.Yellow,
             fontSize = 13.sp,
             fontWeight = FontWeight.Medium

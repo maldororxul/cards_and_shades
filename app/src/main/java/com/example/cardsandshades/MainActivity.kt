@@ -32,6 +32,9 @@ import com.example.cardsandshades.sound.SoundManager
 import com.example.cardsandshades.ui.settings.SettingsScreen
 import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.delay
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
     private val gameViewModel: GameViewModel by viewModels()
@@ -64,76 +67,87 @@ class MainActivity : AppCompatActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
+                    val screens = listOf("campaign", "collection", "shop", "forge", "rewards", "settings")
                     var currentScreen by remember { mutableStateOf("campaign") }
+                    val pagerState = rememberPagerState(initialPage = 0, pageCount = { screens.size })
+                    val scope = rememberCoroutineScope()
+
+                    // Синхронизация currentScreen с pagerState
+                    LaunchedEffect(pagerState.currentPage) {
+                        currentScreen = screens[pagerState.currentPage]
+                    }
 
                     Box(modifier = Modifier.fillMaxSize()) {
                         var isTransitioning by remember { mutableStateOf(false) }
                         
-                        // ЭФФЕКТ ЗАТЕМНЕНИЯ ПРИ СМЕНЕ ЭКРАНА
+                        // ЭФФЕКТ ЗАТЕМНЕНИЯ ПРИ СМЕНЕ ЭКРАНА (для кнопок навигации)
+                        // При свайпах анимация и так есть в Pager
                         LaunchedEffect(currentScreen) {
-                            isTransitioning = true
-                            delay(200)
-                            isTransitioning = false
-                        }
-
-                        // КОНТЕНТ ТЕКУЩЕГО ЭКРАНА С АНИМАЦИЕЙ
-                        AnimatedContent(
-                            targetState = currentScreen,
-                            transitionSpec = {
-                                fadeIn(animationSpec = tween(400)) togetherWith 
-                                fadeOut(animationSpec = tween(400))
-                            },
-                            label = "screen_transition"
-                        ) { screen ->
-                            // Подбираем фон: для игры — из уровня, для остальных — из каталога
-                            val levelBackground = if (screen == "game") gameViewModel.currentLevel?.backgroundRes else null
-                            
-                            GameBackground(screenId = screen, overrideRes = levelBackground) {
-                                when (screen) {
-                                    "campaign" -> {
-                                        CampaignScreen(
-                                            onLevelSelect = { selectedLevel ->
-                                                gameViewModel.startNewGame(selectedLevel)
-                                                currentScreen = "game"
-                                            }
-                                        )
-                                    }
-                                    "game" -> {
-                                        GameScreen(viewModel = gameViewModel, onBackToMenu = { currentScreen = "campaign" })
-                                    }
-                                    "shop" -> {
-                                        com.example.cardsandshades.ui.booster.BoosterScreen()
-                                    }
-                                    "collection" -> {
-                                        com.example.cardsandshades.ui.collection.CollectionScreen()
-                                    }
-                                    "rewards" -> {
-                                        com.example.cardsandshades.ui.rewards.RewardsScreen()
-                                    }
-                                    "forge" -> {
-                                        com.example.cardsandshades.ui.forge.ForgeScreen()
-                                    }
-                                    "settings" -> {
-                                        SettingsScreen(onBack = { currentScreen = "campaign" })
-                                    }
-                                }
+                            val targetPage = screens.indexOf(currentScreen)
+                            if (pagerState.currentPage != targetPage) {
+                                isTransitioning = true
+                                pagerState.animateScrollToPage(targetPage)
+                                isTransitioning = false
                             }
                         }
 
-                        // ВИЗУАЛЬНЫЙ СЛОЙ ЗАТЕМНЕНИЯ
-                        AnimatedVisibility(
-                            visible = isTransitioning,
-                            enter = fadeIn(tween(200)),
-                            exit = fadeOut(tween(200))
-                        ) {
-                            Box(modifier = Modifier.fillMaxSize().background(Color.Black))
-                        }
+                        if (gameViewModel.gameState.collectAsState().value != null) {
+                            // ЭКРАН ИГРЫ (Оверлей)
+                            GameScreen(viewModel = gameViewModel, onBackToMenu = { 
+                                gameViewModel.claimRewardsAndExit(false) 
+                            })
+                        } else {
+                            // КОНТЕНТ ТЕКУЩЕГО ЭКРАНА С ПЕЙДЖЕРОМ
+                            HorizontalPager(
+                                state = pagerState,
+                                modifier = Modifier.fillMaxSize()
+                            ) { page ->
+                                val screen = screens[page]
+                                GameBackground(screenId = screen) {
+                                    when (screen) {
+                                        "campaign" -> {
+                                            CampaignScreen(
+                                                onLevelSelect = { selectedLevel ->
+                                                    gameViewModel.startNewGame(selectedLevel)
+                                                }
+                                            )
+                                        }
+                                        "collection" -> {
+                                            com.example.cardsandshades.ui.collection.CollectionScreen()
+                                        }
+                                        "shop" -> {
+                                            com.example.cardsandshades.ui.booster.BoosterScreen()
+                                        }
+                                        "forge" -> {
+                                            com.example.cardsandshades.ui.forge.ForgeScreen()
+                                        }
+                                        "rewards" -> {
+                                            com.example.cardsandshades.ui.rewards.RewardsScreen()
+                                        }
+                                        "settings" -> {
+                                            SettingsScreen(onBack = { 
+                                                scope.launch { pagerState.animateScrollToPage(0) }
+                                            })
+                                        }
+                                    }
+                                }
+                            }
 
-                        // НИЖНЯЯ ПАНЕЛЬ НАВИГАЦИИ (видна везде кроме боя)
-                        if (currentScreen != "game") {
+                            // ВИЗУАЛЬНЫЙ СЛОЙ ЗАТЕМНЕНИЯ (опционально)
+                            AnimatedVisibility(
+                                visible = isTransitioning,
+                                enter = fadeIn(tween(200)),
+                                exit = fadeOut(tween(200))
+                            ) {
+                                Box(modifier = Modifier.fillMaxSize().background(Color.Black))
+                            }
+
+                            // НИЖНЯЯ ПАНЕЛЬ НАВИГАЦИИ
                             BottomNavBar(
                                 currentScreen = currentScreen,
-                                onScreenChange = { currentScreen = it },
+                                onScreenChange = { 
+                                    scope.launch { pagerState.animateScrollToPage(screens.indexOf(it)) }
+                                },
                                 modifier = Modifier.align(Alignment.BottomCenter)
                             )
                         }

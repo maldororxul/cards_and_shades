@@ -6,15 +6,24 @@
     <string name="language">Idioma</string>
     <string name="save">Guardar</string>
     <string name="campaign">Campaña</string>
-    <string name="shop">Tienda</string>
+    <string name="shop">Sobres</string>
     <string name="collection">Colección</string>
     <string name="rewards">Recompensas</string>
     <string name="forge">Forja</string>
+    <string name="merge_dust">Fusión de polvo</string>
+    <string name="merge_dust_desc">Combina 100 de polvo de una rareza en 10 de la siguiente.</string>
     <string name="mana">Maná</string>
     <string name="in_deck">En mazo</string>
     <string name="end_turn">Fin de Turno</string>
     <string name="player_name">Jugador</string>
     <string name="draw">Empate</string>
+
+    <string name="fusion_tree">Fusión de cartas</string>
+    <string name="fusion_desc">¡Combina copias de cartas débiles en cartas nuevas y más raras!</string>
+    <string name="fusion_recipe_ready">¡Receta lista!</string>
+    <string name="fusion_recipe_missing">¡Faltan cartas!</string>
+    <string name="fusion_confirm">Crear carta</string>
+    <string name="fusion_success">Fusión exitosa: ¡%s creada!</string>
 
     <!-- Game Over -->
     <string name="battle_finished">¡Batalla Finalizada!</string>
@@ -40,20 +49,20 @@
 
     <!-- Player Board -->
     <string name="drag_card_hint">Arrastra una carta aquí desde tu mano</string>
-    <string name="enemy_board_empty">El tablero enemigo está vacío. ¡La cara está abierta para atacar!</string>
+    <string name="enemy_board_empty">El tablero enemigo está vacío. ¡La cara está abierta!</string>
 
     <!-- Game Screen -->
     <string name="battle_exit_title">¿Interrumpir batalla?</string>
     <string name="battle_exit_desc">Perderás el progreso actual en este combate.</string>
     <string name="battle_exit_confirm">Sí, salir</string>
     <string name="battle_exit_cancel">Cancelar</string>
-    <string name="battle_selected_hint">🎯 %s seleccionado. ¡Haz clic en carta enemiga o HP!</string>
+    <string name="battle_selected_hint">🎯 %s seleccionado. ¡Haz clic en carta o héroe!</string>
 
     <!-- Rewards Screen -->
     <string name="daily_rewards">Recompensas Diarias</string>
-    <string name="rewards_desc">¡Inicia sesión todos los días para obtener premios valiosos! Tu día actual: %d</string>
+    <string name="rewards_desc">¡Inicia sesión todos los días para obtener premios! Tu día actual: %d</string>
     <string name="day_x">Día %d</string>
-    <string name="reward_claimed_msg">¡Ya has reclamado la recompensa de hoy! Te esperamos mañana 🎁</string>
+    <string name="reward_claimed_msg">¡Ya has reclamado la recompensa de hoy! 🎁</string>
     <string name="claim_reward">Reclamar Recompensa</string>
 
     <string name="reward_gold">Oro</string>
@@ -67,7 +76,7 @@
     <string name="forge_awaiting">🔥 El calor de la forja espera...</string>
     <string name="forge_welcome">¡Bienvenido a la Forja!</string>
     <string name="forge_merge_success">Fusión: 100 %1$s -> 10 %2$s</string>
-    <string name="forge_merge_fail">¡No hay suficiente para fusionar!</string>
+    <string name="forge_merge_fail">¡No hay suficiente polvo!</string>
     <string name="forge_craft_success">¡Carta %s forjada!</string>
     <string name="forge_craft_fail">¡No hay suficiente polvo!</string>
     <string name="forge_legendary_ready">¡HOJA LEGENDARIA LISTA!</string>
@@ -91,42 +100,10 @@
     <string name="booster_gold">Oro: %d 🪙</string>
     <string name="booster_crystals">Cristales: %d 💎</string>
 
-    <!-- Battle Log -->
-    <string name="battle_start_msg">Tu turno. ¡Juega cartas o ataca al enemigo!</string>
-    <string name="battle_your_turn">¡Tu turno! Maná actualizado.</string>
-    <string name="battle_opponent_turn">Turno del oponente...</string>
-    <string name="battle_attack_hero">💥 ¡Atacaste al héroe enemigo por %d de daño!</string>
-    <string name="battle_attack_hero_fail">❌ ¡No puedes atacar a la cara mientras el enemigo tenga esbirros!</string>
-    <string name="battle_card_played">🃏 Jugaste %s</string>
-    <string name="battle_play_fail">❌ ¡Error al jugar carta! Revisa maná o espacio.</string>
-    <string name="battle_card_attack">⚔️ ¡%1$s atacó a %2$s!</string>
-    <string name="battle_loading">Cargando batalla...</string>
-
-    <!-- Rarities -->
-    <string name="rarity_common">COMÚN</string>
-    <string name="rarity_rare">RARA</string>
-    <string name="rarity_epic">ÉPICA</string>
-    <string name="rarity_legendary">LEGENDARIA</string>
-
-    <!-- Effects -->
-    <string name="effect_normal_desc">Criatura ordinaria.\nSin poderes mágicos ocultos.</string>
-    <string name="effect_active_buffs">Potenciadores activos:\n%s</string>
-    <string name="stat_attack">Ataque</string>
-    <string name="stat_health">Salud</string>
-    <string name="close">Cerrar</string>
-
-    <!-- Boosters -->
-    <string name="booster_normal">Sobre Normal</string>
-    <string name="booster_normal_desc">Un conjunto de 5 cartas aleatorias. Probabilidades base.</string>
-    <string name="booster_premium">Sobre Premium</string>
-    <string name="booster_premium_desc">Un conjunto de 5 cartas con mayor probabilidad de cartas Raras y Épicas.</string>
-    <string name="booster_crystal">Sobre de Cristal</string>
-    <string name="booster_crystal_desc">Un conjunto de 5 cartas. ¡Cartas Épicas garantizadas y alta probabilidad de Legendaria!</string>
-
     <!-- Chapters and Levels -->
     <string name="chapter_1">Capítulo 1: Sombras de Tierras Olvidadas</string>
     <string name="level_1">Prólogo: Guardia Goblinoide</string>
-    <string name="level_1_desc">Batalla fácil. Familiarízate con los conceptos básicos.</string>
+    <string name="level_1_desc">Batalla fácil. Familiarízate con lo básico.</string>
     <string name="opponent_goblin_scout">Explorador Goblinoide</string>
 
     <string name="level_2">Emboscada en los Arbustos</string>
@@ -197,7 +174,7 @@
     <string name="card_forgotten_cadaver">Cadáver Olvidado</string>
     <string name="card_cult_mystic">Místico del Culto</string>
     <string name="card_kings_guardsman">Guardia del Rey</string>
-    <string name="card_hungry_crocolisk">Crocolisco Hambriento</string>
+    <string name="card_hungry_crocolisk">Crocolisco Hambриento</string>
     <string name="card_lesser_demon">Demonio Inferior</string>
     <string name="card_swamp_thing">Cosa del Pantano</string>
     <string name="card_armored_rhino">Rinoceronte Acorazado</string>
@@ -243,19 +220,25 @@
     <string name="card_doom_herald">Heraldo de la Perdición</string>
     <string name="card_celestial_dragon">Dragón Celestial</string>
 
+    <!-- Rarities -->
+    <string name="rarity_common">COMÚN</string>
+    <string name="rarity_rare">RARA</string>
+    <string name="rarity_epic">ÉPICA</string>
+    <string name="rarity_legendary">LEGENDARIA</string>
+
     <!-- Effects -->
     <string name="effect_rush">Carga</string>
-    <string name="effect_rush_desc">Puede atacar inmediatamente en el turno en que es invocado.</string>
+    <string name="effect_rush_desc">Puede atacar inmediatamente.</string>
     <string name="effect_taunt">Provocar</string>
-    <string name="effect_taunt_desc">Los enemigos deben atacar a este esbirro primero.</string>
+    <string name="effect_taunt_desc">Los enemigos deben atacar primero.</string>
     <string name="effect_ranged">A distancia</string>
-    <string name="effect_ranged_desc">No recibe daño de contraataque al atacar.</string>
+    <string name="effect_ranged_desc">Sin daño de contraataque.</string>
     <string name="effect_splash">Explosión</string>
-    <string name="effect_splash_desc">Inflige 1 de daño a los esbirros adyacentes al objetivo.</string>
+    <string name="effect_splash_desc">Daño a minions adyacentes.</string>
     <string name="effect_lifesteal">Robo de vida</string>
-    <string name="effect_lifesteal_desc">Sana a tu héroe por la cantidad de daño infligido.</string>
+    <string name="effect_lifesteal_desc">Sana a tu héroe.</string>
     <string name="effect_blessing">Bendición</string>
-    <string name="effect_blessing_desc">Otorga +2/+2 a un aliado aleatorio durante 2 turnos al ser invocado.</string>
+    <string name="effect_blessing_desc">Otorga +2/+2 a un aliado.</string>
     <string name="effect_buff_name">Fortalecimiento</string>
     <string name="buff_format">💪 %1$s: +%2$d/+%3$d (%4$d turnos)</string>
     <string name="lang_en">English</string>

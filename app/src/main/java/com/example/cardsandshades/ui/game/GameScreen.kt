@@ -83,14 +83,14 @@ fun GameScreen(
             content = {
                 GameText(stringResource(R.string.battle_exit_desc), color = Color.Gray, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
             },
-            confirmButton = {
+            confirmButton = { onAction ->
                 GameButton(text = stringResource(R.string.battle_exit_confirm), onClick = {
-                    showExitDialog = false
+                    onAction()
                     onBackToMenu()
                 }, containerColor = Color(0xFFD32F2F))
             },
-            dismissButton = {
-                GameButton(text = stringResource(R.string.battle_exit_cancel), onClick = { showExitDialog = false }, containerColor = Color.Gray)
+            dismissButton = { onAction ->
+                GameButton(text = stringResource(R.string.battle_exit_cancel), onClick = onAction, containerColor = Color.Gray)
             }
         )
     }
