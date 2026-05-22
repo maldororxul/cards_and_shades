@@ -138,9 +138,9 @@ object UserProfile {
 
                     selectedDeck.clear()
                     selectedDeck.addAll(validStartDeck)
+                    
+                    save()
                 }
-
-                save(context)
             }
         }
     }

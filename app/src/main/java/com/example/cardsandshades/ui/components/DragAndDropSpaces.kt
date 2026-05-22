@@ -12,10 +12,14 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.unit.IntSize
 import com.example.cardsandshades.model.CardModel
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlin.math.abs
 
 internal val LocalDragTargetInfo = compositionLocalOf { DragTargetInfo() }
@@ -72,6 +76,7 @@ fun DragTarget(
     card: CardModel,
     modifier: Modifier = Modifier,
     onTap: () -> Unit = {},
+    onLongClick: () -> Unit = {},
     content: @Composable () -> Unit
 ) {
     val currentDragTargetInfo = LocalDragTargetInfo.current
@@ -83,55 +88,69 @@ fun DragTarget(
         modifier = modifier
             .onGloballyPositioned { currentPositionInWindow = it.positionInWindow() }
             .pointerInput(card.id) {
-                awaitEachGesture {
-                    val down = awaitFirstDown(requireUnconsumed = false)
-                    accumulatedDrag = Offset.Zero
-                    isVerticalDragActive = false
+                coroutineScope {
+                    awaitEachGesture {
+                        val down = awaitFirstDown(requireUnconsumed = false)
+                        accumulatedDrag = Offset.Zero
+                        isVerticalDragActive = false
+                        var isLongClickTriggered = false
 
-                    val initialFingerGlobalPosition = currentPositionInWindow + down.position
+                        val initialFingerGlobalPosition = currentPositionInWindow + down.position
 
-                    drag(down.id) { change ->
-                        val dragDelta = change.positionChange()
-                        accumulatedDrag = Offset(accumulatedDrag.x + dragDelta.x, accumulatedDrag.y + dragDelta.y)
-
-                        if (!isVerticalDragActive) {
-                            if (accumulatedDrag.y < -15f && abs(accumulatedDrag.y) > abs(accumulatedDrag.x)) {
-                                isVerticalDragActive = true
-                                currentDragTargetInfo.isDragging = true
-                                currentDragTargetInfo.draggableCard = card
-                                currentDragTargetInfo.dragPosition = initialFingerGlobalPosition
+                        val longPressJob = launch {
+                            delay(viewConfiguration.longPressTimeoutMillis)
+                            if (!isVerticalDragActive && accumulatedDrag.getDistance() < 10f) {
+                                isLongClickTriggered = true
+                                onLongClick()
                             }
                         }
 
+                        drag(down.id) { change ->
+                            val dragDelta = change.positionChange()
+                            accumulatedDrag = Offset(accumulatedDrag.x + dragDelta.x, accumulatedDrag.y + dragDelta.y)
+
+                            if (!isVerticalDragActive) {
+                                if (accumulatedDrag.y < -15f && abs(accumulatedDrag.y) > abs(accumulatedDrag.x)) {
+                                    isVerticalDragActive = true
+                                    longPressJob.cancel()
+                                    currentDragTargetInfo.isDragging = true
+                                    currentDragTargetInfo.draggableCard = card
+                                    currentDragTargetInfo.dragPosition = initialFingerGlobalPosition
+                                }
+                            }
+
+                            if (isVerticalDragActive) {
+                                change.consume()
+                                currentDragTargetInfo.dragPosition = Offset(
+                                    initialFingerGlobalPosition.x + accumulatedDrag.x,
+                                    initialFingerGlobalPosition.y + accumulatedDrag.y
+                                )
+                            }
+                        }
+
+                        longPressJob.cancel()
+
+                        // Если перемещение было незначительным — засчитываем как TAP
+                        if (!isVerticalDragActive && !isLongClickTriggered && accumulatedDrag.getDistance() < 10f) {
+                            onTap()
+                        }
+
+                        // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Обрабатываем сброс прямо в момент отпускания пальца
                         if (isVerticalDragActive) {
-                            change.consume()
-                            currentDragTargetInfo.dragPosition = Offset(
-                                initialFingerGlobalPosition.x + accumulatedDrag.x,
-                                initialFingerGlobalPosition.y + accumulatedDrag.y
-                            )
+                            val finalDropPosition = currentDragTargetInfo.dragPosition
+
+                            // Ищем, в какую из зарегистрированных зон попал палец
+                            val targetZone = currentDragTargetInfo.activeDropTargets.find { zone ->
+                                zone.bounds.contains(finalDropPosition)
+                            }
+
+                            // Если зона найдена — принудительно активируем логику розыгрыша карты
+                            targetZone?.onDropped?.invoke(card)
+
+                            // Очищаем глобальное состояние
+                            currentDragTargetInfo.isDragging = false
+                            isVerticalDragActive = false
                         }
-                    }
-
-                    // Если перемещение было незначительным — засчитываем как TAP
-                    if (!isVerticalDragActive && abs(accumulatedDrag.y) < 10f && abs(accumulatedDrag.x) < 10f) {
-                        onTap()
-                    }
-
-                    // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Обрабатываем сброс прямо в момент отпускания пальца
-                    if (isVerticalDragActive) {
-                        val finalDropPosition = currentDragTargetInfo.dragPosition
-
-                        // Ищем, в какую из зарегистрированных зон попал палец
-                        val targetZone = currentDragTargetInfo.activeDropTargets.find { zone ->
-                            zone.bounds.contains(finalDropPosition)
-                        }
-
-                        // Если зона найдена — принудительно активируем логику розыгрыша карты
-                        targetZone?.onDropped?.invoke(card)
-
-                        // Очищаем глобальное состояние
-                        currentDragTargetInfo.isDragging = false
-                        isVerticalDragActive = false
                     }
                 }
             }
@@ -179,10 +198,4 @@ fun DropTarget(
 
         content(isHovered)
     }
-}
-
-private fun androidx.compose.ui.input.pointer.PointerInputChange.positionChange(): Offset {
-    val previous = previousPosition
-    val current = position
-    return Offset(current.x - previous.x, current.y - previous.y)
 }

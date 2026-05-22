@@ -3,9 +3,10 @@ package com.example.cardsandshades.ui.components
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -136,6 +137,7 @@ fun CardInspectionDialog(
     )
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CardComponent(
     card: CardModel,
@@ -191,13 +193,17 @@ fun CardComponent(
                 .width(105.dp)
                 .height(150.dp)
                 .border(borderThickness, if (card.isTakingDamage) Color.Red else borderColor, RoundedCornerShape(8.dp))
-                .clickable(enabled = !isPreview || onClick != null) {
-                    if (onClick != null) {
-                        onClick()
-                    } else {
+                .combinedClickable(
+                    enabled = !isPreview || onClick != null,
+                    onClick = {
+                        if (onClick != null) {
+                            onClick()
+                        }
+                    },
+                    onLongClick = {
                         showInspectDialog = true
                     }
-                },
+                ),
             shape = RoundedCornerShape(8.dp),
             colors = CardDefaults.cardColors(containerColor = Color(0xFF212121))
         ) {

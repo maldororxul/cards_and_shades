@@ -135,3 +135,485 @@ cards:
     rarity: "LEGENDARY"
     effectTags: ["SPLASH", "BUFF"]
     imageResName: "card_void_archmage"
+  - name: "Бешеный волк"
+    manaCost: 2
+    baseAttack: 3
+    baseHealth: 1
+    rarity: "COMMON"
+    effectTags: ["RUSH"]
+    imageResName: "card_rabid_wolf"
+  - name: "Стальной голем"
+    manaCost: 5
+    baseAttack: 2
+    baseHealth: 8
+    rarity: "COMMON"
+    effectTags: ["TAUNT"]
+    imageResName: "card_steel_golem"
+  - name: "Охотник джунглей"
+    manaCost: 4
+    baseAttack: 4
+    baseHealth: 3
+    rarity: "RARE"
+    effectTags: ["RANGED"]
+    imageResName: "card_jungle_hunter"
+  - name: "Жрица солнца"
+    manaCost: 3
+    baseAttack: 2
+    baseHealth: 4
+    rarity: "RARE"
+    effectTags: ["BUFF"]
+    imageResName: "card_sun_priestess"
+  - name: "Гоблин-подрывник"
+    manaCost: 3
+    baseAttack: 3
+    baseHealth: 2
+    rarity: "EPIC"
+    effectTags: ["SPLASH"]
+    imageResName: "card_goblin_demolisher"
+  - name: "Темный рыцарь"
+    manaCost: 5
+    baseAttack: 5
+    baseHealth: 4
+    rarity: "EPIC"
+    effectTags: ["TAUNT", "LIFESTEAL"]
+    imageResName: "card_dark_knight"
+  - name: "Адепт бури"
+    manaCost: 4
+    baseAttack: 3
+    baseHealth: 3
+    rarity: "EPIC"
+    effectTags: ["RANGED", "SPLASH"]
+    imageResName: "card_storm_adept"
+  - name: "Повелитель огня"
+    manaCost: 6
+    baseAttack: 6
+    baseHealth: 5
+    rarity: "LEGENDARY"
+    effectTags: ["SPLASH", "RUSH"]
+    imageResName: "card_fire_lord"
+  - name: "Ангел-хранитель"
+    manaCost: 6
+    baseAttack: 4
+    baseHealth: 7
+    rarity: "LEGENDARY"
+    effectTags: ["TAUNT", "BUFF"]
+    imageResName: "card_guardian_angel"
+  - name: "Высший лич"
+    manaCost: 7
+    baseAttack: 5
+    baseHealth: 6
+    rarity: "LEGENDARY"
+    effectTags: ["LIFESTEAL", "BUFF"]
+    imageResName: "card_arch_lich"
+  - name: "Адепт ордена"
+    manaCost: 1
+    baseAttack: 1
+    baseHealth: 2
+    rarity: "COMMON"
+    imageResName: "card_order_adept"
+  - name: "Дикая гиена"
+    manaCost: 1
+    baseAttack: 1
+    baseHealth: 1
+    rarity: "COMMON"
+    effectTags: ["RUSH"]
+    imageResName: "card_wild_hyena"
+  - name: "Городской стражник"
+    manaCost: 2
+    baseAttack: 2
+    baseHealth: 3
+    rarity: "COMMON"
+    imageResName: "card_town_guard"
+  - name: "Молодой лучник"
+    manaCost: 2
+    baseAttack: 2
+    baseHealth: 1
+    rarity: "COMMON"
+    effectTags: ["RANGED"]
+    imageResName: "card_young_archer"
+  - name: "Гном-щитоносец"
+    manaCost: 2
+    baseAttack: 1
+    baseHealth: 3
+    rarity: "COMMON"
+    effectTags: ["TAUNT"]
+    imageResName: "card_gnome_shieldbearer"
+  - name: "Чумная крыса"
+    manaCost: 2
+    baseAttack: 1
+    baseHealth: 2
+    rarity: "COMMON"
+    effectTags: ["LIFESTEAL"]
+    imageResName: "card_plague_rat"
+  - name: "Лесной засадник"
+    manaCost: 3
+    baseAttack: 3
+    baseHealth: 2
+    rarity: "COMMON"
+    effectTags: ["RUSH"]
+    imageResName: "card_forest_ambusher"
+  - name: "Веб-прядильщик"
+    manaCost: 3
+    baseAttack: 1
+    baseHealth: 5
+    rarity: "COMMON"
+    effectTags: ["TAUNT"]
+    imageResName: "card_web_spinner"
+  - name: "Искрящий голем"
+    manaCost: 3
+    baseAttack: 4
+    baseHealth: 3
+    rarity: "COMMON"
+    imageResName: "card_sparking_golem"
+  - name: "Ученик мага"
+    manaCost: 3
+    baseAttack: 3
+    baseHealth: 4
+    rarity: "COMMON"
+    imageResName: "card_mage_apprentice"
+  - name: "Наемный арбалетчик"
+    manaCost: 4
+    baseAttack: 3
+    baseHealth: 4
+    rarity: "COMMON"
+    effectTags: ["RANGED"]
+    imageResName: "card_hired_crossbowman"
+  - name: "Пещерный йети"
+    manaCost: 4
+    baseAttack: 4
+    baseHealth: 5
+    rarity: "COMMON"
+    imageResName: "card_cave_yeti"
+  - name: "Забытый кадавр"
+    manaCost: 4
+    baseAttack: 4
+    baseHealth: 3
+    rarity: "COMMON"
+    effectTags: ["RUSH"]
+    imageResName: "card_forgotten_cadaver"
+  - name: "Мистик культа"
+    manaCost: 4
+    baseAttack: 2
+    baseHealth: 5
+    rarity: "COMMON"
+    effectTags: ["BUFF"]
+    imageResName: "card_cult_mystic"
+  - name: "Гвардеец короля"
+    manaCost: 5
+    baseAttack: 3
+    baseHealth: 6
+    rarity: "COMMON"
+    effectTags: ["TAUNT"]
+    imageResName: "card_kings_guardsman"
+  - name: "Голодный кроколиск"
+    manaCost: 5
+    baseAttack: 5
+    baseHealth: 6
+    rarity: "COMMON"
+    imageResName: "card_hungry_crocolisk"
+  - name: "Младший демон"
+    manaCost: 5
+    baseAttack: 6
+    baseHealth: 5
+    rarity: "COMMON"
+    imageResName: "card_lesser_demon"
+  - name: "Болотная тварь"
+    manaCost: 5
+    baseAttack: 4
+    baseHealth: 5
+    rarity: "COMMON"
+    effectTags: ["LIFESTEAL"]
+    imageResName: "card_swamp_thing"
+  - name: "Бронированный носорог"
+    manaCost: 6
+    baseAttack: 4
+    baseHealth: 7
+    rarity: "COMMON"
+    effectTags: ["TAUNT"]
+    imageResName: "card_armored_rhino"
+  - name: "Осадный великан"
+    manaCost: 6
+    baseAttack: 5
+    baseHealth: 6
+    rarity: "COMMON"
+    effectTags: ["SPLASH"]
+    imageResName: "card_siege_giant"
+  - name: "Адепт левитации"
+    manaCost: 1
+    baseAttack: 2
+    baseHealth: 1
+    rarity: "RARE"
+    effectTags: ["RANGED"]
+    imageResName: "card_levitation_adept"
+  - name: "Щитоносец авангарда"
+    manaCost: 1
+    baseAttack: 1
+    baseHealth: 3
+    rarity: "RARE"
+    effectTags: ["TAUNT"]
+    imageResName: "card_vanguard_shieldbearer"
+  - name: "Стихийный огонек"
+    manaCost: 2
+    baseAttack: 3
+    baseHealth: 2
+    rarity: "RARE"
+    effectTags: ["BUFF"]
+    imageResName: "card_elemental_wisp"
+  - name: "Следопыт Пустоты"
+    manaCost: 2
+    baseAttack: 2
+    baseHealth: 2
+    rarity: "RARE"
+    effectTags: ["RANGED", "RUSH"]
+    imageResName: "card_void_tracker"
+  - name: "Оскверненный волк"
+    manaCost: 2
+    baseAttack: 2
+    baseHealth: 3
+    rarity: "RARE"
+    effectTags: ["LIFESTEAL"]
+    imageResName: "card_corrupted_wolf"
+  - name: "Часовой рассвета"
+    manaCost: 3
+    baseAttack: 2
+    baseHealth: 5
+    rarity: "RARE"
+    effectTags: ["TAUNT"]
+    imageResName: "card_dawn_sentinel"
+  - name: "Теневой клинок"
+    manaCost: 3
+    baseAttack: 4
+    baseHealth: 2
+    rarity: "RARE"
+    effectTags: ["RUSH"]
+    imageResName: "card_shadow_blade"
+  - name: "Маг-разрушитель"
+    manaCost: 3
+    baseAttack: 3
+    baseHealth: 3
+    rarity: "RARE"
+    effectTags: ["SPLASH"]
+    imageResName: "card_destruction_mage"
+  - name: "Лесной друид"
+    manaCost: 3
+    baseAttack: 2
+    baseHealth: 4
+    rarity: "RARE"
+    effectTags: ["BUFF"]
+    imageResName: "card_forest_druid"
+  - name: "Клинок Света"
+    manaCost: 4
+    baseAttack: 4
+    baseHealth: 4
+    rarity: "RARE"
+    effectTags: ["BUFF"]
+    imageResName: "card_light_blade"
+  - name: "Изумрудный дракончик"
+    manaCost: 4
+    baseAttack: 3
+    baseHealth: 5
+    rarity: "RARE"
+    effectTags: ["RANGED"]
+    imageResName: "card_emerald_drake"
+  - name: "Костяной голем"
+    manaCost: 4
+    baseAttack: 3
+    baseHealth: 5
+    rarity: "RARE"
+    effectTags: ["TAUNT", "LIFESTEAL"]
+    imageResName: "card_bone_golem"
+  - name: "Темный сектант"
+    manaCost: 4
+    baseAttack: 5
+    baseHealth: 4
+    rarity: "RARE"
+    effectTags: ["RUSH"]
+    imageResName: "card_dark_sectarian"
+  - name: "Инквизитор"
+    manaCost: 5
+    baseAttack: 5
+    baseHealth: 5
+    rarity: "RARE"
+    effectTags: ["SPLASH"]
+    imageResName: "card_inquisitor"
+  - name: "Хранитель рощи"
+    manaCost: 5
+    baseAttack: 4
+    baseHealth: 7
+    rarity: "RARE"
+    effectTags: ["TAUNT"]
+    imageResName: "card_grove_keeper"
+  - name: "Жнец душ"
+    manaCost: 5
+    baseAttack: 5
+    baseHealth: 4
+    rarity: "RARE"
+    effectTags: ["LIFESTEAL", "RUSH"]
+    imageResName: "card_soul_reaper"
+  - name: "Громовержец"
+    manaCost: 6
+    baseAttack: 5
+    baseHealth: 6
+    rarity: "RARE"
+    effectTags: ["RANGED", "SPLASH"]
+    imageResName: "card_thunderbolt_mage"
+  - name: "Огненный гигант"
+    manaCost: 6
+    baseAttack: 7
+    baseHealth: 5
+    rarity: "RARE"
+    effectTags: ["SPLASH"]
+    imageResName: "card_fire_giant"
+  - name: "Железный исполин"
+    manaCost: 7
+    baseAttack: 5
+    baseHealth: 9
+    rarity: "RARE"
+    effectTags: ["TAUNT"]
+    imageResName: "card_iron_colossus"
+  - name: "Пожиратель миров"
+    manaCost: 8
+    baseAttack: 8
+    baseHealth: 8
+    rarity: "RARE"
+    effectTags: ["RUSH", "SPLASH"]
+    imageResName: "card_world_eater"
+  - name: "Озорной пикси"
+    manaCost: 1
+    baseAttack: 1
+    baseHealth: 1
+    rarity: "RARE"
+    effectTags: ["BUFF"]
+    imageResName: "card_mischievous_pixie"
+  - name: "Аколит Пустоты"
+    manaCost: 1
+    baseAttack: 2
+    baseHealth: 2
+    rarity: "RARE"
+    imageResName: "card_void_acolyte"
+  - name: "Песчаный сталкер"
+    manaCost: 2
+    baseAttack: 3
+    baseHealth: 2
+    rarity: "RARE"
+    effectTags: ["RUSH"]
+    imageResName: "card_sand_stalker"
+  - name: "Эльфийский страж"
+    manaCost: 2
+    baseAttack: 2
+    baseHealth: 4
+    rarity: "RARE"
+    effectTags: ["TAUNT"]
+    imageResName: "card_elven_warden"
+  - name: "Проклятый ворон"
+    manaCost: 2
+    baseAttack: 2
+    baseHealth: 1
+    rarity: "RARE"
+    effectTags: ["RANGED"]
+    imageResName: "card_cursed_raven"
+  - name: "Служитель Света"
+    manaCost: 3
+    baseAttack: 2
+    baseHealth: 3
+    rarity: "RARE"
+    effectTags: ["LIFESTEAL"]
+    imageResName: "card_light_servant"
+  - name: "Осадный копейщик"
+    manaCost: 3
+    baseAttack: 3
+    baseHealth: 3
+    rarity: "RARE"
+    effectTags: ["RANGED"]
+    imageResName: "card_siege_spearman"
+  - name: "Каменное чудище"
+    manaCost: 3
+    baseAttack: 2
+    baseHealth: 5
+    rarity: "RARE"
+    effectTags: ["TAUNT"]
+    imageResName: "card_stone_beast"
+  - name: "Берсерк клана"
+    manaCost: 4
+    baseAttack: 5
+    baseHealth: 3
+    rarity: "RARE"
+    effectTags: ["RUSH"]
+    imageResName: "card_clan_berserk"
+  - name: "Ведьма топей"
+    manaCost: 4
+    baseAttack: 3
+    baseHealth: 5
+    rarity: "RARE"
+    effectTags: ["BUFF"]
+    imageResName: "card_swamp_witch"
+  - name: "Лавовый прыгун"
+    manaCost: 4
+    baseAttack: 4
+    baseHealth: 3
+    rarity: "RARE"
+    effectTags: ["SPLASH"]
+    imageResName: "card_lava_jumper"
+  - name: "Королевский лучник"
+    manaCost: 4
+    baseAttack: 4
+    baseHealth: 4
+    rarity: "RARE"
+    effectTags: ["RANGED"]
+    imageResName: "card_royal_archer"
+  - name: "Багровый палач"
+    manaCost: 5
+    baseAttack: 6
+    baseHealth: 3
+    rarity: "RARE"
+    effectTags: ["RUSH"]
+    imageResName: "card_crimson_executioner"
+  - name: "Старший экзорцист"
+    manaCost: 5
+    baseAttack: 4
+    baseHealth: 5
+    rarity: "RARE"
+    effectTags: ["BUFF", "TAUNT"]
+    imageResName: "card_senior_exorcist"
+  - name: "Призрак глубин"
+    manaCost: 5
+    baseAttack: 4
+    baseHealth: 4
+    rarity: "RARE"
+    effectTags: ["LIFESTEAL", "SPLASH"]
+    imageResName: "card_depth_wraith"
+  - name: "Черепаха-бастион"
+    manaCost: 6
+    baseAttack: 3
+    baseHealth: 9
+    rarity: "RARE"
+    effectTags: ["TAUNT"]
+    imageResName: "card_bastion_turtle"
+  - name: "Штормовой элементаль"
+    manaCost: 6
+    baseAttack: 5
+    baseHealth: 5
+    rarity: "RARE"
+    effectTags: ["SPLASH"]
+    imageResName: "card_storm_elemental"
+  - name: "Забытый титан"
+    manaCost: 7
+    baseAttack: 7
+    baseHealth: 7
+    rarity: "RARE"
+    effectTags: ["TAUNT"]
+    imageResName: "card_forgotten_titan"
+  - name: "Вестник рока"
+    manaCost: 7
+    baseAttack: 6
+    baseHealth: 6
+    rarity: "RARE"
+    effectTags: ["SPLASH", "BUFF"]
+    imageResName: "card_doom_herald"
+  - name: "Небесный дракон"
+    manaCost: 8
+    baseAttack: 7
+    baseHealth: 7
+    rarity: "RARE"
+    effectTags: ["RANGED", "RUSH"]
+    imageResName: "card_celestial_dragon"

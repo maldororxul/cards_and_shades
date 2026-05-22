@@ -124,9 +124,6 @@ fun GameScreen(
                             battleLog = "⚔️ ${attacker.name} атаковал ${enemyCard.name}!"
                             selectedCardForAttack = null
                             isDrawingArrow = false
-                        } else {
-                            // Если никто не выбран для атаки — открываем инфо карты
-                            inspectedCard = enemyCard
                         }
                     }
                 )
@@ -154,8 +151,7 @@ fun GameScreen(
                         onCardClick = { card, offset ->
                             if (state.currentTurn == Turn.PLAYER && !state.isAnimating) {
                                 if (selectedCardForAttack?.id == card.id) {
-                                    // Второе нажатие на выбранную карту открывает детали
-                                    inspectedCard = card
+                                    // Второе нажатие снимает выбор
                                     selectedCardForAttack = null
                                     isDrawingArrow = false
                                 } else {
@@ -166,14 +162,8 @@ fun GameScreen(
                                         currentArrowOffset = offset
                                         isDrawingArrow = true
                                         battleLog = "🎯 Выбрана ${card.name}. Нажмите на карту врага или его HP!"
-                                    } else {
-                                        // Если не может атаковать — просто смотрим детали
-                                        inspectedCard = card
                                     }
                                 }
-                            } else {
-                                // В чужой ход — только просмотр
-                                inspectedCard = card
                             }
                         }
                     )

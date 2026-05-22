@@ -105,7 +105,8 @@ fun PlayerControlsZone(
                 DragTarget(
                     card = card,
                     modifier = Modifier.padding(4.dp),
-                    onTap = { inspectedCard = card }
+                    onTap = { /* Ничего не делаем или выбираем */ },
+                    onLongClick = { inspectedCard = card }
                 ) {
                     CardComponent(card = card, isPreview = true)
                 }

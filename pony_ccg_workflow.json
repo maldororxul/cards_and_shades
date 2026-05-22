@@ -16,7 +16,7 @@
         { "name": "VAE", "type": "VAE", "links": [7], "slot_index": 2 }
       ],
       "properties": { "Node name for PNG info": "CheckpointLoaderSimple" },
-      "widgets_values": ["ponyDiffusionV6XL_v6StartWithThisM.safetensors"]
+      "widgets_values": ["ponyDiffusionV6XL_v6StartWithThisOne.safetensors"]
     },
     {
       "id": 3,
@@ -97,7 +97,7 @@
       "flags": {},
       "order": 6,
       "mode": 0,
-      "inputs": [{ "name": "images", "type": "IMAGE", "link": 0 }],
+      "inputs": [{ "name": "images", "type": "IMAGE", "link": 9 }],
       "properties": { "Node name for PNG info": "SaveImage" },
       "widgets_values": ["ComfyUI_PonyCCG_NoLora"]
     }
@@ -111,7 +111,7 @@
     [6, 4, 0, 6, 2, "CONDITIONING"],
     [7, 1, 2, 7, 1, "VAE"],
     [8, 5, 0, 6, 3, "LATENT"],
-    [0, 7, 0, 8, 0, "IMAGE"]
+    [9, 7, 0, 8, 0, "IMAGE"]
   ],
   "groups": [],
   "config": {},
