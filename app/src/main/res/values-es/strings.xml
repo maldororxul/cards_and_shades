@@ -19,18 +19,28 @@
     <string name="draw">Empate</string>
 
     <string name="fusion_tree">Fusión de cartas</string>
-    <string name="fusion_desc">¡Combina copias de cartas débiles en cartas nuevas y más raras!</string>
+    <string name="fusion_desc">¡Combina copias de cartas débiles en cartas nuevas и más raras!</string>
     <string name="fusion_recipe_ready">¡Receta lista!</string>
     <string name="fusion_recipe_missing">¡Faltan cartas!</string>
     <string name="fusion_confirm">Crear carta</string>
     <string name="fusion_success">Fusión exitosa: ¡%s creada!</string>
+    <string name="fusion_cost">Requerido:</string>
+    <string name="fusion_result">Resultado:</string>
 
-    <!-- Game Over -->
+    <string name="battle_start_msg">¡La batalla ha comenzado!</string>
+    <string name="battle_your_turn">Tu Turno</string>
+    <string name="battle_opponent_turn">Turno del Oponente</string>
+    <string name="battle_attack_hero">¡Atacó al héroe por %d de daño!</string>
+    <string name="battle_attack_hero_fail">¡No puedes atacar al héroe! Hay un Guardián en el camino.</string>
+    <string name="battle_card_attack">%1$s atacó a %2$s</string>
+    <string name="battle_card_played">Jugó %s</string>
+    <string name="battle_play_fail">No se puede jugar la carta (sin maná o tablero lleno)</string>
+    <string name="battle_loading">Cargando batalla...</string>
     <string name="battle_finished">¡Batalla Finalizada!</string>
     <string name="victory_msg">¡HAS GANADO! 🎉</string>
     <string name="defeat_msg">HAS PERDIDO 💀</string>
     <string name="rewards_label">Tus recompensas de victoria:</string>
-    <string name="collect_loot">Recoger botín y salir</string>
+    <string name="collect_loot">Recoger botín и salir</string>
     <string name="card_added">🃏 Carta: [%s] añadida!</string>
 
     <string name="missions_count">%d Misiones</string>
@@ -39,6 +49,17 @@
     <string name="locked_icon">🔒</string>
     <string name="unlocked_icon">➡️</string>
     <string name="completed_icon">✅</string>
+
+    <!-- Achievements -->
+    <string name="daily_tab">Diario</string>
+    <string name="achievements_tab">Logros</string>
+    <string name="ach_collection_title">Maestro de Colección</string>
+    <string name="ach_epic_title">Herrero Épico</string>
+    <string name="ach_campaign_title">Conquistador</string>
+    <string name="ach_forge_title">Maestro de Forja</string>
+    <string name="ach_progress">Progreso: %1$d / %2$d</string>
+    <string name="ach_claim">Reclamar</string>
+    <string name="ach_completed">¡Completado!</string>
 
     <!-- Opponent Header -->
     <string name="opponent_stats">En mano: %1$d | En mazo: %2$d | Maná: %3$d/%4$d</string>
@@ -100,34 +121,6 @@
     <string name="booster_gold">Oro: %d 🪙</string>
     <string name="booster_crystals">Cristales: %d 💎</string>
 
-    <!-- Chapters and Levels -->
-    <string name="chapter_1">Capítulo 1: Sombras de Tierras Olvidadas</string>
-    <string name="level_1">Prólogo: Guardia Goblinoide</string>
-    <string name="level_1_desc">Batalla fácil. Familiarízate con lo básico.</string>
-    <string name="opponent_goblin_scout">Explorador Goblinoide</string>
-
-    <string name="level_2">Emboscada en los Arbustos</string>
-    <string name="level_2_desc">El enemigo usa fuerza bruta.</string>
-    <string name="opponent_orc_bruiser">Matón Orco</string>
-
-    <string name="level_3">Susurro del Bosque</string>
-    <string name="level_3_desc">Cuidado con los ataques mágicos.</string>
-    <string name="opponent_forest_spirit">Espíritu del Bosque</string>
-
-    <string name="level_7">Guarida de la Sombra</string>
-    <string name="level_7_desc">Jefe del primer capítulo.</string>
-    <string name="opponent_shadow_lord">Señor de las Sombras</string>
-
-    <string name="chapter_2">Capítulo 2: Ciudadela Maldita</string>
-    <string name="level_8">Puertas del Infierno</string>
-    <string name="level_8_desc">Dificultad muy alta.</string>
-    <string name="opponent_gatekeeper">Guardián de la Puerta</string>
-
-    <string name="chapter_3">Capítulo 3: Trono del Vacío</string>
-    <string name="level_15">El Vacío</string>
-    <string name="level_15_desc">Batallas legendarias.</string>
-    <string name="opponent_void_shadow">Sombra del Vacío</string>
-
     <!-- Card Keys -->
     <string name="card_shadow_recruit">Recluta de la Sombra</string>
     <string name="card_agile_imp">Diablillo Ágil</string>
@@ -174,7 +167,7 @@
     <string name="card_forgotten_cadaver">Cadáver Olvidado</string>
     <string name="card_cult_mystic">Místico del Culto</string>
     <string name="card_kings_guardsman">Guardia del Rey</string>
-    <string name="card_hungry_crocolisk">Crocolisco Hambриento</string>
+    <string name="card_hungry_crocolisk">Crocolisco Hambriento</string>
     <string name="card_lesser_demon">Demonio Inferior</string>
     <string name="card_swamp_thing">Cosa del Pantano</string>
     <string name="card_armored_rhino">Rinoceronte Acorazado</string>
@@ -193,7 +186,7 @@
     <string name="card_bone_golem">Gólem de Hueso</string>
     <string name="card_dark_sectarian">Sectario Oscuro</string>
     <string name="card_inquisitor">Inquisidor</string>
-    <string name="card_grove_keeper">Guardián de la Arboleda</string>
+    <string name="card_grove_keeper">Guardián de la Arболеда</string>
     <string name="card_soul_reaper">Segador de Almas</string>
     <string name="card_thunderbolt_mage">Mago del Rayo</string>
     <string name="card_fire_giant">Gigante de Fuego</string>
@@ -245,4 +238,5 @@
     <string name="lang_es">Español</string>
     <string name="lang_ru">Ruso</string>
     <string name="lang_selection_format">%1$s: %2$s</string>
+    <string name="effect_normal_desc">effect_normal_desc</string>
 </resources>

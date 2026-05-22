@@ -62,7 +62,7 @@ fun OpponentHeaderZone(
                             val pos = coords.positionInWindow()
                             onEnemyHeroPositioned(Offset(pos.x + coords.size.width / 2, pos.y + coords.size.height / 2))
                         }
-                        .border(1.dp, Color.Red, RoundedCornerShape(4.dp))
+                        .border(2.dp, Color.Red.copy(alpha = 0.5f), RoundedCornerShape(4.dp))
                         .padding(horizontal = 8.dp, vertical = 2.dp)
                         .clickable { onEnemyHeroClick() }
                 )

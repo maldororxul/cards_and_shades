@@ -24,8 +24,18 @@
     <string name="fusion_recipe_missing">Не хватает карт!</string>
     <string name="fusion_confirm">Создать Карту</string>
     <string name="fusion_success">Слияние завершено: %s создана!</string>
+    <string name="fusion_cost">Требуется:</string>
+    <string name="fusion_result">Результат:</string>
 
-    <!-- Game Over -->
+    <string name="battle_start_msg">Битва началась!</string>
+    <string name="battle_your_turn">Ваш Ход</string>
+    <string name="battle_opponent_turn">Ход Противника</string>
+    <string name="battle_attack_hero">Атака героя на %d урона!</string>
+    <string name="battle_attack_hero_fail">Нельзя атаковать героя! Мешает Провокация.</string>
+    <string name="battle_card_attack">%1$s атакует %2$s</string>
+    <string name="battle_card_played">Разыграна карта: %s</string>
+    <string name="battle_play_fail">Нельзя разыграть (нет маны или места)</string>
+    <string name="battle_loading">Загрузка битвы...</string>
     <string name="battle_finished">Битва Завершена!</string>
     <string name="victory_msg">ВЫ ПОБЕДИЛИ! 🎉</string>
     <string name="defeat_msg">ВЫ ПРОИГРАЛИ 💀</string>
@@ -39,6 +49,17 @@
     <string name="locked_icon">🔒</string>
     <string name="unlocked_icon">➡️</string>
     <string name="completed_icon">✅</string>
+
+    <!-- Achievements -->
+    <string name="daily_tab">Ежедневно</string>
+    <string name="achievements_tab">Достижения</string>
+    <string name="ach_collection_title">Мастер коллекции</string>
+    <string name="ach_epic_title">Эпический кузнец</string>
+    <string name="ach_campaign_title">Завоеватель</string>
+    <string name="ach_forge_title">Мастер кузни</string>
+    <string name="ach_progress">Прогресс: %1$d / %2$d</string>
+    <string name="ach_claim">Забрать</string>
+    <string name="ach_completed">Выполнено!</string>
 
     <!-- Opponent Header -->
     <string name="opponent_stats">В руке: %1$d | В колоде: %2$d | Мана: %3$d/%4$d</string>
@@ -99,34 +120,6 @@
     <string name="booster_no_resources">Недостаточно ресурсов!</string>
     <string name="booster_gold">Золото: %d 🪙</string>
     <string name="booster_crystals">Кристаллы: %d 💎</string>
-
-    <!-- Chapters and Levels -->
-    <string name="chapter_1">Глава 1: Тени Забытых Земель</string>
-    <string name="level_1">Пролог: Гоблинский дозор</string>
-    <string name="level_1_desc">Легкий бой. Познакомьтесь с основами.</string>
-    <string name="opponent_goblin_scout">Гоблин-разведчик</string>
-
-    <string name="level_2">Засада в кустах</string>
-    <string name="level_2_desc">Враг использует грубую силу.</string>
-    <string name="opponent_orc_bruiser">Громила орков</string>
-
-    <string name="level_3">Шепот леса</string>
-    <string name="level_3_desc">Остерегайтесь магических атак.</string>
-    <string name="opponent_forest_spirit">Лесной дух</string>
-
-    <string name="level_7">Логово Тени</string>
-    <string name="level_7_desc">Босс первой главы.</string>
-    <string name="opponent_shadow_lord">Теневой лорд</string>
-
-    <string name="chapter_2">Глава 2: Проклятая Цитадель</string>
-    <string name="level_8">Врата ада</string>
-    <string name="level_8_desc">Очень высокая сложность.</string>
-    <string name="opponent_gatekeeper">Привратник</string>
-
-    <string name="chapter_3">Глава 3: Трон Пустоты</string>
-    <string name="level_15">Пустота</string>
-    <string name="level_15_desc">Легендарные битвы.</string>
-    <string name="opponent_void_shadow">Тень пустоты</string>
 
     <!-- Card Keys -->
     <string name="card_shadow_recruit">Тень-новобранец</string>
@@ -245,4 +238,5 @@
     <string name="lang_es">Español</string>
     <string name="lang_ru">Русский</string>
     <string name="lang_selection_format">%1$s: %2$s</string>
+    <string name="effect_normal_desc">effect_normal_desc</string>
 </resources>

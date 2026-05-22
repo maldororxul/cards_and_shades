@@ -1,11 +1,14 @@
 package com.example.cardsandshades.ui.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import com.example.cardsandshades.catalog.BackgroundCatalog
 import com.example.cardsandshades.model.CardModel
+import com.example.cardsandshades.model.Rarity
 
 @Composable
 fun GameBackground(
@@ -15,17 +18,16 @@ fun GameBackground(
 ) {
     val bgResName = overrideRes ?: BackgroundCatalog.getBackgroundForScreen(screenId)
     
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = Modifier.fillMaxSize().background(Color(0xFF0F0F0F))) {
         if (bgResName != null) {
-            // Используем CardVisual как универсальный загрузчик картинка/видео
             CardVisual(
                 card = CardModel(
                     id = "bg",
-                    name = "background",
+                    name = bgResName,
                     manaCost = 0,
                     baseAttack = 0,
                     baseHealth = 0,
-                    rarity = com.example.cardsandshades.model.Rarity.COMMON,
+                    rarity = Rarity.COMMON,
                 ),
                 modifier = Modifier.fillMaxSize()
             )

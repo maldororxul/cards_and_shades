@@ -4,6 +4,8 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -48,9 +50,19 @@ class MainActivity : AppCompatActivity() {
         com.example.cardsandshades.catalog.RewardsCatalog.init(this)
         com.example.cardsandshades.catalog.BoosterCatalog.init(this)
         com.example.cardsandshades.catalog.BackgroundCatalog.init(this)
+        com.example.cardsandshades.catalog.FusionCatalog.init(this)
+        com.example.cardsandshades.catalog.AchievementCatalog.init(this)
         UserProfile.initDatabase(this)
         SoundManager.init(this)
         SoundManager.startMusic(this)
+
+        lifecycle.addObserver(LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_PAUSE -> SoundManager.pauseMusic()
+                Lifecycle.Event.ON_RESUME -> SoundManager.resumeMusic()
+                else -> {}
+            }
+        })
 
         // 1. Разрешаем приложению отрисовываться под системными панелями
         WindowCompat.setDecorFitsSystemWindows(window, false)
@@ -68,28 +80,15 @@ class MainActivity : AppCompatActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     val screens = listOf("campaign", "collection", "shop", "forge", "rewards", "settings")
-                    var currentScreen by remember { mutableStateOf("campaign") }
                     val pagerState = rememberPagerState(initialPage = 0, pageCount = { screens.size })
                     val scope = rememberCoroutineScope()
-
-                    // Синхронизация currentScreen с pagerState
-                    LaunchedEffect(pagerState.currentPage) {
-                        currentScreen = screens[pagerState.currentPage]
-                    }
+                    
+                    val currentScreen = screens[pagerState.currentPage]
 
                     Box(modifier = Modifier.fillMaxSize()) {
-                        var isTransitioning by remember { mutableStateOf(false) }
-                        
                         // ЭФФЕКТ ЗАТЕМНЕНИЯ ПРИ СМЕНЕ ЭКРАНА (для кнопок навигации)
                         // При свайпах анимация и так есть в Pager
-                        LaunchedEffect(currentScreen) {
-                            val targetPage = screens.indexOf(currentScreen)
-                            if (pagerState.currentPage != targetPage) {
-                                isTransitioning = true
-                                pagerState.animateScrollToPage(targetPage)
-                                isTransitioning = false
-                            }
-                        }
+                        var isTransitioning by remember { mutableStateOf(false) }
 
                         if (gameViewModel.gameState.collectAsState().value != null) {
                             // ЭКРАН ИГРЫ (Оверлей)
@@ -97,11 +96,12 @@ class MainActivity : AppCompatActivity() {
                                 gameViewModel.claimRewardsAndExit(false) 
                             })
                         } else {
-                            // КОНТЕНТ ТЕКУЩЕГО ЭКРАНА С ПЕЙДЖЕРОМ
-                            HorizontalPager(
-                                state = pagerState,
-                                modifier = Modifier.fillMaxSize()
-                            ) { page ->
+                    // КОНТЕНТ ТЕКУЩЕГО ЭКРАНА С ПЕЙДЖЕРОМ
+                    HorizontalPager(
+                        state = pagerState,
+                        modifier = Modifier.fillMaxSize(),
+                        userScrollEnabled = gameViewModel.gameState.collectAsState().value == null
+                    ) { page ->
                                 val screen = screens[page]
                                 GameBackground(screenId = screen) {
                                     when (screen) {

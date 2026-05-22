@@ -1,0 +1,35 @@
+achievement_groups:
+  - id: "collection_size"
+    name: "ach_collection_title"
+    type: "COLLECTION_SIZE"
+    tiers:
+      - goal: 10
+        reward_gold: 100
+      - goal: 20
+        reward_gold: 250
+      - goal: 50
+        reward_crystals: 50
+  - id: "epic_cards"
+    name: "ach_epic_title"
+    type: "EPIC_COLLECTION"
+    tiers:
+      - goal: 5
+        reward_dust_epic: 50
+      - goal: 10
+        reward_dust_epic: 150
+  - id: "campaign_progress"
+    name: "ach_campaign_title"
+    type: "CAMPAIGN_LEVEL"
+    tiers:
+      - goal: 5
+        reward_gold: 200
+      - goal: 10
+        reward_crystals: 100
+  - id: "forge_count"
+    name: "ach_forge_title"
+    type: "FORGE_COUNT"
+    tiers:
+      - goal: 10
+        reward_dust_common: 100
+      - goal: 30
+        reward_dust_rare: 50

@@ -7,7 +7,6 @@ import OpponentHeaderZone
 import PlayerBoardZone
 import PlayerControlsZone
 import RenderAttackArrows
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -16,7 +15,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.style.TextAlign
 import com.example.cardsandshades.model.CardModel
 import com.example.cardsandshades.model.Turn
 import com.example.cardsandshades.model.UserProfile
@@ -30,15 +29,37 @@ import com.example.cardsandshades.sound.SoundManager
 import androidx.compose.ui.res.stringResource
 import com.example.cardsandshades.R
 import com.example.cardsandshades.utils.getStringResourceByName
+import com.example.cardsandshades.ui.components.GameBackground
+import androidx.compose.material3.CircularProgressIndicator
 
 @Composable
 fun GameScreen(
     viewModel: GameViewModel,
     onBackToMenu: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val gameState by viewModel.gameState.collectAsState()
+    val levelBg = viewModel.currentLevel?.backgroundRes ?: "bg_battle_default"
+
+    GameBackground(screenId = "game", overrideRes = levelBg) {
+        if (gameState == null) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+        } else {
+            GameScreenContent(viewModel, gameState!!, onBackToMenu, modifier)
+        }
+    }
+}
+
+@Composable
+private fun GameScreenContent(
+    viewModel: GameViewModel,
+    state: com.example.cardsandshades.model.GameState,
+    onBackToMenu: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    val gameState by viewModel.gameState.collectAsState()
     var selectedCardForAttack by remember { mutableStateOf<CardModel?>(null) }
     var inspectedCard by remember { mutableStateOf<CardModel?>(null) }
     var showExitDialog by remember { mutableStateOf(false) }
@@ -49,7 +70,6 @@ fun GameScreen(
     }
 
     var startArrowOffset by remember { mutableStateOf(Offset.Zero) }
-    var currentArrowOffset by remember { mutableStateOf(Offset.Zero) }
     var isDrawingArrow by remember { mutableStateOf(false) }
 
     val playerCardsOffsets = remember { mutableStateMapOf<String, Offset>() }
@@ -59,15 +79,6 @@ fun GameScreen(
 
     val battleStartMsg = stringResource(R.string.battle_start_msg)
     var battleLog by remember { mutableStateOf(battleStartMsg) }
-
-    if (gameState == null) {
-        Box(modifier = Modifier.fillMaxSize().background(Color.Black), contentAlignment = Alignment.Center) {
-            GameText(stringResource(R.string.battle_loading), color = Color.White)
-        }
-        return
-    }
-
-    val state = gameState!!
     
     val yourTurnMsg = stringResource(R.string.battle_your_turn)
     val opponentTurnMsg = stringResource(R.string.battle_opponent_turn)
@@ -81,7 +92,7 @@ fun GameScreen(
             onDismiss = { showExitDialog = false },
             title = stringResource(R.string.battle_exit_title),
             content = {
-                GameText(stringResource(R.string.battle_exit_desc), color = Color.Gray, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                GameText(stringResource(R.string.battle_exit_desc), color = Color.Gray, textAlign = TextAlign.Center)
             },
             confirmButton = { onAction ->
                 GameButton(text = stringResource(R.string.battle_exit_confirm), onClick = {
@@ -90,7 +101,9 @@ fun GameScreen(
                 }, containerColor = Color(0xFFD32F2F))
             },
             dismissButton = { onAction ->
-                GameButton(text = stringResource(R.string.battle_exit_cancel), onClick = onAction, containerColor = Color.Gray)
+                GameButton(text = stringResource(R.string.battle_exit_cancel), onClick = {
+                    onAction()
+                }, containerColor = Color.Gray)
             }
         )
     }
@@ -101,7 +114,6 @@ fun GameScreen(
                 modifier = Modifier.fillMaxSize().padding(12.dp),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
-                // ВРАГ: Передаем значения из viewModel напрямую в аргументы
                 val attackHeroMsg = stringResource(R.string.battle_attack_hero)
                 val attackHeroFailMsg = stringResource(R.string.battle_attack_hero_fail)
                 
@@ -124,7 +136,6 @@ fun GameScreen(
                     }
                 )
 
-                // ПОЛЕ БОЯ ВРАГА
                 val cardAttackMsg = stringResource(R.string.battle_card_attack)
                 EnemyBoardZone(
                     boardCards = state.opponent.board,
@@ -140,10 +151,8 @@ fun GameScreen(
                     }
                 )
 
-                // ЛОГ ИНФОРМАЦИИ БОЯ
                 BattleLogZone(battleLog = battleLog)
 
-                // ПОЛЕ БОЯ ИГРОКА (С ЗОНОЙ СБРОСА)
                 val cardPlayedMsg = stringResource(R.string.battle_card_played)
                 val playFailMsg = stringResource(R.string.battle_play_fail)
                 DropTarget(
@@ -165,7 +174,6 @@ fun GameScreen(
                         onCardClick = { card, offset ->
                             if (state.currentTurn == Turn.PLAYER && !state.isAnimating) {
                                 if (selectedCardForAttack?.id == card.id) {
-                                    // Второе нажатие снимает выбор
                                     selectedCardForAttack = null
                                     isDrawingArrow = false
                                 } else {
@@ -173,9 +181,9 @@ fun GameScreen(
                                     if (canAttack) {
                                         selectedCardForAttack = card
                                         startArrowOffset = offset
-                                        currentArrowOffset = offset
                                         isDrawingArrow = true
-                                        battleLog = context.getString(R.string.battle_selected_hint, getStringResourceByName(context, card.name))
+                                        val cardName = getStringResourceByName(context, card.name)
+                                        battleLog = context.getString(R.string.battle_selected_hint, cardName)
                                     }
                                 }
                             }
@@ -183,24 +191,21 @@ fun GameScreen(
                     )
                 }
 
-                // ИГРОК: Контроллеры, мана и рука. Тоже передаем значения урона по лицу
                 PlayerControlsZone(
                     player = state.player,
                     isPlayerTurn = state.currentTurn == Turn.PLAYER,
                     isHeroTakingDamage = viewModel.playerHeroTakingDamage,
                     damageValue = viewModel.playerHeroDamageValue,
                     onPlayerHeroPositioned = { playerHeroOffset = it },
-                    onEndTurnClick = {
-                        viewModel.endTurn()
-                        selectedCardForAttack = null
-                        isDrawingArrow = false
-                    }
-                )
+                ) {
+                    viewModel.endTurn()
+                    selectedCardForAttack = null
+                    isDrawingArrow = false
+                }
             }
 
-            // ВИЗУАЛЬНЫЙ СЛОЙ: Рендеринг стрелок атаки
             RenderAttackArrows(
-                isPlayerDrawing = isDrawingArrow && selectedCardForAttack != null,
+                isPlayerDrawing = (isDrawingArrow && selectedCardForAttack != null),
                 playerStart = startArrowOffset,
                 playerTargetOffset = state.opponent.board.firstOrNull()?.id?.let { enemyCardsOffsets[it] },
                 enemyHeroOffset = enemyHeroOffset,
@@ -213,7 +218,6 @@ fun GameScreen(
                 playerHeroOffset = playerHeroOffset
             )
 
-            // ЭКРАН ЗАВЕРШЕНИЯ ИГРЫ
             val unlockedLevel by UserProfile.maxUnlockedLevel.collectAsState()
             val isFirstTimeWin = (viewModel.currentLevel?.id ?: 0) >= unlockedLevel
             val rewards = if (isFirstTimeWin) viewModel.currentLevel?.firstTimeReward else viewModel.currentLevel?.repeatReward

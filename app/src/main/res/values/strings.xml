@@ -8,12 +8,6 @@
     <string name="save">Save</string>
     <string name="campaign">Campaign</string>
     <string name="shop">Packs</string>
-    <string name="fusion_tree">Fusion Tree</string>
-    <string name="fusion_desc">Combine multiple cards to create a rarer card!</string>
-    <string name="fusion_recipe_ready">Recipe ready!</string>
-    <string name="fusion_recipe_missing">Missing cards!</string>
-    <string name="fusion_confirm">Fuse Cards</string>
-    <string name="fusion_success">Fusion successful: %s created!</string>
     <string name="collection">Collection</string>
     <string name="rewards">Rewards</string>
     <string name="forge">Forge</string>
@@ -25,7 +19,25 @@
     <string name="player_name">Player</string>
     <string name="draw">Draw</string>
 
+    <string name="fusion_tree">Fusion Tree</string>
+    <string name="fusion_desc">Combine multiple cards to create a rarer card!</string>
+    <string name="fusion_recipe_ready">Recipe ready!</string>
+    <string name="fusion_recipe_missing">Missing cards!</string>
+    <string name="fusion_confirm">Fuse Cards</string>
+    <string name="fusion_success">Fusion successful: %s created!</string>
+    <string name="fusion_cost">Required:</string>
+    <string name="fusion_result">Result:</string>
+
     <!-- Game Over -->
+    <string name="battle_start_msg">Battle started!</string>
+    <string name="battle_your_turn">Your Turn</string>
+    <string name="battle_opponent_turn">Opponent\'s Turn</string>
+    <string name="battle_attack_hero">Attacked hero for %d damage!</string>
+    <string name="battle_attack_hero_fail">Cannot attack hero! Taunt minion is in the way.</string>
+    <string name="battle_card_attack">%1$s attacked %2$s</string>
+    <string name="battle_card_played">Played %s</string>
+    <string name="battle_play_fail">Cannot play card (Not enough mana or board full)</string>
+    <string name="battle_loading">Loading battle...</string>
     <string name="battle_finished">Battle Finished!</string>
     <string name="victory_msg">YOU WON! 🎉</string>
     <string name="defeat_msg">YOU LOST 💀</string>
@@ -39,6 +51,17 @@
     <string name="locked_icon">🔒</string>
     <string name="unlocked_icon">➡️</string>
     <string name="completed_icon">✅</string>
+
+    <!-- Achievements -->
+    <string name="daily_tab">Daily</string>
+    <string name="achievements_tab">Achievements</string>
+    <string name="ach_collection_title">Collection Master</string>
+    <string name="ach_epic_title">Epic Blacksmith</string>
+    <string name="ach_campaign_title">Conqueror</string>
+    <string name="ach_forge_title">Forge Master</string>
+    <string name="ach_progress">Progress: %1$d / %2$d</string>
+    <string name="ach_claim">Claim</string>
+    <string name="ach_completed">Completed!</string>
 
     <!-- Opponent Header -->
     <string name="opponent_stats">In hand: %1$d | In deck: %2$d | Mana: %3$d/%4$d</string>
@@ -99,66 +122,6 @@
     <string name="booster_no_resources">Not enough resources!</string>
     <string name="booster_gold">Gold: %d 🪙</string>
     <string name="booster_crystals">Crystals: %d 💎</string>
-
-    <!-- Battle Log -->
-    <string name="battle_start_msg">Your turn. Play cards or attack the enemy!</string>
-    <string name="battle_your_turn">Your turn! Mana updated.</string>
-    <string name="battle_opponent_turn">Opponent\'s turn...</string>
-    <string name="battle_attack_hero">💥 You attacked the enemy hero for %d damage!</string>
-    <string name="battle_attack_hero_fail">❌ Cannot attack face while the enemy has minions!</string>
-    <string name="battle_card_played">🃏 You played %s</string>
-    <string name="battle_play_fail">❌ Failed to play card! Check mana or space.</string>
-    <string name="battle_card_attack">⚔️ %1$s attacked %2$s!</string>
-    <string name="battle_loading">Loading battle...</string>
-
-    <!-- Rarities -->
-    <string name="rarity_common">COMMON</string>
-    <string name="rarity_rare">RARE</string>
-    <string name="rarity_epic">EPIC</string>
-    <string name="rarity_legendary">LEGENDARY</string>
-
-    <!-- Effects -->
-    <string name="effect_normal_desc">Ordinary creature.\nNo hidden magical powers.</string>
-    <string name="effect_active_buffs">Active buffs:\n%s</string>
-    <string name="stat_attack">Attack</string>
-    <string name="stat_health">Health</string>
-    <string name="close">Close</string>
-
-    <!-- Boosters -->
-    <string name="booster_normal">Normal Pack</string>
-    <string name="booster_normal_desc">A set of 5 random cards. Base chances.</string>
-    <string name="booster_premium">Premium Pack</string>
-    <string name="booster_premium_desc">A set of 5 cards with increased chance for Rare and Epic cards.</string>
-    <string name="booster_crystal">Crystal Pack</string>
-    <string name="booster_crystal_desc">A set of 5 cards. Guaranteed Epic cards and high chance for Legendary!</string>
-
-    <!-- Chapters and Levels -->
-    <string name="chapter_1">Chapter 1: Shadows of Forgotten Lands</string>
-    <string name="level_1">Prologue: Goblin Watch</string>
-    <string name="level_1_desc">Easy battle. Get familiar with the basics.</string>
-    <string name="opponent_goblin_scout">Goblin Scout</string>
-
-    <string name="level_2">Ambush in the Bushes</string>
-    <string name="level_2_desc">The enemy uses brute force.</string>
-    <string name="opponent_orc_bruiser">Orc Bruiser</string>
-
-    <string name="level_3">Whisper of the Forest</string>
-    <string name="level_3_desc">Watch out for magical attacks.</string>
-    <string name="opponent_forest_spirit">Forest Spirit</string>
-
-    <string name="level_7">Shadow\'s Lair</string>
-    <string name="level_7_desc">Boss of the first chapter.</string>
-    <string name="opponent_shadow_lord">Shadow Lord</string>
-
-    <string name="chapter_2">Chapter 2: Cursed Citadel</string>
-    <string name="level_8">Gates of Hell</string>
-    <string name="level_8_desc">Very high difficulty.</string>
-    <string name="opponent_gatekeeper">Gatekeeper</string>
-
-    <string name="chapter_3">Chapter 3: Throne of the Void</string>
-    <string name="level_15">The Void</string>
-    <string name="level_15_desc">Legendary battles.</string>
-    <string name="opponent_void_shadow">Void Shadow</string>
 
     <!-- Card Keys -->
     <string name="card_shadow_recruit">Shadow Recruit</string>
@@ -251,6 +214,12 @@
     <string name="card_forgotten_titan">Forgotten Titan</string>
     <string name="card_doom_herald">Doom Herald</string>
     <string name="card_celestial_dragon">Celestial Dragon</string>
+
+    <!-- Rarities -->
+    <string name="rarity_common">COMMON</string>
+    <string name="rarity_rare">RARE</string>
+    <string name="rarity_epic">EPIC</string>
+    <string name="rarity_legendary">LEGENDARY</string>
 
     <!-- Effects -->
     <string name="effect_rush">Rush</string>

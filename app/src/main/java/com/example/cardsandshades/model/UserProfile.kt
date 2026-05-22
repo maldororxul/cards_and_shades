@@ -78,10 +78,14 @@ object UserProfile {
 
                 val collectionJson = prefs.getString("collection", "[]") ?: "[]"
                 val deckJson = prefs.getString("deck", "[]") ?: "[]"
+                val achJson = prefs.getString("achievements", "[]") ?: "[]"
 
                 val listType = object : com.google.gson.reflect.TypeToken<List<CardModel>>() {}.type
                 val loadedCollection: List<CardModel> = gson.fromJson(collectionJson, listType) ?: emptyList()
                 val loadedDeck: List<CardModel> = gson.fromJson(deckJson, listType) ?: emptyList()
+                
+                val achStates: List<AchievementState> = gson.fromJson(achJson, object : com.google.gson.reflect.TypeToken<List<AchievementState>>() {}.type) ?: emptyList()
+                AchievementManager.loadStates(achStates)
 
                 // Обновляем SnapshotStateList в главном потоке для безопасности
                 launch(Dispatchers.Main) {
@@ -151,6 +155,7 @@ object UserProfile {
 
                 putString("collection", gson.toJson(collection.toList()))
                 putString("deck", gson.toJson(selectedDeck.toList()))
+                putString("achievements", gson.toJson(AchievementManager.getAllStates()))
                 apply()
             }
         }

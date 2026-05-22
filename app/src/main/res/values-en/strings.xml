@@ -130,4 +130,7 @@
     <string name="level_15">The Void</string>
     <string name="level_15_desc">Legendary battles.</string>
     <string name="opponent_void_shadow">Void Shadow</string>
+
+    <string name="battle_finished">Battle Finished</string>
+    <string name="effect_normal_desc">effect_normal_desc</string>
 </resources>

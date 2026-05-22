@@ -1,12 +1,18 @@
 package com.example.cardsandshades.ui.booster
 
+import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.*
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -19,21 +25,17 @@ import androidx.compose.ui.unit.sp
 import com.example.cardsandshades.R
 import com.example.cardsandshades.catalog.CardCatalog
 import com.example.cardsandshades.catalog.BoosterCatalog
+import com.example.cardsandshades.catalog.FusionCatalog
+import com.example.cardsandshades.catalog.FusionRecipe
 import com.example.cardsandshades.model.CardModel
 import com.example.cardsandshades.model.Rarity
 import com.example.cardsandshades.model.UserProfile
 import com.example.cardsandshades.model.BoosterModel
 import com.example.cardsandshades.ui.components.CardComponent
+import com.example.cardsandshades.ui.components.CardInspectionDialog
 import com.example.cardsandshades.ui.components.GameButton
 import com.example.cardsandshades.ui.components.GameText
 import com.example.cardsandshades.utils.getStringResourceByName
-
-import androidx.compose.animation.*
-import androidx.compose.animation.core.tween
-import androidx.compose.material3.*
-import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 
 @Composable
 fun BoosterScreen(
@@ -107,6 +109,9 @@ private fun PacksTab(gold: Int, crystals: Int, context: android.content.Context)
     val choosePackMsg = stringResource(R.string.booster_choose)
     var message by remember { mutableStateOf(choosePackMsg) }
     
+    // Стейт для полноэкранной анимации редкой карты
+    var highlightedCard by remember { mutableStateOf<CardModel?>(null) }
+
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         GameText(text = message, color = Color.White, fontSize = 16.sp, modifier = Modifier.padding(bottom = 16.dp))
 
@@ -121,11 +126,13 @@ private fun PacksTab(gold: Int, crystals: Int, context: android.content.Context)
                         LaunchedEffect(card.id) {
                             isVisible = true
                         }
-                        androidx.compose.animation.AnimatedVisibility(
-                            visible = isVisible,
-                            enter = scaleIn(initialScale = 0.5f, animationSpec = tween(400)) + fadeIn()
-                        ) {
-                            CardComponent(card = card)
+                        Box {
+                            androidx.compose.animation.AnimatedVisibility(
+                                visible = isVisible,
+                                enter = scaleIn(initialScale = 0.5f, animationSpec = tween(400)) + fadeIn()
+                            ) {
+                                CardComponent(card = card)
+                            }
                         }
                     }
                 }
@@ -157,10 +164,19 @@ private fun PacksTab(gold: Int, crystals: Int, context: android.content.Context)
                         val success = buyBooster(booster)
                         if (success) {
                             com.example.cardsandshades.sound.SoundManager.playSoundByName(context, "booster_open")
-                            openedCards = generatePack(booster)
+                            val newCards = generatePack(booster)
+                            openedCards = newCards
                             UserProfile.collection.addAll(openedCards)
                             UserProfile.save()
                             message = packOpenedMsg.format(getStringResourceByName(context, booster.name))
+                            
+                            // Проверка на легендарку/эпик для анимации
+                            val best = newCards.filter { it.rarity == Rarity.LEGENDARY || it.rarity == Rarity.EPIC }
+                                .maxByOrNull { if (it.rarity == Rarity.LEGENDARY) 2 else 1 }
+                            
+                            if (best != null) {
+                                highlightedCard = best
+                            }
                         } else {
                             message = noResourcesMsg
                         }
@@ -169,18 +185,28 @@ private fun PacksTab(gold: Int, crystals: Int, context: android.content.Context)
             }
         }
     }
+
+    if (highlightedCard != null) {
+        val color = if (highlightedCard!!.rarity == Rarity.LEGENDARY) Color(0xFFFDD835) else Color(0xFF8E24AA)
+        
+        Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.85f)).clickable { highlightedCard = null }, contentAlignment = Alignment.Center) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                GameText(
+                    text = if (highlightedCard!!.rarity == Rarity.LEGENDARY) "🌟 LEGENDARY! 🌟" else "✨ EPIC! ✨",
+                    color = color,
+                    fontSize = 32.sp,
+                    fontWeight = FontWeight.Black
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+                CardComponent(card = highlightedCard!!, modifier = Modifier.size(200.dp, 300.dp))
+            }
+        }
+    }
 }
 
 @Composable
 private fun FusionTab(context: android.content.Context) {
-    val recipes = remember {
-        listOf(
-            FusionRecipe("card_shadow_recruit", 3, "card_wild_hyena"),
-            FusionRecipe("card_agile_imp", 2, "card_rabid_wolf"),
-            FusionRecipe("card_stone_guardian", 2, "card_stone_beast"),
-            FusionRecipe("card_fire_elemental", 2, "card_fire_giant")
-        )
-    }
+    val recipes = FusionCatalog.recipes
 
     Column(modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState())) {
         GameText(stringResource(R.string.fusion_desc), fontSize = 14.sp, color = Color.Gray, modifier = Modifier.padding(bottom = 16.dp))
@@ -192,14 +218,15 @@ private fun FusionTab(context: android.content.Context) {
     }
 }
 
-data class FusionRecipe(val inputKey: String, val count: Int, val outputKey: String)
-
 @Composable
 private fun FusionAccordion(recipe: FusionRecipe, context: android.content.Context) {
     var expanded by remember { mutableStateOf(false) }
+    var inspectedCard by remember { mutableStateOf<CardModel?>(null) }
+
     val userCards = UserProfile.collection
-    val inputCount = userCards.count { it.name == recipe.inputKey }
-    val canFuse = inputCount >= recipe.count
+    val canFuse = recipe.inputs.all { input -> 
+        userCards.count { it.name == input.key } >= input.count
+    }
     
     Column(
         modifier = Modifier
@@ -214,14 +241,14 @@ private fun FusionAccordion(recipe: FusionRecipe, context: android.content.Conte
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column {
+            Column(modifier = Modifier.weight(1f)) {
                 GameText(
-                    text = "${recipe.count}x " + getStringResourceByName(context, recipe.inputKey) + " ➔ " + getStringResourceByName(context, recipe.outputKey),
+                    text = getStringResourceByName(context, recipe.outputKey),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold
                 )
                 GameText(
-                    text = if (canFuse) stringResource(R.string.fusion_recipe_ready) else stringResource(R.string.fusion_recipe_missing) + " ($inputCount/${recipe.count})",
+                    text = if (canFuse) stringResource(R.string.fusion_recipe_ready) else stringResource(R.string.fusion_recipe_missing),
                     fontSize = 11.sp,
                     color = if (canFuse) Color.Green else Color.Red
                 )
@@ -231,12 +258,36 @@ private fun FusionAccordion(recipe: FusionRecipe, context: android.content.Conte
 
         if (expanded) {
             Spacer(modifier = Modifier.height(16.dp))
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
-                // Превью входа
-                CardComponent(card = CardCatalog.createCardInstance(recipe.inputKey)!!, isPreview = true, modifier = Modifier.size(80.dp, 120.dp))
-                GameText("➕", fontSize = 20.sp)
-                // Превью выхода
-                CardComponent(card = CardCatalog.createCardInstance(recipe.outputKey)!!, isPreview = true, modifier = Modifier.size(80.dp, 120.dp))
+            
+            GameText(stringResource(R.string.fusion_cost), fontSize = 12.sp, color = Color.Gray)
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
+                recipe.inputs.forEach { input ->
+                    val hasCount = userCards.count { it.name == input.key }
+                    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(end = 12.dp)) {
+                        CardComponent(
+                            card = CardCatalog.createCardInstance(input.key)!!, 
+                            isPreview = true, 
+                            modifier = Modifier.size(60.dp, 90.dp),
+                            onClick = { inspectedCard = CardCatalog.createCardInstance(input.key) }
+                        )
+                        GameText("${hasCount}/${input.count}", fontSize = 10.sp, color = if (hasCount >= input.count) Color.Green else Color.Red)
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+            GameText(stringResource(R.string.fusion_result), fontSize = 12.sp, color = Color.Gray)
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                CardComponent(
+                    card = CardCatalog.createCardInstance(recipe.outputKey)!!, 
+                    isPreview = true, 
+                    modifier = Modifier.size(100.dp, 150.dp),
+                    onClick = { inspectedCard = CardCatalog.createCardInstance(recipe.outputKey) }
+                )
             }
             
             Spacer(modifier = Modifier.height(16.dp))
@@ -244,9 +295,11 @@ private fun FusionAccordion(recipe: FusionRecipe, context: android.content.Conte
             GameButton(
                 text = stringResource(R.string.fusion_confirm),
                 onClick = {
-                    repeat(recipe.count) {
-                        val card = UserProfile.collection.find { it.name == recipe.inputKey }
-                        if (card != null) UserProfile.collection.remove(card)
+                    recipe.inputs.forEach { input ->
+                        repeat(input.count) {
+                            val card = UserProfile.collection.find { it.name == input.key }
+                            if (card != null) UserProfile.collection.remove(card)
+                        }
                     }
                     val newCard = CardCatalog.createCardInstance(recipe.outputKey)!!
                     UserProfile.collection.add(newCard)
@@ -257,6 +310,10 @@ private fun FusionAccordion(recipe: FusionRecipe, context: android.content.Conte
                 modifier = Modifier.fillMaxWidth()
             )
         }
+    }
+
+    if (inspectedCard != null) {
+        CardInspectionDialog(card = inspectedCard!!, onDismiss = { inspectedCard = null })
     }
 }
 

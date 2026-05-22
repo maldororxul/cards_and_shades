@@ -31,7 +31,7 @@ fun GameOverOverlay(
     winnerName: String?,
     playerName: String?,
     rewards: RewardSetModel?,
-    onExitClick: (Boolean) -> Unit
+    onExitClick: (Boolean) -> Unit,
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
     AnimatedVisibility(visible = isGameOver, enter = fadeIn(), exit = fadeOut()) {
@@ -63,7 +63,7 @@ fun GameOverOverlay(
                 )
 
                 // ВИЗУАЛИЗАЦИЯ НАГРАДЫ ИГРОКА
-                if (isPlayerWin && rewards != null && !rewards.isEmpty) {
+                if (isPlayerWin && (rewards != null) && !rewards.isEmpty) {
                     Spacer(modifier = Modifier.height(24.dp))
                     GameText(stringResource(R.string.rewards_label), color = Color.Gray, fontSize = 14.sp)
                     Spacer(modifier = Modifier.height(12.dp))
