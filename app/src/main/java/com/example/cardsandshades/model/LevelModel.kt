@@ -10,7 +10,8 @@ data class LevelModel(
     val opponentDeckPreset: List<String>,
     val firstTimeReward: RewardSetModel,
     val repeatReward: RewardSetModel,
-    val backgroundRes: String? = null
+    val backgroundRes: String? = null,
+    val musicRes: String? = null
 )
 
 data class ChapterModel(

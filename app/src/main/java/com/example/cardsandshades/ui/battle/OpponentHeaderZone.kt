@@ -24,8 +24,11 @@ import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.example.cardsandshades.R
 import com.example.cardsandshades.model.PlayerModel
 import com.example.cardsandshades.ui.components.GameText
+import com.example.cardsandshades.utils.getStringResourceByName
 
 @Composable
 fun OpponentHeaderZone(
@@ -35,19 +38,20 @@ fun OpponentHeaderZone(
     onEnemyHeroPositioned: (Offset) -> Unit,
     onEnemyHeroClick: () -> Unit
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     Column(modifier = Modifier.fillMaxWidth().background(Color(0xFF1E1414), RoundedCornerShape(8.dp)).padding(8.dp)) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            GameText(opponent.name, color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            GameText(getStringResourceByName(context, opponent.name), color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
 
             val heroScale by animateFloatAsState(targetValue = if (isHeroTakingDamage) 1.4f else 1f, animationSpec = tween(200))
 
             Box(contentAlignment = Alignment.Center) {
                 GameText(
-                    text = "HP: ${opponent.currentHp}/${opponent.maxHp} ❤️",
+                    text = stringResource(R.string.hp_label, opponent.currentHp, opponent.maxHp),
                     color = if (isHeroTakingDamage) Color.White else Color(0xFFFF5252),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Black,
@@ -76,7 +80,7 @@ fun OpponentHeaderZone(
             }
         }
         GameText(
-            text = "В руке: ${opponent.hand.size} | В колоде: ${opponent.deck.size} | Мана: ${opponent.currentMana}/${opponent.maxMana}",
+            text = stringResource(R.string.opponent_stats, opponent.hand.size, opponent.deck.size, opponent.currentMana, opponent.maxMana),
             color = Color.Gray,
             fontSize = 12.sp
         )

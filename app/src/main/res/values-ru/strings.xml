@@ -1,0 +1,261 @@
+<resources>
+    <string name="back">Назад</string>
+    <string name="settings">Настройки</string>
+    <string name="music">Музыка: %d%%</string>
+    <string name="sounds">Звуки: %d%%</string>
+    <string name="language">Язык</string>
+    <string name="save">Сохранить</string>
+    <string name="campaign">Кампания</string>
+    <string name="shop">Магазин</string>
+    <string name="collection">Коллекция</string>
+    <string name="rewards">Награды</string>
+    <string name="forge">Кузница</string>
+    <string name="mana">Мана</string>
+    <string name="in_deck">В колоде</string>
+    <string name="end_turn">Конец Хода</string>
+    <string name="player_name">Игрок</string>
+    <string name="draw">Ничья</string>
+
+    <!-- Game Over -->
+    <string name="battle_finished">Битва Завершена!</string>
+    <string name="victory_msg">ВЫ ПОБЕДИЛИ! 🎉</string>
+    <string name="defeat_msg">ВЫ ПРОИГРАЛИ 💀</string>
+    <string name="rewards_label">Ваша награда за победу:</string>
+    <string name="collect_loot">Забрать лут и выйти</string>
+    <string name="card_added">🃏 Карта: [%s] добавлена!</string>
+
+    <string name="missions_count">%d Миссий</string>
+    <string name="reward_label">Награда: </string>
+    <string name="back_arrow">⬅️</string>
+    <string name="locked_icon">🔒</string>
+    <string name="unlocked_icon">➡️</string>
+    <string name="completed_icon">✅</string>
+
+    <!-- Opponent Header -->
+    <string name="opponent_stats">В руке: %1$d | В колоде: %2$d | Мана: %3$d/%4$d</string>
+    <string name="hp_label">HP: %1$d/%2$d ❤️</string>
+    <string name="mana_label">Мана: %1$d/%2$d 💧</string>
+    <string name="mana_short">Мана: %d</string>
+    <string name="in_deck_label">В колоде: %d</string>
+
+    <!-- Player Board -->
+    <string name="drag_card_hint">Перетащите карту сюда из руки</string>
+    <string name="enemy_board_empty">Поле противника пусто. Его Лицо открыто для атак!</string>
+
+    <!-- Game Screen -->
+    <string name="battle_exit_title">Прервать битву?</string>
+    <string name="battle_exit_desc">Вы потеряете текущий прогресс в этом бою.</string>
+    <string name="battle_exit_confirm">Да, выйти</string>
+    <string name="battle_exit_cancel">Отмена</string>
+    <string name="battle_selected_hint">🎯 Выбрана %s. Нажмите на карту врага или его HP!</string>
+
+    <!-- Rewards Screen -->
+    <string name="daily_rewards">Награды за вход</string>
+    <string name="rewards_desc">Заходите каждый день, чтобы получать ценные призы! Ваш текущий день: %d</string>
+    <string name="day_x">День %d</string>
+    <string name="reward_claimed_msg">Вы уже забрали сегодняшнюю награду! Ждем вас завтра 🎁</string>
+    <string name="claim_reward">Забрать награду дня</string>
+
+    <string name="reward_gold">Золото</string>
+    <string name="reward_crystals">Кристаллы</string>
+    <string name="reward_dust">Пыль</string>
+    <string name="reward_item">Предмет</string>
+
+    <!-- Forge Screen -->
+    <string name="forge_title">⚒️ КУЗНИЦА ⚒️</string>
+    <string name="forge_desc">Используйте пыль, чтобы выковать новые карты</string>
+    <string name="forge_awaiting">🔥 Жар кузни ожидает...</string>
+    <string name="forge_welcome">Добро пожаловать в Кузницу!</string>
+    <string name="forge_merge_success">Слияние: 100 %1$s -> 10 %2$s</string>
+    <string name="forge_merge_fail">Недостаточно для слияния!</string>
+    <string name="forge_craft_success">Выкована %s карта!</string>
+    <string name="forge_craft_fail">Недостаточно пыли!</string>
+    <string name="forge_legendary_ready">ЛЕГЕНДАРНЫЙ КЛИНОК ГОТОВ!</string>
+    <string name="dust_label">Пыль: %d</string>
+    <string name="forge_merge_btn">СЛИТЬ (100)</string>
+    <string name="forge_craft_btn">КОВАТЬ (%d)</string>
+
+    <!-- Collection Screen -->
+    <string name="deck_count">Соберите колоду: %d/20 карт</string>
+    <string name="deck_saved">✅ Колода сохранена!</string>
+    <string name="deck_error">❌ Нужно 20 карт!</string>
+    <string name="collection_empty">Ваша коллекция пуста! 📦</string>
+    <string name="in_stock">В наличии: %d</string>
+    <string name="dust_extras">Распылить (%d)</string>
+
+    <!-- Booster Screen -->
+    <string name="booster_choose">Выберите набор карт!</string>
+    <string name="booster_wait">📦 Выберите пак ниже</string>
+    <string name="booster_opened">Пак [%s] открыт!</string>
+    <string name="booster_no_resources">Недостаточно ресурсов!</string>
+    <string name="booster_gold">Золото: %d 🪙</string>
+    <string name="booster_crystals">Кристаллы: %d 💎</string>
+
+    <!-- Battle Log -->
+    <string name="battle_start_msg">Ваш ход. Разыграйте карты или атакуйте врага!</string>
+    <string name="battle_your_turn">Ваш ход! Мана обновлена.</string>
+    <string name="battle_opponent_turn">Ход соперника...</string>
+    <string name="battle_attack_hero">💥 Вы атаковали героя врага на %d урона!</string>
+    <string name="battle_attack_hero_fail">❌ Нельзя атаковать лицо, пока у врага есть существа!</string>
+    <string name="battle_card_played">🃏 Вы разыграли карту %s</string>
+    <string name="battle_play_fail">❌ Не удалось разыграть карту! Проверьте ману или место.</string>
+    <string name="battle_card_attack">⚔️ %1$s атаковал %2$s!</string>
+    <string name="battle_loading">Загрузка боя...</string>
+
+    <!-- Rarities -->
+    <string name="rarity_common">ОБЫЧНАЯ</string>
+    <string name="rarity_rare">РЕДКАЯ</string>
+    <string name="rarity_epic">ЭПИЧЕСКАЯ</string>
+    <string name="rarity_legendary">ЛЕГЕНДАРНАЯ</string>
+
+    <!-- Effects -->
+    <string name="effect_normal_desc">Обычное существо.\nНе имеет скрытых магических сил.</string>
+    <string name="effect_active_buffs">Активные баффы:\n%s</string>
+    <string name="stat_attack">Атака</string>
+    <string name="stat_health">Здоровье</string>
+    <string name="close">Закрыть</string>
+
+    <!-- Boosters -->
+    <string name="booster_normal">Обычный пак</string>
+    <string name="booster_normal_desc">Набор из 5 случайных карт. Базовые шансы.</string>
+    <string name="booster_premium">Премиум пак</string>
+    <string name="booster_premium_desc">Набор из 5 карт с повышенным шансом на редкие и эпические карты.</string>
+    <string name="booster_crystal">Кристальный пак</string>
+    <string name="booster_crystal_desc">Набор из 5 карт. Гарантированные эпические карты и высокий шанс на легендарку!</string>
+
+    <!-- Chapters and Levels -->
+    <string name="chapter_1">Глава 1: Тени Забытых Земель</string>
+    <string name="level_1">Пролог: Гоблинский дозор</string>
+    <string name="level_1_desc">Легкий бой. Познакомьтесь с основами.</string>
+    <string name="opponent_goblin_scout">Гоблин-разведчик</string>
+
+    <string name="level_2">Засада в кустах</string>
+    <string name="level_2_desc">Враг использует грубую силу.</string>
+    <string name="opponent_orc_bruiser">Громила орков</string>
+
+    <string name="level_3">Шепот леса</string>
+    <string name="level_3_desc">Остерегайтесь магических атак.</string>
+    <string name="opponent_forest_spirit">Лесной дух</string>
+
+    <string name="level_7">Логово Тени</string>
+    <string name="level_7_desc">Босс первой главы.</string>
+    <string name="opponent_shadow_lord">Теневой лорд</string>
+
+    <string name="chapter_2">Глава 2: Проклятая Цитадель</string>
+    <string name="level_8">Врата ада</string>
+    <string name="level_8_desc">Очень высокая сложность.</string>
+    <string name="opponent_gatekeeper">Привратник</string>
+
+    <string name="chapter_3">Глава 3: Трон Пустоты</string>
+    <string name="level_15">Пустота</string>
+    <string name="level_15_desc">Легендарные битвы.</string>
+    <string name="opponent_void_shadow">Тень пустоты</string>
+
+    <!-- Card Keys -->
+    <string name="card_shadow_recruit">Тень-новобранец</string>
+    <string name="card_agile_imp">Проворный бес</string>
+    <string name="card_stone_guardian">Каменный страж</string>
+    <string name="card_fire_elemental">Огненный элементаль</string>
+    <string name="card_elven_archer">Эльфийский лучник</string>
+    <string name="card_arcane_adept">Адепт тайной магии</string>
+    <string name="card_light_squire">Оруженосец Света</string>
+    <string name="card_void_sorcerer">Чародей Пустоты</string>
+    <string name="card_vampire_aristocrat">Вампир-аристократ</string>
+    <string name="card_shadow_king">Король Теней</string>
+    <string name="card_void_dragon">Дракон Пустоты</string>
+    <string name="card_shadow_reaper">Теневой жнец</string>
+    <string name="card_spirit_mentor">Дух-наставник</string>
+    <string name="card_rotting_zombie">Гниющий зомби</string>
+    <string name="card_ice_maiden">Ледяная дева</string>
+    <string name="card_cursed_paladin">Проклятый паладин</string>
+    <string name="card_storm_herald">Вестник бури</string>
+    <string name="card_ancient_ent">Древний энт</string>
+    <string name="card_ghost_reaper">Призрачный жнец</string>
+    <string name="card_void_archmage">Архимаг пустоты</string>
+    <string name="card_rabid_wolf">Бешеный волк</string>
+    <string name="card_steel_golem">Стальной голем</string>
+    <string name="card_jungle_hunter">Охотник джунглей</string>
+    <string name="card_sun_priestess">Жрица солнца</string>
+    <string name="card_goblin_demolisher">Гоблин-подрывник</string>
+    <string name="card_dark_knight">Темный рыцарь</string>
+    <string name="card_storm_adept">Адепт бури</string>
+    <string name="card_fire_lord">Повелитель огня</string>
+    <string name="card_guardian_angel">Ангел-хранитель</string>
+    <string name="card_arch_lich">Высший лич</string>
+    <string name="card_order_adept">Адепт ордена</string>
+    <string name="card_wild_hyena">Дикая гиена</string>
+    <string name="card_town_guard">Городской стражник</string>
+    <string name="card_young_archer">Молодой лучник</string>
+    <string name="card_gnome_shieldbearer">Гном-щитоносец</string>
+    <string name="card_plague_rat">Чумная крыса</string>
+    <string name="card_forest_ambusher">Лесной засадник</string>
+    <string name="card_web_spinner">Веб-прядильщик</string>
+    <string name="card_sparking_golem">Искрящий голем</string>
+    <string name="card_mage_apprentice">Ученик мага</string>
+    <string name="card_hired_crossbowman">Наемный арбалетчик</string>
+    <string name="card_cave_yeti">Пещерный йети</string>
+    <string name="card_forgotten_cadaver">Забытый кадавр</string>
+    <string name="card_cult_mystic">Мистик культа</string>
+    <string name="card_kings_guardsman">Гвардеец короля</string>
+    <string name="card_hungry_crocolisk">Голодный кроколиск</string>
+    <string name="card_lesser_demon">Младший демон</string>
+    <string name="card_swamp_thing">Болотная тварь</string>
+    <string name="card_armored_rhino">Бронированный носорог</string>
+    <string name="card_siege_giant">Осадный великан</string>
+    <string name="card_levitation_adept">Адепт левитации</string>
+    <string name="card_vanguard_shieldbearer">Щитоносец авангарда</string>
+    <string name="card_elemental_wisp">Стихийный огонек</string>
+    <string name="card_void_tracker">Следопыт Пустоты</string>
+    <string name="card_corrupted_wolf">Оскверненный волк</string>
+    <string name="card_dawn_sentinel">Часовой рассвета</string>
+    <string name="card_shadow_blade">Теневой клинок</string>
+    <string name="card_destruction_mage">Маг-разрушитель</string>
+    <string name="card_forest_druid">Лесной друид</string>
+    <string name="card_light_blade">Клинок Света</string>
+    <string name="card_emerald_drake">Изумрудный дракончик</string>
+    <string name="card_bone_golem">Костяной голем</string>
+    <string name="card_dark_sectarian">Темный сектант</string>
+    <string name="card_inquisitor">Инквизитор</string>
+    <string name="card_grove_keeper">Хранитель рощи</string>
+    <string name="card_soul_reaper">Жнец душ</string>
+    <string name="card_thunderbolt_mage">Громовержец</string>
+    <string name="card_fire_giant">Огненный гигант</string>
+    <string name="card_iron_colossus">Железный исполин</string>
+    <string name="card_world_eater">Пожиратель миров</string>
+    <string name="card_mischievous_pixie">Озорной пикси</string>
+    <string name="card_void_acolyte">Аколит Пустоты</string>
+    <string name="card_sand_stalker">Песчаный сталкер</string>
+    <string name="card_elven_warden">Эльфийский страж</string>
+    <string name="card_cursed_raven">Проклятый ворон</string>
+    <string name="card_light_servant">Служитель Света</string>
+    <string name="card_siege_spearman">Осадный копейщик</string>
+    <string name="card_stone_beast">Каменное чудище</string>
+    <string name="card_clan_berserk">Берсерк клана</string>
+    <string name="card_swamp_witch">Ведьма топей</string>
+    <string name="card_lava_jumper">Лавовый прыгун</string>
+    <string name="card_royal_archer">Королевский лучник</string>
+    <string name="card_crimson_executioner">Багровый палач</string>
+    <string name="card_senior_exorcist">Старший экзорцист</string>
+    <string name="card_depth_wraith">Призрак глубин</string>
+    <string name="card_bastion_turtle">Черепаха-бастион</string>
+    <string name="card_storm_elemental">Штормовой элементаль</string>
+    <string name="card_forgotten_titan">Забытый титан</string>
+    <string name="card_doom_herald">Вестник рока</string>
+    <string name="card_celestial_dragon">Небесный дракон</string>
+
+    <!-- Effects -->
+    <string name="effect_rush">Рывок</string>
+    <string name="effect_rush_desc">Может атаковать сразу в ход призыва.</string>
+    <string name="effect_taunt">Провокация</string>
+    <string name="effect_taunt_desc">Враг обязан атаковать это существо в первую очередь.</string>
+    <string name="effect_ranged">Стрелок</string>
+    <string name="effect_ranged_desc">При атаке не получает ответного урона.</string>
+    <string name="effect_splash">Маг</string>
+    <string name="effect_splash_desc">При атаке наносит 1 ед. урона соседним картам цели.</string>
+    <string name="effect_lifesteal">Вампиризм</string>
+    <string name="effect_lifesteal_desc">Лечит вашего героя на величину нанесенного урона.</string>
+    <string name="effect_blessing">Благословение</string>
+    <string name="effect_blessing_desc">При призыве дает +2/+2 случайному союзнику на 2 хода.</string>
+    <string name="effect_buff_name">Усиление</string>
+    <string name="buff_format">💪 %1$s: +%2$d/+%3$d (%4$d ходов)</string>
+</resources>

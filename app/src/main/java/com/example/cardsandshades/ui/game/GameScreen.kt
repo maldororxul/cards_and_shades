@@ -26,6 +26,10 @@ import com.example.cardsandshades.ui.components.GameText
 import com.example.cardsandshades.ui.components.GameButton
 import com.example.cardsandshades.ui.components.GameDialog
 import androidx.activity.compose.BackHandler
+import com.example.cardsandshades.sound.SoundManager
+import androidx.compose.ui.res.stringResource
+import com.example.cardsandshades.R
+import com.example.cardsandshades.utils.getStringResourceByName
 
 @Composable
 fun GameScreen(
@@ -53,36 +57,40 @@ fun GameScreen(
     var playerHeroOffset by remember { mutableStateOf(Offset.Zero) }
     var enemyHeroOffset by remember { mutableStateOf(Offset.Zero) }
 
-    var battleLog by remember { mutableStateOf("Ваш ход. Разыграйте карты или атакуйте врага!") }
+    val battleStartMsg = stringResource(R.string.battle_start_msg)
+    var battleLog by remember { mutableStateOf(battleStartMsg) }
 
     if (gameState == null) {
         Box(modifier = Modifier.fillMaxSize().background(Color.Black), contentAlignment = Alignment.Center) {
-            GameText("Загрузка боя...", color = Color.White)
+            GameText(stringResource(R.string.battle_loading), color = Color.White)
         }
         return
     }
 
     val state = gameState!!
+    
+    val yourTurnMsg = stringResource(R.string.battle_your_turn)
+    val opponentTurnMsg = stringResource(R.string.battle_opponent_turn)
 
     LaunchedEffect(state.currentTurn) {
-        battleLog = if (state.currentTurn == Turn.PLAYER) "Ваш ход! Мана обновлена." else "Ход соперника..."
+        battleLog = if (state.currentTurn == Turn.PLAYER) yourTurnMsg else opponentTurnMsg
     }
 
     if (showExitDialog) {
         GameDialog(
             onDismiss = { showExitDialog = false },
-            title = "Прервать битву?",
+            title = stringResource(R.string.battle_exit_title),
             content = {
-                GameText("Вы потеряете текущий прогресс в этом бою.", color = Color.Gray, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                GameText(stringResource(R.string.battle_exit_desc), color = Color.Gray, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
             },
             confirmButton = {
-                GameButton(text = "Да, выйти", onClick = {
+                GameButton(text = stringResource(R.string.battle_exit_confirm), onClick = {
                     showExitDialog = false
                     onBackToMenu()
                 }, containerColor = Color(0xFFD32F2F))
             },
             dismissButton = {
-                GameButton(text = "Отмена", onClick = { showExitDialog = false }, containerColor = Color.Gray)
+                GameButton(text = stringResource(R.string.battle_exit_cancel), onClick = { showExitDialog = false }, containerColor = Color.Gray)
             }
         )
     }
@@ -94,6 +102,9 @@ fun GameScreen(
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
                 // ВРАГ: Передаем значения из viewModel напрямую в аргументы
+                val attackHeroMsg = stringResource(R.string.battle_attack_hero)
+                val attackHeroFailMsg = stringResource(R.string.battle_attack_hero_fail)
+                
                 OpponentHeaderZone(
                     opponent = state.opponent,
                     isHeroTakingDamage = viewModel.opponentHeroTakingDamage,
@@ -103,17 +114,18 @@ fun GameScreen(
                         selectedCardForAttack?.let { attacker ->
                             if (state.opponent.board.isEmpty()) {
                                 viewModel.attackEnemyHero(attacker)
-                                battleLog = "💥 Вы атаковали героя врага на ${attacker.currentAttack} урона!"
+                                battleLog = attackHeroMsg.format(attacker.currentAttack)
                                 selectedCardForAttack = null
                                 isDrawingArrow = false
                             } else {
-                                battleLog = "❌ Нельзя атаковать лицо, пока у врага есть существа!"
+                                battleLog = attackHeroFailMsg
                             }
                         }
                     }
                 )
 
                 // ПОЛЕ БОЯ ВРАГА
+                val cardAttackMsg = stringResource(R.string.battle_card_attack)
                 EnemyBoardZone(
                     boardCards = state.opponent.board,
                     onCardPositioned = { id, offset -> enemyCardsOffsets[id] = offset },
@@ -121,7 +133,7 @@ fun GameScreen(
                         if (selectedCardForAttack != null) {
                             val attacker = selectedCardForAttack!!
                             viewModel.attackEnemyCard(attacker, enemyCard)
-                            battleLog = "⚔️ ${attacker.name} атаковал ${enemyCard.name}!"
+                            battleLog = cardAttackMsg.format(getStringResourceByName(context, attacker.name), getStringResourceByName(context, enemyCard.name))
                             selectedCardForAttack = null
                             isDrawingArrow = false
                         }
@@ -132,12 +144,14 @@ fun GameScreen(
                 BattleLogZone(battleLog = battleLog)
 
                 // ПОЛЕ БОЯ ИГРОКА (С ЗОНОЙ СБРОСА)
+                val cardPlayedMsg = stringResource(R.string.battle_card_played)
+                val playFailMsg = stringResource(R.string.battle_play_fail)
                 DropTarget(
                     modifier = Modifier.fillMaxWidth().height(150.dp),
                     onCardDropped = { droppedCard ->
                         val success = viewModel.playCard(droppedCard)
-                        battleLog = if (success) "🃏 Вы разыграли карту ${droppedCard.name}"
-                        else "❌ Не удалось разыграть карту! Проверьте ману или место."
+                        battleLog = if (success) cardPlayedMsg.format(getStringResourceByName(context, droppedCard.name))
+                        else playFailMsg
                     }
                 ) { isHovered ->
                     PlayerBoardZone(
@@ -161,7 +175,7 @@ fun GameScreen(
                                         startArrowOffset = offset
                                         currentArrowOffset = offset
                                         isDrawingArrow = true
-                                        battleLog = "🎯 Выбрана ${card.name}. Нажмите на карту врага или его HP!"
+                                        battleLog = context.getString(R.string.battle_selected_hint, getStringResourceByName(context, card.name))
                                     }
                                 }
                             }
@@ -212,6 +226,7 @@ fun GameScreen(
                 onExitClick = { isPlayerWin ->
                     viewModel.claimRewardsAndExit(isPlayerWin)
                     UserProfile.save(context)
+                    SoundManager.startMusic(context)
                     onBackToMenu()
                 }
             )

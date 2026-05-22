@@ -21,6 +21,8 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.example.cardsandshades.R
 import com.example.cardsandshades.model.CardModel
 import com.example.cardsandshades.ui.components.CardComponent
 import com.example.cardsandshades.ui.components.GameText
@@ -44,7 +46,7 @@ fun PlayerBoardZone(
         contentAlignment = Alignment.Center
     ) {
         if (boardCards.isEmpty()) {
-            GameText("Перетащите карту сюда из руки", color = Color.Gray, fontSize = 12.sp)
+            GameText(stringResource(R.string.drag_card_hint), color = Color.Gray, fontSize = 12.sp)
         } else {
             LazyRow(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
                 items(boardCards, key = { "pl_${it.id}" }) { playerCard ->

@@ -18,18 +18,23 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.cardsandshades.R
 import com.example.cardsandshades.model.CardModel
 import com.example.cardsandshades.model.Rarity
+import com.example.cardsandshades.utils.getStringResourceByName
 
 @Composable
 fun CardInspectionDialog(
     card: CardModel,
     onDismiss: () -> Unit
 ) {
+    val context = LocalContext.current
     val borderColor = when (card.rarity) {
         Rarity.COMMON -> Color.Gray
         Rarity.RARE -> Color(0xFF1E88E5)
@@ -39,7 +44,7 @@ fun CardInspectionDialog(
 
     GameDialog(
         onDismiss = onDismiss,
-        title = card.name,
+        title = getStringResourceByName(context, card.name),
         content = {
             Column(
                 modifier = Modifier.fillMaxWidth(),
@@ -59,8 +64,15 @@ fun CardInspectionDialog(
                         GameText(card.manaCost.toString(), fontWeight = FontWeight.Bold, fontSize = 20.sp)
                     }
                     
+                    val rarityLabel = when(card.rarity) {
+                        Rarity.COMMON -> stringResource(R.string.rarity_common)
+                        Rarity.RARE -> stringResource(R.string.rarity_rare)
+                        Rarity.EPIC -> stringResource(R.string.rarity_epic)
+                        Rarity.LEGENDARY -> stringResource(R.string.rarity_legendary)
+                    }
+                    
                     GameText(
-                        text = card.rarity.name,
+                        text = rarityLabel,
                         color = borderColor,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold
@@ -85,14 +97,19 @@ fun CardInspectionDialog(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 val effectsDescription = if (card.activeTags.isNotEmpty()) {
-                    card.activeEffects.joinToString("\n\n") { "✨ ${it.name}\n${it.description}" }
+                    card.activeEffects.joinToString("\n\n") { 
+                        "✨ " + getStringResourceByName(context, it.name) + "\n" + getStringResourceByName(context, it.description)
+                    }
                 } else {
-                    "Обычное существо.\nНе имеет скрытых магических сил."
+                    stringResource(R.string.effect_normal_desc)
                 }
 
                 if (card.buffs.isNotEmpty()) {
+                    val buffsText = card.buffs.joinToString("\n") { 
+                        context.getString(R.string.buff_format, getStringResourceByName(context, it.name), it.attackBonus, it.healthBonus, it.duration)
+                    }
                     GameText(
-                        text = "Активные баффы:\n" + card.buffs.joinToString("\n") { "💪 ${it.name}: +${it.attackBonus}/+${it.healthBonus} (${it.duration} ходов)" },
+                        text = stringResource(R.string.effect_active_buffs, buffsText),
                         color = Color(0xFF4CAF50),
                         fontSize = 13.sp,
                         textAlign = TextAlign.Center,
@@ -118,11 +135,11 @@ fun CardInspectionDialog(
                             GameText(card.currentAttack.toString(), fontWeight = FontWeight.Bold, fontSize = 18.sp)
                         }
                         Spacer(modifier = Modifier.width(8.dp))
-                        GameText("Атака", color = Color.Gray, fontSize = 12.sp)
+                        GameText(stringResource(R.string.stat_attack), color = Color.Gray, fontSize = 12.sp)
                     }
 
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        GameText("Здоровье", color = Color.Gray, fontSize = 12.sp)
+                        GameText(stringResource(R.string.stat_health), color = Color.Gray, fontSize = 12.sp)
                         Spacer(modifier = Modifier.width(8.dp))
                         Box(modifier = Modifier.size(40.dp).background(Color(0xFF388E3C), RoundedCornerShape(8.dp)), contentAlignment = Alignment.Center) {
                             GameText(card.currentHealth.toString(), fontWeight = FontWeight.Bold, fontSize = 18.sp)
@@ -132,7 +149,7 @@ fun CardInspectionDialog(
             }
         },
         confirmButton = {
-            GameButton(text = "Закрыть", onClick = onDismiss, containerColor = Color(0xFF673AB7))
+            GameButton(text = stringResource(R.string.close), onClick = onDismiss, containerColor = Color(0xFF673AB7))
         }
     )
 }
@@ -242,6 +259,7 @@ fun CardComponent(
 
 @Composable
 private fun BoxScope.CardContent(card: CardModel, borderColor: Color) {
+    val context = LocalContext.current
     Box(
         modifier = Modifier.size(22.dp).background(Color(0xFF0288D1), RoundedCornerShape(11.dp)).align(Alignment.TopStart),
         contentAlignment = Alignment.Center
@@ -250,14 +268,21 @@ private fun BoxScope.CardContent(card: CardModel, borderColor: Color) {
     }
 
     Column(modifier = Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
-        GameText(text = card.name, color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Medium, textAlign = TextAlign.Center, maxLines = 2)
+        GameText(text = getStringResourceByName(context, card.name), color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Medium, textAlign = TextAlign.Center, maxLines = 2)
         Spacer(modifier = Modifier.height(2.dp))
-        GameText(text = card.rarity.name, color = borderColor, fontSize = 8.sp, fontWeight = FontWeight.Bold)
+        
+        val rarityLabel = when(card.rarity) {
+            Rarity.COMMON -> stringResource(R.string.rarity_common)
+            Rarity.RARE -> stringResource(R.string.rarity_rare)
+            Rarity.EPIC -> stringResource(R.string.rarity_epic)
+            Rarity.LEGENDARY -> stringResource(R.string.rarity_legendary)
+        }
+        GameText(text = rarityLabel, color = borderColor, fontSize = 8.sp, fontWeight = FontWeight.Bold)
 
         // Маленький текстовый индикатор абилки прямо на карте для удобства в бою
         if (card.activeTags.isNotEmpty()) {
             GameText(
-                text = "[${card.activeEffects.first().name}]",
+                text = "[${getStringResourceByName(context, card.activeEffects.first().name)}]",
                 color = Color.Yellow,
                 fontSize = 9.sp,
                 fontWeight = FontWeight.Light,

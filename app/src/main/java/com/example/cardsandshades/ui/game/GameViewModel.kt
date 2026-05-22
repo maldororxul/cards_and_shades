@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.cardsandshades.catalog.CardCatalog
 import com.example.cardsandshades.engine.GameEngine
 import com.example.cardsandshades.model.*
+import com.example.cardsandshades.sound.SoundManager
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -56,6 +57,9 @@ class GameViewModel : ViewModel() {
         opponentTurnJob?.cancel()
         currentLevel = level
 
+        val musicName = level.musicRes ?: "battle_music_default"
+        SoundManager.playMusicByName(null, musicName)
+
         // ИСПРАВЛЕНИЕ: Берем сохраненную деку игрока из профиля и полностью восстанавливаем ей статы
         val playerDeck = if (UserProfile.selectedDeck.size == 20) {
             UserProfile.selectedDeck.map {
@@ -79,14 +83,14 @@ class GameViewModel : ViewModel() {
         }
         val opponentDeck = opponentDeckNames.take(20).map { cardName ->
             // Ищем карту в каталоге по имени. Если не нашли (опечатка) — подставляем Тень-новобранца
-            (CardCatalog.createCardInstance(cardName) ?: CardCatalog.createCardInstance("Тень-новобранец")!!).apply { reset() }
+            (CardCatalog.createCardInstance(cardName) ?: CardCatalog.createCardInstance("card_shadow_recruit")!!).apply { reset() }
         }.toMutableList()
 
         // Обязательно перемешиваем колоду босса перед началом матча
         opponentDeck.shuffle()
 
         val player = PlayerModel(
-            name = "Игрок",
+            name = "player_name",
             deck = playerDeck,
             hand = mutableListOf(),
             board = mutableListOf()
@@ -125,6 +129,7 @@ class GameViewModel : ViewModel() {
     fun claimRewardsAndExit(isPlayerWin: Boolean) {
         opponentTurnJob?.cancel()
         if (isPlayerWin) {
+            SoundManager.playSoundByName(null, "victory")
             currentLevel?.let { level ->
                 val isFirstTime = level.id >= UserProfile.maxUnlockedLevel.value
                 val rewards = if (isFirstTime) level.firstTimeReward else level.repeatReward
@@ -152,6 +157,8 @@ class GameViewModel : ViewModel() {
                 }
                 UserProfile.save()
             }
+        } else {
+            SoundManager.playSoundByName(null, "defeat")
         }
         _gameState.value = null
     }
@@ -168,7 +175,8 @@ class GameViewModel : ViewModel() {
                 if (currentTurn == Turn.PLAYER) {
                     val cardInHand = player.hand.find { it.id == card.id }
                     if (cardInHand != null && player.currentMana >= cardInHand.manaCost && player.board.size < 5) {
-                        com.example.cardsandshades.engine.GameEngine.playCard(this, cardInHand)
+                        GameEngine.playCard(this, cardInHand)
+                        SoundManager.playSoundByName(null, "card_place")
                         isPlayed = true
                     }
                 }
@@ -189,6 +197,8 @@ class GameViewModel : ViewModel() {
                 updateCardAnimation(attacker.id, isAttacking = true)
                 delay(200)
 
+                SoundManager.playSoundByName(null, "attack")
+
                 // 2. Встречный удар: Делегируем чистый расчет урона в GameEngine для работы Стрелков
                 _gameState.update { currentState ->
                     currentState?.deepCopy()?.apply {
@@ -198,7 +208,7 @@ class GameViewModel : ViewModel() {
                         if (aCard != null && tCard != null) {
                             tCard.isTakingDamage = true
                             aCard.isTakingDamage = true
-                            com.example.cardsandshades.engine.GameEngine.calculateCombat(this, aCard, tCard)
+                            GameEngine.calculateCombat(this, aCard, tCard)
                         }
                     }
                 }
@@ -221,7 +231,10 @@ class GameViewModel : ViewModel() {
 
                 val hasDeaths = _gameState.value?.player?.board?.any { it.isDying } == true ||
                         _gameState.value?.opponent?.board?.any { it.isDying } == true
-                if (hasDeaths) delay(400)
+                if (hasDeaths) {
+                    SoundManager.playSoundByName(null, "card_death")
+                    delay(400)
+                }
 
                 // 4. Окончательное удаление карт со стола
                 _gameState.update { currentState ->
@@ -264,6 +277,8 @@ class GameViewModel : ViewModel() {
             try {
                 updateCardAnimation(attacker.id, isAttacking = true)
                 delay(200)
+
+                SoundManager.playSoundByName(null, "attack")
 
                 opponentHeroDamageValue = attacker.currentAttack
                 opponentHeroTakingDamage = true
@@ -320,7 +335,7 @@ class GameViewModel : ViewModel() {
             currentState?.deepCopy()?.apply {
                 val cardsInHand = opponent.hand.toList()
                 for (card in cardsInHand) {
-                    com.example.cardsandshades.engine.GameEngine.playCard(this, card)
+                    GameEngine.playCard(this, card)
                 }
             }
         }
@@ -365,6 +380,8 @@ class GameViewModel : ViewModel() {
                 updateCardAnimation(activeAttacker.id, isAttacking = true)
                 delay(200)
 
+                SoundManager.playSoundByName(null, "attack")
+
                 _gameState.update { currentState ->
                     currentState?.deepCopy()?.apply {
                         val nextAttacker = opponent.board.find { it.id == activeAttacker.id }
@@ -374,12 +391,12 @@ class GameViewModel : ViewModel() {
                                 if (nextTarget != null) {
                                     nextTarget.isTakingDamage = true
                                     nextAttacker.isTakingDamage = true
-                                    com.example.cardsandshades.engine.GameEngine.calculateCombat(this, nextAttacker, nextTarget)
+                                    GameEngine.calculateCombat(this, nextAttacker, nextTarget)
                                 }
                             } else {
                                 playerHeroDamageValue = nextAttacker.currentAttack
                                 playerHeroTakingDamage = true
-                                com.example.cardsandshades.engine.GameEngine.attackHero(this, nextAttacker)
+                                GameEngine.attackHero(this, nextAttacker)
                             }
                         }
                     }
@@ -408,7 +425,10 @@ class GameViewModel : ViewModel() {
 
                 val hasDeaths = _gameState.value?.player?.board?.any { it.isDying } == true ||
                         _gameState.value?.opponent?.board?.any { it.isDying } == true
-                if (hasDeaths) delay(400)
+                if (hasDeaths) {
+                    SoundManager.playSoundByName(null, "card_death")
+                    delay(400)
+                }
 
                 _gameState.update { currentState ->
                     currentState?.deepCopy()?.apply {

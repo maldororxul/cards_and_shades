@@ -28,6 +28,9 @@ import com.example.cardsandshades.ui.game.GameViewModel
 import com.example.cardsandshades.ui.components.GameText
 import com.example.cardsandshades.ui.theme.GameTypography
 import com.example.cardsandshades.ui.components.GameBackground
+import com.example.cardsandshades.sound.SoundManager
+import com.example.cardsandshades.ui.settings.SettingsScreen
+import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.delay
 
 class MainActivity : ComponentActivity() {
@@ -43,6 +46,8 @@ class MainActivity : ComponentActivity() {
         com.example.cardsandshades.catalog.BoosterCatalog.init(this)
         com.example.cardsandshades.catalog.BackgroundCatalog.init(this)
         UserProfile.initDatabase(this)
+        SoundManager.init(this)
+        SoundManager.startMusic(this)
 
         // 1. Разрешаем приложению отрисовываться под системными панелями
         WindowCompat.setDecorFitsSystemWindows(window, false)
@@ -108,6 +113,9 @@ class MainActivity : ComponentActivity() {
                                     "forge" -> {
                                         com.example.cardsandshades.ui.forge.ForgeScreen()
                                     }
+                                    "settings" -> {
+                                        SettingsScreen(onBack = { currentScreen = "campaign" })
+                                    }
                                 }
                             }
                         }
@@ -151,23 +159,27 @@ fun BottomNavBar(
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        NavIcon("🗺️", "campaign", currentScreen == "campaign", onScreenChange)
-        NavIcon("🃏", "collection", currentScreen == "collection", onScreenChange)
-        NavIcon("🏪", "shop", currentScreen == "shop", onScreenChange)
-        NavIcon("🔨", "forge", currentScreen == "forge", onScreenChange)
-        NavIcon("🎁", "rewards", currentScreen == "rewards", onScreenChange)
+        NavIcon("🗺️", "campaign", stringResource(R.string.campaign), currentScreen == "campaign", onScreenChange)
+        NavIcon("🃏", "collection", stringResource(R.string.collection), currentScreen == "collection", onScreenChange)
+        NavIcon("🏪", "shop", stringResource(R.string.shop), currentScreen == "shop", onScreenChange)
+        NavIcon("🔨", "forge", stringResource(R.string.forge), currentScreen == "forge", onScreenChange)
+        NavIcon("🎁", "rewards", stringResource(R.string.rewards), currentScreen == "rewards", onScreenChange)
+        NavIcon("⚙️", "settings", stringResource(R.string.settings), currentScreen == "settings", onScreenChange)
     }
 }
 
 @Composable
-private fun NavIcon(icon: String, id: String, isSelected: Boolean, onClick: (String) -> Unit) {
+private fun NavIcon(icon: String, id: String, label: String, isSelected: Boolean, onClick: (String) -> Unit) {
     Box(
         modifier = Modifier
-            .size(48.dp)
+            .size(56.dp)
             .background(if (isSelected) Color(0xFF673AB7) else Color.Transparent, RoundedCornerShape(12.dp))
             .clickable { onClick(id) },
         contentAlignment = Alignment.Center
     ) {
-        GameText(text = icon, fontSize = 24.sp)
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            GameText(text = icon, fontSize = 20.sp)
+            GameText(text = label, fontSize = 8.sp, color = if (isSelected) Color.White else Color.Gray)
+        }
     }
 }

@@ -72,50 +72,38 @@ object CardCatalog {
         return deck
     }
 
-    // Открытие пака по математической модели вероятностей
-    fun openBooster(): List<CardModel> {
-        val booster = mutableListOf<CardModel>()
-        if (templates.isEmpty()) return booster
-
-        // Генерируем первые 4 карты по стандартным шансам
-        repeat(4) {
-            booster.add(generateRandomCardByRarity())
-        }
-
-        // 5-я карта: гарантированно Rare, Epic или Legendary (защита от неудач)
-        booster.add(generateGuaranteedRareOrHigher())
-
-        return booster
-    }
-
-    private fun generateRandomCardByRarity(): CardModel {
-        val roll = (1..100).random()
-        val targetRarity = when {
-            roll <= 2 -> Rarity.LEGENDARY // 2%
-            roll <= 10 -> Rarity.EPIC     // 8%
-            roll <= 30 -> Rarity.RARE     // 20%
-            else -> Rarity.COMMON         // 70%
-        }
-
-        return generateRandomCardByRarityOnly(targetRarity)!!
-    }
-
     fun generateRandomCardByRarityOnly(rarity: Rarity): CardModel? {
         val filteredTemplates = templates.filter { it.rarity == rarity }
         val template = if (filteredTemplates.isNotEmpty()) filteredTemplates.random() else templates.randomOrNull()
         return if (template != null) createCardInstance(template.name) else null
     }
 
-    private fun generateGuaranteedRareOrHigher(): CardModel {
+    // ОТКРЫТИЕ ПАКА: 5 карт, гарантированная редкая или выше
+    fun openBooster(): List<CardModel> {
+        val booster = mutableListOf<CardModel>()
+        if (templates.isEmpty()) return booster
+
+        repeat(4) {
+            val roll = (1..100).random()
+            val targetRarity = when {
+                roll <= 2 -> Rarity.LEGENDARY // 2%
+                roll <= 10 -> Rarity.EPIC     // 8%
+                roll <= 30 -> Rarity.RARE     // 20%
+                else -> Rarity.COMMON         // 70%
+            }
+            booster.add(generateRandomCardByRarityOnly(targetRarity) ?: createCardInstance("card_shadow_recruit")!!)
+        }
+
+        // 5-я карта: гарантированно Rare+
         val roll = (1..100).random()
-        val targetRarity = when {
+        val highRarity = when {
             roll <= 5 -> Rarity.LEGENDARY  // 5%
             roll <= 25 -> Rarity.EPIC      // 20%
             else -> Rarity.RARE            // 75%
         }
-        val filteredTemplates = templates.filter { it.rarity == targetRarity }
-        val template = if (filteredTemplates.isNotEmpty()) filteredTemplates.random() else templates.random()
-        return createCardInstance(template.name)!!
+        booster.add(generateRandomCardByRarityOnly(highRarity) ?: generateRandomCardByRarityOnly(Rarity.RARE)!!)
+
+        return booster
     }
 }
 

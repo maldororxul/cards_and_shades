@@ -33,7 +33,8 @@ object CampaignCatalog {
                         opponentDeckPreset = levelMap["opponentDeckPreset"] as List<String>,
                         firstTimeReward = parseReward(levelMap["firstTimeReward"] as? Map<String, Any>),
                         repeatReward = parseReward(levelMap["repeatReward"] as? Map<String, Any>),
-                        backgroundRes = levelMap["backgroundRes"] as? String
+                        backgroundRes = levelMap["backgroundRes"] as? String,
+                        musicRes = levelMap["musicRes"] as? String
                     )
                 }
             )

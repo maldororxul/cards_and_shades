@@ -22,12 +22,17 @@ import com.example.cardsandshades.model.UserProfile
 import com.example.cardsandshades.ui.components.GameText
 import com.example.cardsandshades.ui.components.GameButton
 import androidx.activity.compose.BackHandler
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.example.cardsandshades.R
+import com.example.cardsandshades.utils.getStringResourceByName
 
 @Composable
 fun CampaignScreen(
     onLevelSelect: (LevelModel) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     val unlockedLevel by UserProfile.maxUnlockedLevel.collectAsState()
     var selectedChapter by remember { mutableStateOf<ChapterModel?>(null) }
 
@@ -54,7 +59,7 @@ fun CampaignScreen(
                 Spacer(modifier = Modifier.width(12.dp))
             }
             GameText(
-                text = selectedChapter?.name ?: "Карта Кампании",
+                text = if (selectedChapter != null) getStringResourceByName(context, selectedChapter!!.name) else stringResource(R.string.campaign),
                 color = Color.White,
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold
@@ -100,6 +105,7 @@ fun CampaignScreen(
 
 @Composable
 private fun ChapterItem(chapter: ChapterModel, isUnlocked: Boolean, onClick: () -> Unit) {
+    val context = LocalContext.current
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -111,8 +117,8 @@ private fun ChapterItem(chapter: ChapterModel, isUnlocked: Boolean, onClick: () 
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column {
-            GameText(text = chapter.name, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = if (isUnlocked) Color.White else Color.Gray)
-            GameText(text = "${chapter.levels.size} Миссий", fontSize = 12.sp, color = Color.Gray)
+            GameText(text = getStringResourceByName(context, chapter.name), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = if (isUnlocked) Color.White else Color.Gray)
+            GameText(text = stringResource(R.string.missions_count, chapter.levels.size), fontSize = 12.sp, color = Color.Gray)
         }
         
         if (!isUnlocked) {
@@ -125,6 +131,7 @@ private fun ChapterItem(chapter: ChapterModel, isUnlocked: Boolean, onClick: () 
 
 @Composable
 private fun LevelItem(level: LevelModel, isUnlocked: Boolean, isCompleted: Boolean, onClick: () -> Unit) {
+    val context = LocalContext.current
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -137,14 +144,14 @@ private fun LevelItem(level: LevelModel, isUnlocked: Boolean, isCompleted: Boole
     ) {
         Column(modifier = Modifier.weight(1f)) {
             GameText(
-                text = "${level.id}. ${level.name}",
+                text = "${level.id}. " + getStringResourceByName(context, level.name),
                 color = if (isUnlocked) Color.White else Color.Gray,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.SemiBold
             )
             if (isUnlocked) {
                 Spacer(modifier = Modifier.height(4.dp))
-                GameText(text = level.difficultyDescription, color = Color.Gray, fontSize = 12.sp)
+                GameText(text = getStringResourceByName(context, level.difficultyDescription), color = Color.Gray, fontSize = 12.sp)
                 
                 Spacer(modifier = Modifier.height(8.dp))
                 
@@ -152,7 +159,7 @@ private fun LevelItem(level: LevelModel, isUnlocked: Boolean, isCompleted: Boole
                 val currentRewards = if (isCompleted) level.repeatReward else level.firstTimeReward
                 if (!currentRewards.isEmpty) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        GameText(text = "Награда: ", fontSize = 11.sp, color = Color.LightGray)
+                        GameText(text = stringResource(R.string.reward_label), fontSize = 11.sp, color = Color.LightGray)
                         RewardIcons(currentRewards)
                     }
                 }
@@ -169,6 +176,7 @@ private fun LevelItem(level: LevelModel, isUnlocked: Boolean, isCompleted: Boole
 
 @Composable
 private fun RewardIcons(rewards: RewardSetModel) {
+    val context = LocalContext.current
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         if (rewards.gold > 0) GameText("🪙${rewards.gold}", fontSize = 11.sp, color = Color.Yellow)
         if (rewards.crystals > 0) GameText("💎${rewards.crystals}", fontSize = 11.sp, color = Color(0xFF03A9F4))
@@ -176,6 +184,6 @@ private fun RewardIcons(rewards: RewardSetModel) {
         if (rewards.dustRare > 0) GameText("🔵${rewards.dustRare}", fontSize = 11.sp, color = Color(0xFF1E88E5))
         if (rewards.dustEpic > 0) GameText("🟣${rewards.dustEpic}", fontSize = 11.sp, color = Color(0xFF8E24AA))
         if (rewards.dustLegendary > 0) GameText("🟡${rewards.dustLegendary}", fontSize = 11.sp, color = Color(0xFFFDD835))
-        if (rewards.cardName != null) GameText("🃏${rewards.cardName}", fontSize = 11.sp, color = Color(0xFF00E676))
+        if (rewards.cardName != null) GameText("🃏${getStringResourceByName(context, rewards.cardName)}", fontSize = 11.sp, color = Color(0xFF00E676))
     }
 }

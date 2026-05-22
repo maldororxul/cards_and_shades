@@ -16,15 +16,19 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.example.cardsandshades.R
 import com.example.cardsandshades.catalog.RewardsCatalog
 import com.example.cardsandshades.model.UserProfile
 import com.example.cardsandshades.ui.components.GameButton
 import com.example.cardsandshades.ui.components.GameText
+import com.example.cardsandshades.utils.getStringResourceByName
 
 @Composable
 fun RewardsScreen(
     modifier: Modifier = Modifier
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     val chainDay by UserProfile.loginChainDays.collectAsState()
     val claimedSet by UserProfile.rewardsClaimed.collectAsState()
     
@@ -39,13 +43,13 @@ fun RewardsScreen(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            GameText("Награды за вход", fontSize = 22.sp, fontWeight = FontWeight.Bold)
+            GameText(stringResource(R.string.daily_rewards), fontSize = 22.sp, fontWeight = FontWeight.Bold)
         }
         
         Spacer(modifier = Modifier.height(16.dp))
         
         GameText(
-            text = "Заходите каждый день, чтобы получать ценные призы! Ваш текущий день: $chainDay",
+            text = stringResource(R.string.rewards_desc, chainDay),
             color = Color.LightGray,
             fontSize = 14.sp,
             textAlign = TextAlign.Center
@@ -84,7 +88,7 @@ fun RewardsScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    GameText(text = "День ${reward.day}", fontSize = 10.sp, color = Color.Gray)
+                    GameText(text = stringResource(R.string.day_x, reward.day), fontSize = 10.sp, color = Color.Gray)
                     Spacer(modifier = Modifier.height(4.dp))
                     GameText(
                         text = "${reward.amount}",
@@ -93,7 +97,7 @@ fun RewardsScreen(
                         color = if (isClaimed) Color.Gray else Color.White
                     )
                     GameText(
-                        text = getRewardIcon(reward.type),
+                        text = getRewardIcon(reward.type, context),
                         fontSize = 12.sp,
                         color = Color.Yellow
                     )
@@ -108,10 +112,10 @@ fun RewardsScreen(
         Spacer(modifier = Modifier.height(16.dp))
         
         if (claimedSet.contains(chainDay)) {
-             GameText("Вы уже забрали сегодняшнюю награду! Ждем вас завтра 🎁", color = Color.Yellow)
+             GameText(stringResource(R.string.reward_claimed_msg), color = Color.Yellow, textAlign = TextAlign.Center)
         } else {
              GameButton(
-                 text = "Забрать награду дня", 
+                 text = stringResource(R.string.claim_reward), 
                  onClick = { claimReward(chainDay) },
                  modifier = Modifier.fillMaxWidth()
              )
@@ -121,15 +125,15 @@ fun RewardsScreen(
     }
 }
 
-private fun getRewardIcon(type: String): String {
+private fun getRewardIcon(type: String, context: android.content.Context): String {
     return when (type) {
-        "gold" -> "🪙 Золото"
-        "crystals" -> "💎 Кристаллы"
-        "dust_common" -> "⚪ Пыль"
-        "dust_rare" -> "🔵 Пыль"
-        "dust_epic" -> "🟣 Пыль"
-        "dust_legendary" -> "🟡 Пыль"
-        else -> "🎁 Предмет"
+        "gold" -> "🪙 " + context.getString(R.string.reward_gold)
+        "crystals" -> "💎 " + context.getString(R.string.reward_crystals)
+        "dust_common" -> "⚪ " + context.getString(R.string.reward_dust)
+        "dust_rare" -> "🔵 " + context.getString(R.string.reward_dust)
+        "dust_epic" -> "🟣 " + context.getString(R.string.reward_dust)
+        "dust_legendary" -> "🟡 " + context.getString(R.string.reward_dust)
+        else -> "🎁 " + context.getString(R.string.reward_item)
     }
 }
 

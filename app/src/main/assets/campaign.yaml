@@ -1,92 +1,98 @@
 chapters:
   - id: 1
-    name: "Глава 1: Тени Забытых Земель"
+    name: "chapter_1"
     backgroundRes: "bg_campaign_map"
     levels:
       - id: 1
-        name: "Пролог: Гоблинский дозор"
-        opponentName: "Гоблин-разведчик"
+        name: "level_1"
+        opponentName: "opponent_goblin_scout"
         opponentMaxHp: 15
         opponentStartMana: 1
-        difficultyDescription: "Легкий бой. Познакомьтесь с основами."
-        opponentDeckPreset: ["Тень-новобранец", "Тень-новобранец", "Проворный бес"]
+        difficultyDescription: "level_1_desc"
+        opponentDeckPreset: ["card_shadow_recruit", "card_shadow_recruit", "card_agile_imp"]
         backgroundRes: "bg_battle_arena"
+        musicRes: "battle_music_default"
         firstTimeReward:
           gold: 100
-          card: "Проворный бес"
+          card: "card_agile_imp"
         repeatReward:
           gold: 20
       - id: 2
-        name: "Засада в кустах"
-        opponentName: "Громила орков"
+        name: "level_2"
+        opponentName: "opponent_orc_bruiser"
         opponentMaxHp: 20
         opponentStartMana: 1
-        difficultyDescription: "Враг использует грубую силу."
-        opponentDeckPreset: ["Тень-новобранец", "Каменный страж"]
+        difficultyDescription: "level_2_desc"
+        opponentDeckPreset: ["card_shadow_recruit", "card_stone_guardian"]
         backgroundRes: "bg_battle_arena"
+        musicRes: "battle_music_default"
         firstTimeReward:
           gold: 120
           dust_common: 20
         repeatReward:
           gold: 30
       - id: 3
-        name: "Шепот леса"
-        opponentName: "Лесной дух"
+        name: "level_3"
+        opponentName: "opponent_forest_spirit"
         opponentMaxHp: 22
         opponentStartMana: 1
-        difficultyDescription: "Остерегайтесь магических атак."
-        opponentDeckPreset: ["Адепт тайной магии", "Эльфийский лучник"]
+        difficultyDescription: "level_3_desc"
+        opponentDeckPreset: ["card_arcane_adept", "card_elven_archer"]
         backgroundRes: "bg_battle_arena"
+        musicRes: "battle_music_default"
         firstTimeReward:
           gold: 150
           crystals: 10
         repeatReward:
           gold: 40
       - id: 7
-        name: "Логово Тени"
-        opponentName: "Теневой лорд"
+        name: "level_7"
+        opponentName: "opponent_shadow_lord"
         opponentMaxHp: 35
         opponentStartMana: 2
-        difficultyDescription: "Босс первой главы."
-        opponentDeckPreset: ["Король Теней", "Теневой жнец", "Вампир-аристократ"]
+        difficultyDescription: "level_7_desc"
+        opponentDeckPreset: ["card_shadow_king", "card_shadow_reaper", "card_vampire_aristocrat"]
         backgroundRes: "bg_battle_arena"
+        musicRes: "battle_music_default"
         firstTimeReward:
           gold: 500
           crystals: 50
           dust_rare: 50
-          card: "Король Теней"
+          card: "card_shadow_king"
         repeatReward:
           gold: 100
           dust_common: 10
   - id: 2
-    name: "Глава 2: Проклятая Цитадель"
+    name: "chapter_2"
     backgroundRes: "bg_campaign_map"
     levels:
       - id: 8
-        name: "Врата ада"
-        opponentName: "Привратник"
+        name: "level_8"
+        opponentName: "opponent_gatekeeper"
         opponentMaxHp: 40
         opponentStartMana: 2
-        difficultyDescription: "Очень высокая сложность."
-        opponentDeckPreset: ["Вестник бури", "Проклятый паладин"]
+        difficultyDescription: "level_8_desc"
+        opponentDeckPreset: ["card_storm_herald", "card_cursed_paladin"]
         backgroundRes: "bg_battle_arena"
+        musicRes: "battle_music_default"
         firstTimeReward:
           gold: 300
           crystals: 20
         repeatReward:
           gold: 60
   - id: 3
-    name: "Глава 3: Трон Пустоты"
+    name: "chapter_3"
     backgroundRes: "bg_campaign_map"
     levels:
       - id: 15
-        name: "Пустота"
-        opponentName: "Тень пустоты"
+        name: "level_15"
+        opponentName: "opponent_void_shadow"
         opponentMaxHp: 70
         opponentStartMana: 3
-        difficultyDescription: "Легендарные битвы."
-        opponentDeckPreset: ["Дракон Пустоты", "Архимаг пустоты"]
+        difficultyDescription: "level_15_desc"
+        opponentDeckPreset: ["card_void_dragon", "card_void_archmage"]
         backgroundRes: "bg_battle_arena"
+        musicRes: "battle_music_default"
         firstTimeReward:
           gold: 1000
           crystals: 100

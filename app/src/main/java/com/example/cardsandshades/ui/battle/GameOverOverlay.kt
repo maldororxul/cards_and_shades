@@ -18,9 +18,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.example.cardsandshades.R
 import com.example.cardsandshades.model.RewardSetModel
 import com.example.cardsandshades.ui.components.GameButton
 import com.example.cardsandshades.ui.components.GameText
+import com.example.cardsandshades.utils.getStringResourceByName
 
 @Composable
 fun GameOverOverlay(
@@ -30,16 +33,31 @@ fun GameOverOverlay(
     rewards: RewardSetModel?,
     onExitClick: (Boolean) -> Unit
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     AnimatedVisibility(visible = isGameOver, enter = fadeIn(), exit = fadeOut()) {
         Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.9f)), contentAlignment = Alignment.Center) {
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(24.dp)) {
-                GameText("Битва Завершена!", color = Color.White, fontSize = 28.sp, fontWeight = FontWeight.Black)
+                GameText(stringResource(R.string.battle_finished), color = Color.White, fontSize = 28.sp, fontWeight = FontWeight.Black)
                 Spacer(modifier = Modifier.height(8.dp))
 
+                val isDraw = winnerName == "draw"
                 val isPlayerWin = winnerName == playerName
+                
+                val statusText = when {
+                    isDraw -> stringResource(R.string.draw)
+                    isPlayerWin -> stringResource(R.string.victory_msg)
+                    else -> stringResource(R.string.defeat_msg)
+                }
+                
+                val statusColor = when {
+                    isDraw -> Color.Yellow
+                    isPlayerWin -> Color.Green
+                    else -> Color.Red
+                }
+
                 GameText(
-                    text = if (isPlayerWin) "ВЫ ПОБЕДИЛИ! 🎉" else "ВЫ ПРОИГРАЛИ 💀",
-                    color = if (isPlayerWin) Color.Green else Color.Red,
+                    text = statusText,
+                    color = statusColor,
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -47,27 +65,27 @@ fun GameOverOverlay(
                 // ВИЗУАЛИЗАЦИЯ НАГРАДЫ ИГРОКА
                 if (isPlayerWin && rewards != null && !rewards.isEmpty) {
                     Spacer(modifier = Modifier.height(24.dp))
-                    GameText("Ваша награда за победу:", color = Color.Gray, fontSize = 14.sp)
+                    GameText(stringResource(R.string.rewards_label), color = Color.Gray, fontSize = 14.sp)
                     Spacer(modifier = Modifier.height(12.dp))
                     
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        if (rewards.gold > 0) RewardItem("🪙 +${rewards.gold} Золота", Color.Yellow)
-                        if (rewards.crystals > 0) RewardItem("💎 +${rewards.crystals} Кристаллов", Color(0xFF03A9F4))
-                        if (rewards.dustCommon > 0) RewardItem("⚪ +${rewards.dustCommon} Обычной пыли", Color.Gray)
-                        if (rewards.dustRare > 0) RewardItem("🔵 +${rewards.dustRare} Редкой пыли", Color(0xFF1E88E5))
-                        if (rewards.dustEpic > 0) RewardItem("🟣 +${rewards.dustEpic} Эпической пыли", Color(0xFF8E24AA))
-                        if (rewards.dustLegendary > 0) RewardItem("🟡 +${rewards.dustLegendary} Легендарной пыли", Color(0xFFFDD835))
+                        if (rewards.gold > 0) RewardItem("🪙 +${rewards.gold} " + stringResource(R.string.reward_gold), Color.Yellow)
+                        if (rewards.crystals > 0) RewardItem("💎 +${rewards.crystals} " + stringResource(R.string.reward_crystals), Color(0xFF03A9F4))
+                        if (rewards.dustCommon > 0) RewardItem("⚪ +${rewards.dustCommon} " + stringResource(R.string.reward_dust), Color.Gray)
+                        if (rewards.dustRare > 0) RewardItem("🔵 +${rewards.dustRare} " + stringResource(R.string.reward_dust), Color(0xFF1E88E5))
+                        if (rewards.dustEpic > 0) RewardItem("🟣 +${rewards.dustEpic} " + stringResource(R.string.reward_dust), Color(0xFF8E24AA))
+                        if (rewards.dustLegendary > 0) RewardItem("🟡 +${rewards.dustLegendary} " + stringResource(R.string.reward_dust), Color(0xFFFDD835))
                         
                         rewards.cardName?.let { cardName ->
                             Spacer(modifier = Modifier.height(8.dp))
-                            GameText("🃏 Карта: [$cardName] добавлена!", color = Color(0xFF00E676), fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                            GameText(stringResource(R.string.card_added, getStringResourceByName(context, cardName)), color = Color(0xFF00E676), fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
                         }
                     }
                 }
 
                 Spacer(modifier = Modifier.height(32.dp))
                 GameButton(
-                    text = "Забрать лут и выйти",
+                    text = stringResource(R.string.collect_loot),
                     onClick = { onExitClick(isPlayerWin) },
                     containerColor = Color(0xFF388E3C),
                     modifier = Modifier.width(240.dp)

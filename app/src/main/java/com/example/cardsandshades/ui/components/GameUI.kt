@@ -15,6 +15,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.platform.LocalContext
+import com.example.cardsandshades.sound.SoundManager
 import com.example.cardsandshades.ui.theme.GameFontFamily
 import com.example.cardsandshades.ui.theme.GameTypography
 
@@ -50,8 +52,12 @@ fun GameButton(
     fontSize: androidx.compose.ui.unit.TextUnit = 16.sp,
     enabled: Boolean = true
 ) {
+    val context = LocalContext.current
     Button(
-        onClick = onClick,
+        onClick = {
+            SoundManager.playSoundByName(context, "button_click")
+            onClick()
+        },
         modifier = modifier
             .border(2.dp, containerColor.copy(alpha = 0.5f), RoundedCornerShape(8.dp)),
         colors = ButtonDefaults.buttonColors(

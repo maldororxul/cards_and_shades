@@ -148,7 +148,7 @@ object GameEngine {
     private fun checkWinCondition(state: GameState) {
         if (state.player.isDead && state.opponent.isDead) {
             state.isGameOver = true
-            state.winnerName = "Ничья"
+            state.winnerName = "draw"
         } else if (state.opponent.isDead) {
             state.isGameOver = true
             state.winnerName = state.player.name

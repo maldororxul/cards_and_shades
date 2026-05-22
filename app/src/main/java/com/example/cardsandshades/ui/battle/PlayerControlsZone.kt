@@ -22,9 +22,11 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.cardsandshades.R
 import com.example.cardsandshades.model.CardModel
 import com.example.cardsandshades.model.PlayerModel
 import com.example.cardsandshades.ui.components.CardComponent
@@ -53,7 +55,7 @@ fun PlayerControlsZone(
             Column {
                 GameText(player.name, color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 GameText(
-                    text = "Мана: ${player.currentMana}/${player.maxMana} 💧 | В колоде: ${player.deck.size}",
+                    text = "${stringResource(R.string.mana)}: ${player.currentMana}/${player.maxMana} 💧 | ${stringResource(R.string.in_deck)}: ${player.deck.size}",
                     color = Color(0xFF29B6F6),
                     fontSize = 14.sp
                 )
@@ -90,7 +92,7 @@ fun PlayerControlsZone(
                 }
 
                 GameButton(
-                    text = "Конец Хода",
+                    text = stringResource(R.string.end_turn),
                     onClick = onEndTurnClick,
                     containerColor = Color(0xFFD84315),
                     enabled = isPlayerTurn

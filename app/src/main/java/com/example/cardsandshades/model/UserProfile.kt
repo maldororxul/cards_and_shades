@@ -117,10 +117,10 @@ object UserProfile {
                     }
                 }
                 
-                com.example.cardsandshades.catalog.CardCatalog.createCardInstance("Вампир-аристократ")?.let { startCollection.add(it) }
-                com.example.cardsandshades.catalog.CardCatalog.createCardInstance("Вампир-аристократ")?.let { startCollection.add(it) }
-                com.example.cardsandshades.catalog.CardCatalog.createCardInstance("Дух-наставник")?.let { startCollection.add(it) }
-                com.example.cardsandshades.catalog.CardCatalog.createCardInstance("Теневой жнец")?.let { startCollection.add(it) }
+                com.example.cardsandshades.catalog.CardCatalog.createCardInstance("card_vampire_aristocrat")?.let { startCollection.add(it) }
+                com.example.cardsandshades.catalog.CardCatalog.createCardInstance("card_vampire_aristocrat")?.let { startCollection.add(it) }
+                com.example.cardsandshades.catalog.CardCatalog.createCardInstance("card_spirit_mentor")?.let { startCollection.add(it) }
+                com.example.cardsandshades.catalog.CardCatalog.createCardInstance("card_shadow_reaper")?.let { startCollection.add(it) }
 
                 val validStartDeck = mutableListOf<CardModel>()
                 for (card in startCollection) {

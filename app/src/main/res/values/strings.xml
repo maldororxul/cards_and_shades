@@ -1,3 +1,262 @@
 <resources>
     <string name="app_name">Cards And Shades</string>
+    <string name="back">Back</string>
+    <string name="settings">Settings</string>
+    <string name="music">Music: %d%%</string>
+    <string name="sounds">Sounds: %d%%</string>
+    <string name="language">Language</string>
+    <string name="save">Save</string>
+    <string name="campaign">Campaign</string>
+    <string name="shop">Shop</string>
+    <string name="collection">Collection</string>
+    <string name="rewards">Rewards</string>
+    <string name="forge">Forge</string>
+    <string name="mana">Mana</string>
+    <string name="in_deck">In deck</string>
+    <string name="end_turn">End Turn</string>
+    <string name="player_name">Player</string>
+    <string name="draw">Draw</string>
+
+    <!-- Game Over -->
+    <string name="battle_finished">Battle Finished!</string>
+    <string name="victory_msg">YOU WON! 🎉</string>
+    <string name="defeat_msg">YOU LOST 💀</string>
+    <string name="rewards_label">Your victory rewards:</string>
+    <string name="collect_loot">Collect loot and exit</string>
+    <string name="card_added">🃏 Card: [%s] added!</string>
+
+    <string name="missions_count">%d Missions</string>
+    <string name="reward_label">Reward: </string>
+    <string name="back_arrow">⬅️</string>
+    <string name="locked_icon">🔒</string>
+    <string name="unlocked_icon">➡️</string>
+    <string name="completed_icon">✅</string>
+
+    <!-- Opponent Header -->
+    <string name="opponent_stats">In hand: %1$d | In deck: %2$d | Mana: %3$d/%4$d</string>
+    <string name="hp_label">HP: %1$d/%2$d ❤️</string>
+    <string name="mana_label">Mana: %1$d/%2$d 💧</string>
+    <string name="mana_short">Mana: %d</string>
+    <string name="in_deck_label">In deck: %d</string>
+
+    <!-- Player Board -->
+    <string name="drag_card_hint">Drag a card here from your hand</string>
+    <string name="enemy_board_empty">Enemy board is empty. Face is open for attack!</string>
+
+    <!-- Game Screen -->
+    <string name="battle_exit_title">Interrupt Battle?</string>
+    <string name="battle_exit_desc">You will lose current progress in this fight.</string>
+    <string name="battle_exit_confirm">Yes, exit</string>
+    <string name="battle_exit_cancel">Cancel</string>
+    <string name="battle_selected_hint">🎯 %s selected. Click enemy card or HP!</string>
+
+    <!-- Rewards Screen -->
+    <string name="daily_rewards">Daily Rewards</string>
+    <string name="rewards_desc">Log in every day to get valuable prizes! Your current day: %d</string>
+    <string name="day_x">Day %d</string>
+    <string name="reward_claimed_msg">You already claimed today\'s reward! See you tomorrow 🎁</string>
+    <string name="claim_reward">Claim Reward of the Day</string>
+
+    <string name="reward_gold">Gold</string>
+    <string name="reward_crystals">Crystals</string>
+    <string name="reward_dust">Dust</string>
+    <string name="reward_item">Item</string>
+
+    <!-- Forge Screen -->
+    <string name="forge_title">⚒️ FORGE ⚒️</string>
+    <string name="forge_desc">Use dust to forge new cards</string>
+    <string name="forge_awaiting">🔥 Forge heat awaits...</string>
+    <string name="forge_welcome">Welcome to the Forge!</string>
+    <string name="forge_merge_success">Merge: 100 %1$s -> 10 %2$s</string>
+    <string name="forge_merge_fail">Not enough for merge!</string>
+    <string name="forge_craft_success">Forged %s card!</string>
+    <string name="forge_craft_fail">Not enough dust!</string>
+    <string name="forge_legendary_ready">LEGENDARY BLADE READY!</string>
+    <string name="dust_label">Dust: %d</string>
+    <string name="forge_merge_btn">MERGE (100)</string>
+    <string name="forge_craft_btn">FORGE (%d)</string>
+
+    <!-- Collection Screen -->
+    <string name="deck_count">Build deck: %d/20 cards</string>
+    <string name="deck_saved">✅ Deck saved!</string>
+    <string name="deck_error">❌ Need 20 cards!</string>
+    <string name="collection_empty">Your collection is empty! 📦</string>
+    <string name="in_stock">In stock: %d</string>
+    <string name="dust_extras">Disenchant (%d)</string>
+
+    <!-- Booster Screen -->
+    <string name="booster_choose">Select a card pack!</string>
+    <string name="booster_wait">📦 Choose a pack below</string>
+    <string name="booster_opened">Pack [%s] opened!</string>
+    <string name="booster_no_resources">Not enough resources!</string>
+    <string name="booster_gold">Gold: %d 🪙</string>
+    <string name="booster_crystals">Crystals: %d 💎</string>
+
+    <!-- Battle Log -->
+    <string name="battle_start_msg">Your turn. Play cards or attack the enemy!</string>
+    <string name="battle_your_turn">Your turn! Mana updated.</string>
+    <string name="battle_opponent_turn">Opponent\'s turn...</string>
+    <string name="battle_attack_hero">💥 You attacked the enemy hero for %d damage!</string>
+    <string name="battle_attack_hero_fail">❌ Cannot attack face while the enemy has minions!</string>
+    <string name="battle_card_played">🃏 You played %s</string>
+    <string name="battle_play_fail">❌ Failed to play card! Check mana or space.</string>
+    <string name="battle_card_attack">⚔️ %1$s attacked %2$s!</string>
+    <string name="battle_loading">Loading battle...</string>
+
+    <!-- Rarities -->
+    <string name="rarity_common">COMMON</string>
+    <string name="rarity_rare">RARE</string>
+    <string name="rarity_epic">EPIC</string>
+    <string name="rarity_legendary">LEGENDARY</string>
+
+    <!-- Effects -->
+    <string name="effect_normal_desc">Ordinary creature.\nNo hidden magical powers.</string>
+    <string name="effect_active_buffs">Active buffs:\n%s</string>
+    <string name="stat_attack">Attack</string>
+    <string name="stat_health">Health</string>
+    <string name="close">Close</string>
+
+    <!-- Boosters -->
+    <string name="booster_normal">Normal Pack</string>
+    <string name="booster_normal_desc">A set of 5 random cards. Base chances.</string>
+    <string name="booster_premium">Premium Pack</string>
+    <string name="booster_premium_desc">A set of 5 cards with increased chance for Rare and Epic cards.</string>
+    <string name="booster_crystal">Crystal Pack</string>
+    <string name="booster_crystal_desc">A set of 5 cards. Guaranteed Epic cards and high chance for Legendary!</string>
+
+    <!-- Chapters and Levels -->
+    <string name="chapter_1">Chapter 1: Shadows of Forgotten Lands</string>
+    <string name="level_1">Prologue: Goblin Watch</string>
+    <string name="level_1_desc">Easy battle. Get familiar with the basics.</string>
+    <string name="opponent_goblin_scout">Goblin Scout</string>
+
+    <string name="level_2">Ambush in the Bushes</string>
+    <string name="level_2_desc">The enemy uses brute force.</string>
+    <string name="opponent_orc_bruiser">Orc Bruiser</string>
+
+    <string name="level_3">Whisper of the Forest</string>
+    <string name="level_3_desc">Watch out for magical attacks.</string>
+    <string name="opponent_forest_spirit">Forest Spirit</string>
+
+    <string name="level_7">Shadow\'s Lair</string>
+    <string name="level_7_desc">Boss of the first chapter.</string>
+    <string name="opponent_shadow_lord">Shadow Lord</string>
+
+    <string name="chapter_2">Chapter 2: Cursed Citadel</string>
+    <string name="level_8">Gates of Hell</string>
+    <string name="level_8_desc">Very high difficulty.</string>
+    <string name="opponent_gatekeeper">Gatekeeper</string>
+
+    <string name="chapter_3">Chapter 3: Throne of the Void</string>
+    <string name="level_15">The Void</string>
+    <string name="level_15_desc">Legendary battles.</string>
+    <string name="opponent_void_shadow">Void Shadow</string>
+
+    <!-- Card Keys -->
+    <string name="card_shadow_recruit">Shadow Recruit</string>
+    <string name="card_agile_imp">Agile Imp</string>
+    <string name="card_stone_guardian">Stone Guardian</string>
+    <string name="card_fire_elemental">Fire Elemental</string>
+    <string name="card_elven_archer">Elven Archer</string>
+    <string name="card_arcane_adept">Arcane Adept</string>
+    <string name="card_light_squire">Light Squire</string>
+    <string name="card_void_sorcerer">Void Sorcerer</string>
+    <string name="card_vampire_aristocrat">Vampire Aristocrat</string>
+    <string name="card_shadow_king">Shadow King</string>
+    <string name="card_void_dragon">Void Dragon</string>
+    <string name="card_shadow_reaper">Shadow Reaper</string>
+    <string name="card_spirit_mentor">Spirit Mentor</string>
+    <string name="card_rotting_zombie">Rotting Zombie</string>
+    <string name="card_ice_maiden">Ice Maiden</string>
+    <string name="card_cursed_paladin">Cursed Paladin</string>
+    <string name="card_storm_herald">Storm Herald</string>
+    <string name="card_ancient_ent">Ancient Ent</string>
+    <string name="card_ghost_reaper">Ghost Reaper</string>
+    <string name="card_void_archmage">Void Archmage</string>
+    <string name="card_rabid_wolf">Rabid Wolf</string>
+    <string name="card_steel_golem">Steel Golem</string>
+    <string name="card_jungle_hunter">Jungle Hunter</string>
+    <string name="card_sun_priestess">Sun Priestess</string>
+    <string name="card_goblin_demolisher">Goblin Demolisher</string>
+    <string name="card_dark_knight">Dark Knight</string>
+    <string name="card_storm_adept">Storm Adept</string>
+    <string name="card_fire_lord">Fire Lord</string>
+    <string name="card_guardian_angel">Guardian Angel</string>
+    <string name="card_arch_lich">Arch Lich</string>
+    <string name="card_order_adept">Order Adept</string>
+    <string name="card_wild_hyena">Wild Hyena</string>
+    <string name="card_town_guard">Town Guard</string>
+    <string name="card_young_archer">Young Archer</string>
+    <string name="card_gnome_shieldbearer">Gnome Shieldbearer</string>
+    <string name="card_plague_rat">Plague Rat</string>
+    <string name="card_forest_ambusher">Forest Ambusher</string>
+    <string name="card_web_spinner">Web Spinner</string>
+    <string name="card_sparking_golem">Sparking Golem</string>
+    <string name="card_mage_apprentice">Mage Apprentice</string>
+    <string name="card_hired_crossbowman">Hired Crossbowman</string>
+    <string name="card_cave_yeti">Cave Yeti</string>
+    <string name="card_forgotten_cadaver">Forgotten Cadaver</string>
+    <string name="card_cult_mystic">Cult Mystic</string>
+    <string name="card_kings_guardsman">King\'s Guardsman</string>
+    <string name="card_hungry_crocolisk">Hungry Crocolisk</string>
+    <string name="card_lesser_demon">Lesser Demon</string>
+    <string name="card_swamp_thing">Swamp Thing</string>
+    <string name="card_armored_rhino">Armored Rhino</string>
+    <string name="card_siege_giant">Siege Giant</string>
+    <string name="card_levitation_adept">Levitation Adept</string>
+    <string name="card_vanguard_shieldbearer">Vanguard Shieldbearer</string>
+    <string name="card_elemental_wisp">Elemental Wisp</string>
+    <string name="card_void_tracker">Void Tracker</string>
+    <string name="card_corrupted_wolf">Corrupted Wolf</string>
+    <string name="card_dawn_sentinel">Dawn Sentinel</string>
+    <string name="card_shadow_blade">Shadow Blade</string>
+    <string name="card_destruction_mage">Destruction Mage</string>
+    <string name="card_forest_druid">Forest Druid</string>
+    <string name="card_light_blade">Light Blade</string>
+    <string name="card_emerald_drake">Emerald Drake</string>
+    <string name="card_bone_golem">Bone Golem</string>
+    <string name="card_dark_sectarian">Dark Sectarian</string>
+    <string name="card_inquisitor">Inquisitor</string>
+    <string name="card_grove_keeper">Grove Keeper</string>
+    <string name="card_soul_reaper">Soul Reaper</string>
+    <string name="card_thunderbolt_mage">Thunderbolt Mage</string>
+    <string name="card_fire_giant">Fire Giant</string>
+    <string name="card_iron_colossus">Iron Colossus</string>
+    <string name="card_world_eater">World Eater</string>
+    <string name="card_mischievous_pixie">Mischievous Pixie</string>
+    <string name="card_void_acolyte">Void Acolyte</string>
+    <string name="card_sand_stalker">Sand Stalker</string>
+    <string name="card_elven_warden">Elven Warden</string>
+    <string name="card_cursed_raven">Cursed Raven</string>
+    <string name="card_light_servant">Light Servant</string>
+    <string name="card_siege_spearman">Siege Spearman</string>
+    <string name="card_stone_beast">Stone Beast</string>
+    <string name="card_clan_berserk">Clan Berserk</string>
+    <string name="card_swamp_witch">Swamp Witch</string>
+    <string name="card_lava_jumper">Lava Jumper</string>
+    <string name="card_royal_archer">Royal Archer</string>
+    <string name="card_crimson_executioner">Crimson Executioner</string>
+    <string name="card_senior_exorcist">Senior Exorcist</string>
+    <string name="card_depth_wraith">Depth Wraith</string>
+    <string name="card_bastion_turtle">Bastion Turtle</string>
+    <string name="card_storm_elemental">Storm Elemental</string>
+    <string name="card_forgotten_titan">Forgotten Titan</string>
+    <string name="card_doom_herald">Doom Herald</string>
+    <string name="card_celestial_dragon">Celestial Dragon</string>
+
+    <!-- Effects -->
+    <string name="effect_rush">Rush</string>
+    <string name="effect_rush_desc">Can attack immediately on the turn it is summoned.</string>
+    <string name="effect_taunt">Taunt</string>
+    <string name="effect_taunt_desc">Enemies must attack this minion first.</string>
+    <string name="effect_ranged">Ranged</string>
+    <string name="effect_ranged_desc">Does not take counter damage when attacking.</string>
+    <string name="effect_splash">Splash</string>
+    <string name="effect_splash_desc">Deals 1 damage to adjacent minions of the target.</string>
+    <string name="effect_lifesteal">Lifesteal</string>
+    <string name="effect_lifesteal_desc">Heals your hero for the amount of damage dealt.</string>
+    <string name="effect_blessing">Blessing</string>
+    <string name="effect_blessing_desc">Gives +2/+2 to a random ally for 2 turns when summoned.</string>
+    <string name="effect_buff_name">Strengthening</string>
+    <string name="buff_format">💪 %1$s: +%2$d/+%3$d (%4$d turns)</string>
 </resources>

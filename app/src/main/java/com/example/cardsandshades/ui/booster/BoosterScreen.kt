@@ -10,9 +10,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.cardsandshades.R
 import com.example.cardsandshades.catalog.CardCatalog
 import com.example.cardsandshades.catalog.BoosterCatalog
 import com.example.cardsandshades.model.CardModel
@@ -22,15 +25,19 @@ import com.example.cardsandshades.model.BoosterModel
 import com.example.cardsandshades.ui.components.CardComponent
 import com.example.cardsandshades.ui.components.GameButton
 import com.example.cardsandshades.ui.components.GameText
+import com.example.cardsandshades.utils.getStringResourceByName
 
 @Composable
 fun BoosterScreen(
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     val gold by UserProfile.gold.collectAsState()
     val crystals by UserProfile.crystals.collectAsState()
     var openedCards by remember { mutableStateOf<List<CardModel>>(emptyList()) }
-    var message by remember { mutableStateOf("Выберите набор карт!") }
+    
+    val choosePackMsg = stringResource(R.string.booster_choose)
+    var message by remember { mutableStateOf(choosePackMsg) }
 
     Column(
         modifier = modifier
@@ -46,8 +53,8 @@ fun BoosterScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(horizontalAlignment = Alignment.End) {
-                GameText("Золото: $gold 🪙", color = Color.Yellow, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                GameText("Кристаллы: $crystals 💎", color = Color(0xFF03A9F4), fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                GameText(stringResource(R.string.booster_gold, gold), color = Color.Yellow, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                GameText(stringResource(R.string.booster_crystals, crystals), color = Color(0xFF03A9F4), fontSize = 16.sp, fontWeight = FontWeight.Bold)
             }
         }
 
@@ -73,13 +80,16 @@ fun BoosterScreen(
                         .background(Color(0xFF1E1E1E).copy(alpha = 0.8f)),
                     contentAlignment = Alignment.Center
                 ) {
-                    GameText("📦 Выберите пак ниже", color = Color.Gray)
+                    GameText(stringResource(R.string.booster_wait), color = Color.Gray)
                 }
             }
         }
 
         // ВЫБОР ПАКОВ (из YAML)
         Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            val packOpenedMsg = stringResource(R.string.booster_opened)
+            val noResourcesMsg = stringResource(R.string.booster_no_resources)
+            
             BoosterCatalog.boosters.forEach { booster ->
                 BoosterItem(
                     booster = booster,
@@ -87,12 +97,13 @@ fun BoosterScreen(
                     onBuy = {
                         val success = buyBooster(booster)
                         if (success) {
+                            com.example.cardsandshades.sound.SoundManager.playSoundByName(context, "booster_open")
                             openedCards = generatePack(booster)
                             UserProfile.collection.addAll(openedCards)
                             UserProfile.save()
-                            message = "Пак [${booster.name}] открыт!"
+                            message = packOpenedMsg.format(getStringResourceByName(context, booster.name))
                         } else {
-                            message = "Недостаточно ресурсов!"
+                            message = noResourcesMsg
                         }
                     }
                 )
@@ -105,6 +116,7 @@ fun BoosterScreen(
 
 @Composable
 private fun BoosterItem(booster: BoosterModel, canAfford: Boolean, onBuy: () -> Unit) {
+    val context = LocalContext.current
     val color = if (booster.costType == "gold") Color(0xFFFDD835) else Color(0xFF03A9F4)
     
     Column(
@@ -116,8 +128,8 @@ private fun BoosterItem(booster: BoosterModel, canAfford: Boolean, onBuy: () -> 
     ) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             Column(modifier = Modifier.weight(1f)) {
-                GameText(text = booster.name, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                GameText(text = booster.description, fontSize = 11.sp, color = Color.Gray)
+                GameText(text = getStringResourceByName(context, booster.name), fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                GameText(text = getStringResourceByName(context, booster.description), fontSize = 11.sp, color = Color.Gray)
             }
             GameButton(
                 text = "${booster.costAmount} ${if (booster.costType == "gold") "🪙" else "💎"}",

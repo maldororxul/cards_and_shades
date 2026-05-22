@@ -17,6 +17,8 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.example.cardsandshades.R
 import com.example.cardsandshades.model.CardModel
 import com.example.cardsandshades.ui.components.CardComponent
 import com.example.cardsandshades.ui.components.GameText
@@ -36,7 +38,7 @@ fun EnemyBoardZone(
         contentAlignment = Alignment.Center
     ) {
         if (boardCards.isEmpty()) {
-            GameText("Поле противника пусто. Его Лицо открыто для атак!", color = Color.DarkGray, fontSize = 12.sp)
+            GameText(stringResource(R.string.enemy_board_empty), color = Color.DarkGray, fontSize = 12.sp)
         } else {
             LazyRow(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
                 items(boardCards, key = { "opp_${it.id}" }) { enemyCard ->
