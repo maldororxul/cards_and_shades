@@ -6,7 +6,10 @@ import androidx.compose.foundation.gestures.drag
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.*
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
@@ -16,28 +19,27 @@ import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.toSize
 import com.example.cardsandshades.model.CardModel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 
-internal val LocalDragTargetInfo = compositionLocalOf { DragTargetInfo() }
+val LocalDragTargetInfo = compositionLocalOf { DragTargetInfo() }
 
-// Глобальный реестр для отслеживания координат всех DropTarget на экране
-internal class DropTargetBounds(
+data class DropTargetBounds(
     val id: String,
     val bounds: Rect,
     val onDropped: (CardModel) -> Unit
 )
 
-internal class DragTargetInfo {
+class DragTargetInfo {
     var isDragging: Boolean by mutableStateOf(false)
-    var dragPosition by mutableStateOf(Offset.Zero)
+    var dragPosition: Offset by mutableStateOf(Offset.Zero)
     var draggableCard: CardModel? by mutableStateOf(null)
 
-    // Список всех активных зон сброса на экране
-    val activeDropTargets = mutableStateListOf<DropTargetBounds>()
+    val activeDropTargets: SnapshotStateList<DropTargetBounds> = mutableStateListOf()
 }
 
 @Composable
@@ -57,8 +59,8 @@ fun DragAndDropContainer(
                         .graphicsLayer {
                             translationX = state.dragPosition.x - (targetSize.width / 2)
                             translationY = state.dragPosition.y - (targetSize.height / 2)
-                            scaleX = 0.95f
-                            scaleY = 0.95f
+                            scaleX = 1.0f
+                            scaleY = 1.0f
                         }
                         .onGloballyPositioned { targetSize = it.size }
                 ) {
@@ -130,24 +132,16 @@ fun DragTarget(
 
                         longPressJob.cancel()
 
-                        // Если перемещение было незначительным — засчитываем как TAP
                         if (!isVerticalDragActive && !isLongClickTriggered && accumulatedDrag.getDistance() < 10f) {
                             onTap()
                         }
 
-                        // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Обрабатываем сброс прямо в момент отпускания пальца
                         if (isVerticalDragActive) {
                             val finalDropPosition = currentDragTargetInfo.dragPosition
-
-                            // Ищем, в какую из зарегистрированных зон попал палец
                             val targetZone = currentDragTargetInfo.activeDropTargets.find { zone ->
                                 zone.bounds.contains(finalDropPosition)
                             }
-
-                            // Если зона найдена — принудительно активируем логику розыгрыша карты
                             targetZone?.onDropped?.invoke(card)
-
-                            // Очищаем глобальное состояние
                             currentDragTargetInfo.isDragging = false
                             isVerticalDragActive = false
                         }
@@ -169,33 +163,31 @@ fun DropTarget(
     content: @Composable BoxScope.(isHovered: Boolean) -> Unit
 ) {
     val dragInfo = LocalDragTargetInfo.current
-    var isHovered by remember { mutableStateOf(false) }
-    var globalBounds by remember { mutableStateOf(Rect.Zero) }
+    val dropTargetId = remember { java.util.UUID.randomUUID().toString() }
+    var bounds by remember { mutableStateOf(Rect.Zero) }
+
+    val isHovered = dragInfo.isDragging && bounds.contains(dragInfo.dragPosition)
 
     Box(
-        modifier = modifier.onGloballyPositioned { coordinates ->
-            val position = coordinates.positionInWindow()
-            globalBounds = Rect(position, Offset(position.x + coordinates.size.width, position.y + coordinates.size.height))
-        }
-    ) {
-        isHovered = dragInfo.isDragging && globalBounds.contains(dragInfo.dragPosition)
-
-        // Регистрируем зону сброса в глобальном реестре при отрисовке и обновляем при изменении границ
-        val currentZone = remember(globalBounds) {
-            DropTargetBounds(
-                id = "player_battle_board",
-                bounds = globalBounds,
-                onDropped = onCardDropped
-            )
-        }
-
-        DisposableEffect(currentZone) {
-            dragInfo.activeDropTargets.add(currentZone)
-            onDispose {
-                dragInfo.activeDropTargets.remove(currentZone)
+        modifier = modifier
+            .onGloballyPositioned { layoutNodes ->
+                val rect = Rect(layoutNodes.positionInWindow(), layoutNodes.size.toSize())
+                bounds = rect
+                
+                val existing = dragInfo.activeDropTargets.find { it.id == dropTargetId }
+                if (existing != null) {
+                    dragInfo.activeDropTargets.remove(existing)
+                }
+                dragInfo.activeDropTargets.add(DropTargetBounds(dropTargetId, rect, onCardDropped))
             }
-        }
-
+    ) {
         content(isHovered)
+    }
+
+    DisposableEffect(dropTargetId) {
+        onDispose {
+            val existing = dragInfo.activeDropTargets.find { it.id == dropTargetId }
+            if (existing != null) dragInfo.activeDropTargets.remove(existing)
+        }
     }
 }

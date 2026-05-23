@@ -199,11 +199,8 @@ private fun GameScreenContent(
                     isHeroTakingDamage = viewModel.playerHeroTakingDamage,
                     damageValue = viewModel.playerHeroDamageValue,
                     onPlayerHeroPositioned = { playerHeroOffset = it },
-                ) {
-                    viewModel.endTurn()
-                    selectedCardForAttack = null
-                    isDrawingArrow = false
-                }
+                    viewModel = viewModel
+                )
             }
 
             RenderAttackArrows(

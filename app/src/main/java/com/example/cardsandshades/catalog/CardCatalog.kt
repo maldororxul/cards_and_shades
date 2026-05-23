@@ -9,7 +9,8 @@ import java.util.UUID
 
 object CardCatalog {
 
-    private var templates: List<CardTemplate> = emptyList()
+    private var _templates: List<CardTemplate> = emptyList()
+    val templates: List<CardTemplate> get() = _templates
 
     fun init(context: Context) {
         val yaml = Yaml()
@@ -17,7 +18,7 @@ object CardCatalog {
         val data: Map<String, Any> = yaml.load(inputStream)
         val cardsList = data["cards"] as List<Map<String, Any>>
 
-        templates = cardsList.map { cardMap ->
+        _templates = cardsList.map { cardMap ->
             CardTemplate(
                 name = cardMap["name"] as String,
                 manaCost = cardMap["manaCost"] as Int,
@@ -99,7 +100,7 @@ object CardCatalog {
     }
 }
 
-private data class CardTemplate(
+data class CardTemplate(
     val name: String,
     val manaCost: Int,
     val baseAttack: Int,

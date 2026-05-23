@@ -2,11 +2,7 @@ package com.example.cardsandshades.ui.battle
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -41,7 +37,8 @@ fun PlayerBoardZone(
 
     Box(
         modifier = Modifier
-            .fillMaxSize()
+            .fillMaxWidth()
+            .height(180.dp) // Increased height
             .border(2.dp, boardBorderColor.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
             .background(Color.Black.copy(alpha = 0.1f)),
         contentAlignment = Alignment.Center

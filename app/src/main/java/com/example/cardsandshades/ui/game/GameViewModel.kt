@@ -25,7 +25,7 @@ class GameViewModel : ViewModel() {
     private val _gameState = MutableStateFlow<GameState?>(null)
     val gameState: StateFlow<GameState?> = _gameState.asStateFlow()
 
-    private var opponentTurnJob: Job? = null
+    private var autoTurnJob: Job? = null
 
     var currentLevel: LevelModel? = null
         private set
@@ -47,34 +47,39 @@ class GameViewModel : ViewModel() {
     var opponentHeroDamageValue by mutableIntStateOf(0)
         private set
 
-    // Убрали принудительный вызов из init, чтобы игра не крашилась при старте до выбора уровня
+    var isAutoBattleActive by mutableStateOf(false)
+        private set
+
+    fun toggleAutoBattle() {
+        isAutoBattleActive = !isAutoBattleActive
+        val state = _gameState.value
+        if (isAutoBattleActive && state != null && state.currentTurn == Turn.PLAYER && !state.isGameOver) {
+            autoTurnJob?.cancel()
+            autoTurnJob = executeGenericTurn(isOpponent = false)
+        }
+    }
+
     init {
         _gameState.value = null
     }
 
-    // Инициализация матча для конкретного уровня кампании
     fun startNewGame(level: LevelModel) {
-        opponentTurnJob?.cancel()
+        autoTurnJob?.cancel()
         currentLevel = level
 
         val musicName = level.musicRes ?: "battle_music_default"
         SoundManager.playMusicByName(null, musicName)
 
-        // ИСПРАВЛЕНИЕ: Берем сохраненную деку игрока из профиля и полностью восстанавливаем ей статы
         val playerDeck = if (UserProfile.selectedDeck.size == 20) {
             UserProfile.selectedDeck.map {
                 it.copy(id = java.util.UUID.randomUUID().toString()).apply { reset() }
             }.toMutableList()
         } else {
-            // Если игрок умудрился зайти без деки — используем случайный автонабор
             CardCatalog.generateTestDeck()
         }
         
-        // ККИ-ПРАВИЛО: Колода игрока всегда перемешивается перед началом боя
         playerDeck.shuffle()
 
-        // ИСПРАВЛЕНИЕ: Собираем уникальную тематическую колоду для ИИ на основе пресета уровня
-        // Если в пресете мало карт — повторяем их до 20 штук для полноценной игры
         val opponentDeckNames = mutableListOf<String>()
         if (level.opponentDeckPreset.isNotEmpty()) {
             while (opponentDeckNames.size < 20) {
@@ -82,11 +87,9 @@ class GameViewModel : ViewModel() {
             }
         }
         val opponentDeck = opponentDeckNames.take(20).map { cardName ->
-            // Ищем карту в каталоге по имени. Если не нашли (опечатка) — подставляем Тень-новобранца
             (CardCatalog.createCardInstance(cardName) ?: CardCatalog.createCardInstance("card_shadow_recruit")!!).apply { reset() }
         }.toMutableList()
 
-        // Обязательно перемешиваем колоду босса перед началом матча
         opponentDeck.shuffle()
 
         val player = PlayerModel(
@@ -114,44 +117,43 @@ class GameViewModel : ViewModel() {
             winnerName = null
         )
 
-        // Раздаем стартовые карты
         repeat(4) {
             GameEngine.drawCard(initialState.player, initialState)
             GameEngine.drawCard(initialState.opponent, initialState)
         }
 
-        // Начисляем стартовую ману для первого хода
         GameEngine.startTurn(initialState)
 
         _gameState.value = initialState
+        
+        if (isAutoBattleActive) {
+            autoTurnJob = executeGenericTurn(isOpponent = false)
+        }
     }
 
     fun claimRewardsAndExit(isPlayerWin: Boolean) {
-        opponentTurnJob?.cancel()
+        autoTurnJob?.cancel()
         if (isPlayerWin) {
             SoundManager.playSoundByName(null, "victory")
             currentLevel?.let { level ->
                 val isFirstTime = level.id >= UserProfile.maxUnlockedLevel.value
                 val rewards = if (isFirstTime) level.firstTimeReward else level.repeatReward
 
-                // 1. Начисляем золото и кристаллы
                 UserProfile.gold.value += rewards.gold
                 UserProfile.crystals.value += rewards.crystals
                 
-                // 2. Начисляем пыль
                 UserProfile.dustCommon.value += rewards.dustCommon
                 UserProfile.dustRare.value += rewards.dustRare
                 UserProfile.dustEpic.value += rewards.dustEpic
                 UserProfile.dustLegendary.value += rewards.dustLegendary
+                UserProfile.dustMythic.value += rewards.dustMythic
 
-                // 3. Выдаем призовую ККИ-карту
                 rewards.cardName?.let { cardName ->
                     CardCatalog.createCardInstance(cardName)?.let { prizeCard ->
                         UserProfile.collection.add(prizeCard)
                     }
                 }
 
-                // 4. Рассчитываем прогресс
                 if (level.id == UserProfile.maxUnlockedLevel.value) {
                     UserProfile.maxUnlockedLevel.value = level.id + 1
                 }
@@ -168,7 +170,6 @@ class GameViewModel : ViewModel() {
         currentLevel?.let { startNewGame(it) }
     }
 
-    // Разыгрывание карты игроком (с глубоким копированием для Compose)
     fun playCard(card: CardModel): Boolean {
         var isPlayed = false
         _gameState.update { currentState ->
@@ -186,7 +187,6 @@ class GameViewModel : ViewModel() {
         return isPlayed
     }
 
-    // Атака карты на карту с глубоким клонированием стейта статов существ
     fun attackEnemyCard(attacker: CardModel, target: CardModel) {
         val state = _gameState.value ?: return
         if (state.isAnimating || state.currentTurn != Turn.PLAYER) return
@@ -194,13 +194,11 @@ class GameViewModel : ViewModel() {
         viewModelScope.launch {
             _gameState.update { it?.copy(isAnimating = true) }
             try {
-                // 1. Анимация рывка атакующего вперед
                 updateCardAnimation(attacker.id, isAttacking = true)
                 delay(200)
 
                 SoundManager.playSoundByName(null, "attack")
 
-                // 2. Встречный удар: Делегируем чистый расчет урона в GameEngine для работы Стрелков
                 _gameState.update { currentState ->
                     currentState?.deepCopy()?.apply {
                         val aCard = player.board.find { it.id == attacker.id }
@@ -216,7 +214,6 @@ class GameViewModel : ViewModel() {
                 updateCardAnimation(attacker.id, isAttacking = false)
                 delay(500)
 
-                // 3. Анимация смерти (падения) И СБРОС ТРЯСКИ ДЛЯ ВСЕХ УЧАСТНИКОВ (включая жертв Splash)
                 _gameState.update { currentState ->
                     currentState?.deepCopy()?.apply {
                         player.board.forEach { card ->
@@ -237,7 +234,6 @@ class GameViewModel : ViewModel() {
                     delay(400)
                 }
 
-                // 4. Окончательное удаление карт со стола
                 _gameState.update { currentState ->
                     currentState?.deepCopy()?.apply {
                         player.board.removeAll { it.currentHealth <= 0 }
@@ -256,7 +252,6 @@ class GameViewModel : ViewModel() {
         }
     }
 
-    // Вспомогательный метод переключения флагов
     private fun updateCardAnimation(cardId: String, isAttacking: Boolean = false) {
         _gameState.update { currentState ->
             currentState?.let { s ->
@@ -322,19 +317,23 @@ class GameViewModel : ViewModel() {
 
         val state = _gameState.value
         if (state != null && state.currentTurn == Turn.OPPONENT && !state.isGameOver) {
-            opponentTurnJob?.cancel()
-            opponentTurnJob = executeOpponentTurn()
+            autoTurnJob?.cancel()
+            autoTurnJob = executeGenericTurn(isOpponent = true)
+        } else if (state != null && state.currentTurn == Turn.PLAYER && isAutoBattleActive && !state.isGameOver) {
+            autoTurnJob?.cancel()
+            autoTurnJob = executeGenericTurn(isOpponent = false)
         }
     }
 
-    private fun executeOpponentTurn(): Job = viewModelScope.launch {
+    private fun executeGenericTurn(isOpponent: Boolean): Job = viewModelScope.launch {
         delay(1000)
         if (!isActive) return@launch
 
-        // ФАЗА ИИ 1: Розыгрыш карт
+        // ФАЗА 1: Розыгрыш карт
         _gameState.update { currentState ->
             currentState?.deepCopy()?.apply {
-                val cardsInHand = opponent.hand.toList()
+                val actor = if (isOpponent) opponent else player
+                val cardsInHand = actor.hand.toList()
                 for (card in cardsInHand) {
                     GameEngine.playCard(this, card)
                 }
@@ -344,21 +343,23 @@ class GameViewModel : ViewModel() {
         delay(500)
         if (!isActive) return@launch
 
-        // ФАЗА ИИ 2: Атака со строгими правилами ККИ
+        // ФАЗА 2: Атака
         val state = _gameState.value
         if (state != null && !state.isGameOver) {
-            val attackerCards = state.opponent.board.toList()
+            val actor = if (isOpponent) state.opponent else state.player
+            val attackerCards = actor.board.toList()
 
             for (attacker in attackerCards) {
                 if (!isActive) break
                 val currentGameState = _gameState.value ?: break
-                val activeAttacker = currentGameState.opponent.board.find { it.id == attacker.id } ?: continue
+                val currentActor = if (isOpponent) currentGameState.opponent else currentGameState.player
+                val activeAttacker = currentActor.board.find { it.id == attacker.id } ?: continue
 
-                // ОШИБКА: ИИ не должен скипать ход, если не может атаковать героя (например, из-за Таунта)
                 if (activeAttacker.isSleeping || activeAttacker.hasAttackedThisTurn) continue
 
-                val playerBoard = currentGameState.player.board
-                val validEnemyCards = playerBoard.filter { enemyCard ->
+                val defender = if (isOpponent) currentGameState.player else currentGameState.opponent
+                val defenderBoard = defender.board
+                val validEnemyCards = defenderBoard.filter { enemyCard ->
                     GameEngine.canAttackTarget(currentGameState, activeAttacker, enemyCard)
                 }
 
@@ -385,18 +386,25 @@ class GameViewModel : ViewModel() {
 
                 _gameState.update { currentState ->
                     currentState?.deepCopy()?.apply {
-                        val nextAttacker = opponent.board.find { it.id == activeAttacker.id }
+                        val cActor = if (isOpponent) opponent else player
+                        val cDefender = if (isOpponent) player else opponent
+                        val nextAttacker = cActor.board.find { it.id == activeAttacker.id }
                         if (nextAttacker != null) {
                             if (!isOpponentTargetingHero) {
-                                val nextTarget = player.board.find { it.id == opponentTargetId }
+                                val nextTarget = cDefender.board.find { it.id == opponentTargetId }
                                 if (nextTarget != null) {
                                     nextTarget.isTakingDamage = true
                                     nextAttacker.isTakingDamage = true
                                     GameEngine.calculateCombat(this, nextAttacker, nextTarget)
                                 }
                             } else {
-                                playerHeroDamageValue = nextAttacker.currentAttack
-                                playerHeroTakingDamage = true
+                                if (isOpponent) {
+                                    playerHeroDamageValue = nextAttacker.currentAttack
+                                    playerHeroTakingDamage = true
+                                } else {
+                                    opponentHeroDamageValue = nextAttacker.currentAttack
+                                    opponentHeroTakingDamage = true
+                                }
                                 GameEngine.attackHero(this, nextAttacker)
                             }
                         }
@@ -406,6 +414,7 @@ class GameViewModel : ViewModel() {
                 updateCardAnimation(activeAttacker.id, isAttacking = false)
                 delay(500)
                 playerHeroTakingDamage = false
+                opponentHeroTakingDamage = false
 
                 _gameState.update { currentState ->
                     currentState?.deepCopy()?.apply {
@@ -448,11 +457,17 @@ class GameViewModel : ViewModel() {
         if (!isActive) return@launch
         delay(600)
 
-        // ФАЗА ИИ 3: Передача хода игроку
+        // ФАЗА 3: Передача хода
         _gameState.update { currentState ->
             currentState?.deepCopy()?.apply {
                 GameEngine.endTurn(this)
             }
+        }
+        
+        // Если после передачи хода ход игрока и включен автобой — запускаем заново
+        val finalState = _gameState.value
+        if (finalState != null && finalState.currentTurn == Turn.PLAYER && isAutoBattleActive && !finalState.isGameOver) {
+            autoTurnJob = executeGenericTurn(isOpponent = false)
         }
     }
 }
