@@ -1,3 +1,5 @@
+package com.example.cardsandshades.ui.battle
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -36,13 +38,12 @@ fun PlayerBoardZone(
     onCardClick: (CardModel, Offset) -> Unit
 ) {
     val boardBorderColor = if (isHovered) Color.Green else Color(0xFF233A23)
-    val boardBgColor = if (isHovered) Color(0xFF142414) else Color(0xFF141F14)
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .border(1.dp, boardBorderColor, RoundedCornerShape(8.dp))
-            .background(boardBgColor),
+            .border(2.dp, boardBorderColor.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
+            .background(Color.Black.copy(alpha = 0.1f)),
         contentAlignment = Alignment.Center
     ) {
         if (boardCards.isEmpty()) {

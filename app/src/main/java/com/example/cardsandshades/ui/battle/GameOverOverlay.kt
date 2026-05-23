@@ -75,6 +75,7 @@ fun GameOverOverlay(
                         if (rewards.dustRare > 0) RewardItem("🔵 +${rewards.dustRare} " + stringResource(R.string.reward_dust), Color(0xFF1E88E5))
                         if (rewards.dustEpic > 0) RewardItem("🟣 +${rewards.dustEpic} " + stringResource(R.string.reward_dust), Color(0xFF8E24AA))
                         if (rewards.dustLegendary > 0) RewardItem("🟡 +${rewards.dustLegendary} " + stringResource(R.string.reward_dust), Color(0xFFFDD835))
+                        if (rewards.dustMythic > 0) RewardItem("🔴 +${rewards.dustMythic} " + stringResource(R.string.reward_dust), Color(0xFFFF3D00))
                         
                         rewards.cardName?.let { cardName ->
                             Spacer(modifier = Modifier.height(8.dp))

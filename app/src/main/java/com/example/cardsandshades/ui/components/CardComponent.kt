@@ -10,8 +10,8 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,6 +30,9 @@ import com.example.cardsandshades.model.CardModel
 import com.example.cardsandshades.model.Rarity
 import com.example.cardsandshades.utils.getStringResourceByName
 
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+
 @SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 fun CardInspectionDialog(
@@ -37,123 +40,128 @@ fun CardInspectionDialog(
     onDismiss: () -> Unit
 ) {
     val context = LocalContext.current
+    var isFocusMode by remember { mutableStateOf(false) }
+
     val borderColor = when (card.rarity) {
         Rarity.COMMON -> Color.Gray
         Rarity.RARE -> Color(0xFF1E88E5)
         Rarity.EPIC -> Color(0xFF8E24AA)
         Rarity.LEGENDARY -> Color(0xFFFDD835)
+        Rarity.MYTHIC -> Color(0xFFFF3D00)
     }
 
-    GameDialog(
-        onDismiss = onDismiss,
-        title = getStringResourceByName(context, card.name),
-        content = {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            // ФОН: КАРТИНКА КАРТЫ НА ВЕСЬ ЭКРАН
+            CardVisual(card = card, modifier = Modifier.fillMaxSize())
+            
+            // ЗАТЕМНЕНИЕ (Если не в режиме фокуса)
+            if (!isFocusMode) {
+                Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.6f)))
+                
+                // КОНТЕНТ (ПОВЕРХ КАРТИНКИ)
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.SpaceBetween
                 ) {
+                    // ХЕДЕР
+                    Row(
+                        modifier = Modifier.fillMaxWidth().background(Color.Black.copy(alpha = 0.4f), RoundedCornerShape(12.dp)).padding(12.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier.size(50.dp).background(Color(0xFF0288D1), RoundedCornerShape(25.dp)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            GameText(card.manaCost.toString(), fontWeight = FontWeight.Black, fontSize = 24.sp)
+                        }
+
+                        Column(horizontalAlignment = Alignment.End) {
+                            GameText(getStringResourceByName(context, card.name), fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                            val rarityLabel = when(card.rarity) {
+                                Rarity.COMMON -> stringResource(R.string.rarity_common)
+                                Rarity.RARE -> stringResource(R.string.rarity_rare)
+                                Rarity.EPIC -> stringResource(R.string.rarity_epic)
+                                Rarity.LEGENDARY -> stringResource(R.string.rarity_legendary)
+                                Rarity.MYTHIC -> stringResource(R.string.rarity_mythic)
+                            }
+                            GameText(rarityLabel, color = borderColor, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                        }
+                    }
+
+                    // ОПИСАНИЕ И ЭФФЕКТЫ (В ЦЕНТРЕ)
                     Box(
                         modifier = Modifier
-                            .size(44.dp)
-                            .background(Color(0xFF0288D1), RoundedCornerShape(22.dp)),
+                            .fillMaxWidth()
+                            .background(Color.Black.copy(alpha = 0.5f), RoundedCornerShape(16.dp))
+                            .border(1.dp, Color.White.copy(alpha = 0.2f), RoundedCornerShape(16.dp))
+                            .padding(20.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        GameText(card.manaCost.toString(), fontWeight = FontWeight.Bold, fontSize = 20.sp)
-                    }
-                    
-                    val rarityLabel = when(card.rarity) {
-                        Rarity.COMMON -> stringResource(R.string.rarity_common)
-                        Rarity.RARE -> stringResource(R.string.rarity_rare)
-                        Rarity.EPIC -> stringResource(R.string.rarity_epic)
-                        Rarity.LEGENDARY -> stringResource(R.string.rarity_legendary)
-                    }
-                    
-                    GameText(
-                        text = rarityLabel,
-                        color = borderColor,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // ИЗОБРАЖЕНИЕ ИЛИ ВИДЕО КАРТЫ
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(280.dp)
-                        .background(Color(0xFF212121), RoundedCornerShape(12.dp))
-                        .border(1.dp, Color.DarkGray, RoundedCornerShape(12.dp))
-                        .clip(RoundedCornerShape(12.dp)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CardVisual(card = card)
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                val effectsDescription = if (card.activeTags.isNotEmpty()) {
-                    card.activeEffects.joinToString("\n\n") { 
-                        "✨ " + getStringResourceByName(context, it.name) + "\n" + getStringResourceByName(context, it.description)
-                    }
-                } else {
-                    stringResource(R.string.effect_normal_desc)
-                }
-
-                if (card.buffs.isNotEmpty()) {
-                    val buffsText = card.buffs.joinToString("\n") {
-                        context.getString(R.string.buff_format, getStringResourceByName(context, it.name), it.attackBonus, it.healthBonus, it.duration)
-                    }
-                    GameText(
-                        text = stringResource(R.string.effect_active_buffs, buffsText),
-                        color = Color(0xFF4CAF50),
-                        fontSize = 13.sp,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(bottom = 12.dp)
-                    )
-                }
-
-                GameText(
-                    text = effectsDescription,
-                    color = Color.LightGray,
-                    fontSize = 15.sp,
-                    textAlign = TextAlign.Center
-                )
-                
-                Spacer(modifier = Modifier.height(16.dp))
-                
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Box(modifier = Modifier.size(40.dp).background(Color(0xFFD32F2F), RoundedCornerShape(8.dp)), contentAlignment = Alignment.Center) {
-                            GameText(card.currentAttack.toString(), fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            val effectsDescription = if (card.activeTags.isNotEmpty()) {
+                                card.activeEffects.joinToString("\n\n") { 
+                                    "✨ " + getStringResourceByName(context, it.name) + "\n" + getStringResourceByName(context, it.description)
+                                }
+                            } else {
+                                stringResource(R.string.effect_normal_desc)
+                            }
+                            
+                            GameText(effectsDescription, color = Color.LightGray, fontSize = 16.sp, textAlign = TextAlign.Center)
+                            
+                            if (card.buffs.isNotEmpty()) {
+                                val buffsText = card.buffs.joinToString("\n") {
+                                    context.getString(R.string.buff_format, getStringResourceByName(context, it.name), it.attackBonus, it.healthBonus, it.duration)
+                                }
+                                Spacer(modifier = Modifier.height(12.dp))
+                                GameText(stringResource(R.string.effect_active_buffs, buffsText), color = Color(0xFF4CAF50), fontSize = 13.sp, textAlign = TextAlign.Center)
+                            }
                         }
-                        Spacer(modifier = Modifier.width(8.dp))
-                        GameText(stringResource(R.string.stat_attack), color = Color.Gray, fontSize = 12.sp)
                     }
 
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        GameText(stringResource(R.string.stat_health), color = Color.Gray, fontSize = 12.sp)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Box(modifier = Modifier.size(40.dp).background(Color(0xFF388E3C), RoundedCornerShape(8.dp)), contentAlignment = Alignment.Center) {
-                            GameText(card.currentHealth.toString(), fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                    // ФУТЕР: АТАКА И ЗДОРОВЬЕ
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(modifier = Modifier.size(60.dp).background(Color(0xFFD32F2F), RoundedCornerShape(12.dp)).border(2.dp, Color.White.copy(alpha = 0.3f), RoundedCornerShape(12.dp)), contentAlignment = Alignment.Center) {
+                                GameText(card.currentAttack.toString(), fontWeight = FontWeight.Black, fontSize = 28.sp)
+                            }
+                            Spacer(modifier = Modifier.width(12.dp))
+                            GameText(stringResource(R.string.stat_attack), color = Color.Gray, fontSize = 14.sp)
+                        }
+
+                        GameButton(text = stringResource(R.string.close), onClick = onDismiss, containerColor = Color.DarkGray)
+
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            GameText(stringResource(R.string.stat_health), color = Color.Gray, fontSize = 14.sp)
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Box(modifier = Modifier.size(60.dp).background(Color(0xFF388E3C), RoundedCornerShape(12.dp)).border(2.dp, Color.White.copy(alpha = 0.3f), RoundedCornerShape(12.dp)), contentAlignment = Alignment.Center) {
+                                GameText(card.currentHealth.toString(), fontWeight = FontWeight.Black, fontSize = 28.sp)
+                            }
                         }
                     }
                 }
             }
-        },
-        confirmButton = { onAction ->
-            GameButton(text = stringResource(R.string.close), onClick = onAction, containerColor = Color(0xFF673AB7))
+
+            // КНОПКА ФОКУСА (Глаз)
+            IconButton(
+                onClick = { isFocusMode = !isFocusMode },
+                modifier = Modifier.align(Alignment.TopEnd).padding(16.dp).background(Color.Black.copy(alpha = 0.5f), CircleShape)
+            ) {
+                GameText(if (isFocusMode) "👁️" else "👁️‍🗨️", fontSize = 24.sp)
+            }
         }
-    )
+    }
 }
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -184,7 +192,7 @@ fun CardComponent(
     val deathAlpha by animateFloatAsState(targetValue = if (card.isDying) 0f else 1f, animationSpec = tween(350))
     val deathScale by animateFloatAsState(targetValue = if (card.isDying) 0.5f else 1f, animationSpec = tween(350))
 
-    // ВЫБОР ЦВЕТА РАМКИ: Если у карты есть Провокация (Taunt) — делаем рамку толстой и золотисто-оранжевой
+    // ВЫБОР ЦВЕТА РАМКИ: Сделаем ее более "вычурной" и толстой
     val borderColor = if (card.hasTaunt && !isPreview) {
         Color(0xFFFF9800) // Оранжевый щит
     } else {
@@ -193,12 +201,20 @@ fun CardComponent(
             Rarity.RARE -> Color(0xFF1E88E5)
             Rarity.EPIC -> Color(0xFF8E24AA)
             Rarity.LEGENDARY -> Color(0xFFFDD835)
+            Rarity.MYTHIC -> Color(0xFFFF3D00)
         }
     }
-    val borderThickness = if (card.hasTaunt && !isPreview) 4.dp else 2.dp
+    
+    val borderThickness = when(card.rarity) {
+        Rarity.COMMON -> 2.dp
+        Rarity.RARE -> 3.dp
+        Rarity.EPIC -> 4.dp
+        Rarity.LEGENDARY -> 5.dp
+        Rarity.MYTHIC -> 6.dp
+    }
+    val finalBorderThickness = if (card.hasTaunt && !isPreview) borderThickness + 2.dp else borderThickness
 
     // ОПРЕДЕЛЯЕМ ПРОЗРАЧНОСТЬ (Эффект сна или потраченного хода)
-    // Спящие или уже походившие карты слегка затеняются (alpha = 0.6f)
     val cardAlpha = if ((card.isSleeping || card.hasAttackedThisTurn) && !isPreview) 0.6f else 1f
 
     Box(
@@ -206,12 +222,15 @@ fun CardComponent(
             .offset(x = shakeOffset.dp, y = attackOffset)
             .alpha(deathAlpha * cardAlpha)
             .scale(deathScale)
+            .padding(2.dp)
     ) {
         Card(
             modifier = Modifier
-                .width(105.dp)
-                .height(150.dp)
-                .border(borderThickness, if (card.isTakingDamage) Color.Red else borderColor, RoundedCornerShape(8.dp))
+                .fillMaxSize()
+                .border(finalBorderThickness, borderColor, RoundedCornerShape(10.dp))
+                // ВТОРАЯ ТОНКАЯ РАМКА ДЛЯ "ВЫЧУРНОСТИ"
+                .padding(finalBorderThickness)
+                .border(1.dp, Color.Black.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
                 .combinedClickable(
                     enabled = !isPreview || onClick != null,
                     onClick = {
@@ -224,7 +243,7 @@ fun CardComponent(
                     }
                 ),
             shape = RoundedCornerShape(8.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFF212121))
+            colors = CardDefaults.cardColors(containerColor = Color(0xFF1A1A1A))
         ) {
             Box(modifier = Modifier.fillMaxSize()) {
                 // ФОН КАРТЫ (АРТ)
@@ -278,6 +297,7 @@ private fun BoxScope.CardContent(card: CardModel, borderColor: Color) {
             Rarity.RARE -> stringResource(R.string.rarity_rare)
             Rarity.EPIC -> stringResource(R.string.rarity_epic)
             Rarity.LEGENDARY -> stringResource(R.string.rarity_legendary)
+            Rarity.MYTHIC -> stringResource(R.string.rarity_mythic)
         }
         GameText(text = rarityLabel, color = borderColor, fontSize = 8.sp, fontWeight = FontWeight.Bold)
 

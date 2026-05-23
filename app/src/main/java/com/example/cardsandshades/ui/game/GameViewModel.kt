@@ -161,6 +161,7 @@ class GameViewModel : ViewModel() {
             SoundManager.playSoundByName(null, "defeat")
         }
         _gameState.value = null
+        SoundManager.startMusic(null)
     }
 
     fun restartCurrentGame() {

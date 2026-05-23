@@ -305,6 +305,12 @@ cards:
     baseHealth: 7
     rarity: "RARE"
     effectTags: ["SPLASH", "RUSH"]
+  - name: "card_fire_giant"
+    manaCost: 7
+    baseAttack: 8
+    baseHealth: 8
+    rarity: "RARE"
+    effectTags: ["SPLASH"]
 
   # EPIC (Strong Effects)
   - name: "card_light_squire"
@@ -410,3 +416,23 @@ cards:
     baseHealth: 10
     rarity: "LEGENDARY"
     effectTags: ["SPLASH", "BUFF"]
+
+  # MYTHIC (Godlike)
+  - name: "card_world_eater"
+    manaCost: 9
+    baseAttack: 15
+    baseHealth: 15
+    rarity: "MYTHIC"
+    effectTags: ["SPLASH", "LIFESTEAL"]
+  - name: "card_celestial_dragon"
+    manaCost: 10
+    baseAttack: 20
+    baseHealth: 20
+    rarity: "MYTHIC"
+    effectTags: ["RANGED", "BUFF"]
+  - name: "card_forgotten_titan"
+    manaCost: 8
+    baseAttack: 10
+    baseHealth: 25
+    rarity: "MYTHIC"
+    effectTags: ["TAUNT", "SPLASH"]

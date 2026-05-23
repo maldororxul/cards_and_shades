@@ -30,8 +30,8 @@
     <string name="battle_start_msg">¡La batalla ha comenzado!</string>
     <string name="battle_your_turn">Tu Turno</string>
     <string name="battle_opponent_turn">Turno del Oponente</string>
-    <string name="battle_attack_hero">¡Atacó al héroe por %d de daño!</string>
-    <string name="battle_attack_hero_fail">¡No puedes atacar al héroe! Hay un Guardián en el camino.</string>
+    <string name="battle_attack_hero">¡Atacó al héroе por %d de daño!</string>
+    <string name="battle_attack_hero_fail">¡No puedes atacar al héroе! Hay un Guardián en el camino.</string>
     <string name="battle_card_attack">%1$s atacó a %2$s</string>
     <string name="battle_card_played">Jugó %s</string>
     <string name="battle_play_fail">No se puede jugar la carta (sin maná o tablero lleno)</string>
@@ -60,6 +60,10 @@
     <string name="ach_progress">Progreso: %1$d / %2$d</string>
     <string name="ach_claim">Reclamar</string>
     <string name="ach_completed">¡Completado!</string>
+    <string name="ach_collection_desc">Colecciona %d cartas únicas en tu colección.</string>
+    <string name="ach_epic_desc">Colecciona %d cartas épicas.</string>
+    <string name="ach_campaign_desc">Alcanza el nivel %d en la campaña.</string>
+    <string name="ach_forge_desc">Forja %d cartas en la forja.</string>
 
     <!-- Opponent Header -->
     <string name="opponent_stats">En mano: %1$d | En mazo: %2$d | Maná: %3$d/%4$d</string>
@@ -118,6 +122,9 @@
     <string name="booster_wait">📦 Elige un sobre abajo</string>
     <string name="booster_opened">¡Sobre [%s] abierto!</string>
     <string name="booster_no_resources">¡Recursos insuficientes!</string>
+    <string name="mythic_alert">🌌 ¡MÍTICA! 🌌</string>
+    <string name="legendary_alert">🌟 ¡LEGENDARIA! 🌟</string>
+    <string name="epic_alert">✨ ¡ÉPICA! ✨</string>
     <string name="booster_gold">Oro: %d 🪙</string>
     <string name="booster_crystals">Cristales: %d 💎</string>
 
@@ -161,7 +168,7 @@
     <string name="card_forest_ambusher">Emboscador del Bosque</string>
     <string name="card_web_spinner">Tejedor de Redes</string>
     <string name="card_sparking_golem">Gólem de Chispas</string>
-    <string name="card_mage_apprentice">Aprendiz de Mago</string>
+    <string name="card_mage_apprentice">Aprendзи de Mago</string>
     <string name="card_hired_crossbowman">Ballestero Contratado</string>
     <string name="card_cave_yeti">Yeti de Cueva</string>
     <string name="card_forgotten_cadaver">Cadáver Olvidado</string>
@@ -218,6 +225,7 @@
     <string name="rarity_rare">RARA</string>
     <string name="rarity_epic">ÉPICA</string>
     <string name="rarity_legendary">LEGENDARIA</string>
+    <string name="rarity_mythic">MÍTICA</string>
 
     <!-- Effects -->
     <string name="effect_rush">Carga</string>
@@ -238,10 +246,9 @@
     <string name="lang_es">Español</string>
     <string name="lang_ru">Ruso</string>
     <string name="lang_selection_format">%1$s: %2$s</string>
-    <string name="effect_normal_desc">effect_normal_desc</string>
-    <string name="effect_active_buffs">effect_active_buffs</string>
-    <string name="stat_attack">stat_attack</string>
-    <string name="stat_health">stat_health</string>
-    <string name="close">close</string>
-
+    <string name="effect_normal_desc">Esta criatura no tiene habilidades especiales.</string>
+    <string name="effect_active_buffs">Potenciadores activos:\n%s</string>
+    <string name="stat_attack">Ataque</string>
+    <string name="stat_health">Salud</string>
+    <string name="close">Cerrar</string>
 </resources>

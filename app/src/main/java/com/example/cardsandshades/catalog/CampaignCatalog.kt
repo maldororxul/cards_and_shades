@@ -50,6 +50,7 @@ object CampaignCatalog {
             dustRare = rewardMap["dust_rare"] as? Int ?: 0,
             dustEpic = rewardMap["dust_epic"] as? Int ?: 0,
             dustLegendary = rewardMap["dust_legendary"] as? Int ?: 0,
+            dustMythic = rewardMap["dust_mythic"] as? Int ?: 0,
             cardName = rewardMap["card"] as? String
         )
     }

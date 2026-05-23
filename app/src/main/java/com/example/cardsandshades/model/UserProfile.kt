@@ -24,6 +24,7 @@ object UserProfile {
     val dustRare = MutableStateFlow(0)
     val dustEpic = MutableStateFlow(0)
     val dustLegendary = MutableStateFlow(0)
+    val dustMythic = MutableStateFlow(0)
 
     // ДНЕВНЫЕ НАГРАДЫ
     val loginChainDays = MutableStateFlow(1)
@@ -49,26 +50,33 @@ object UserProfile {
                 dustRare.value = prefs.getInt("dustRare", 0)
                 dustEpic.value = prefs.getInt("dustEpic", 0)
                 dustLegendary.value = prefs.getInt("dustLegendary", 0)
+                dustMythic.value = prefs.getInt("dustMythic", 0)
 
                 loginChainDays.value = prefs.getInt("loginChainDays", 1)
                 lastLoginTimestamp.value = prefs.getLong("lastLoginTimestamp", 0L)
                 val claimedJson = prefs.getString("rewardsClaimed", "[]") ?: "[]"
                 rewardsClaimed.value = gson.fromJson(claimedJson, object : com.google.gson.reflect.TypeToken<Set<Int>>() {}.type) ?: emptySet()
 
-                // ЛОГИКА ДНЕВНОГО ЗАХОДА
+                // ЛОГИКА ДНЕВНОГО ЗАХОДА (Сброс в 6:00 утра)
                 val now = System.currentTimeMillis()
                 val lastLogin = lastLoginTimestamp.value
                 
                 if (lastLogin > 0) {
-                    val diff = now - lastLogin
-                    val oneDayMs = 24 * 60 * 60 * 1000L
+                    val offset = 6 * 60 * 60 * 1000L // 6 часов утра
+                    val gameDayNow = (now - offset) / (24 * 60 * 60 * 1000L)
+                    val gameDayLast = (lastLogin - offset) / (24 * 60 * 60 * 1000L)
                     
-                    if (diff > oneDayMs) {
-                        if (diff < 2 * oneDayMs) {
+                    if (gameDayNow > gameDayLast) {
+                        if (gameDayNow == gameDayLast + 1) {
+                            // Следующий день — продолжаем цепочку
                             var nextDay = loginChainDays.value + 1
-                            if (nextDay > 30) nextDay = 1
+                            if (nextDay > 30) {
+                                nextDay = 1
+                                rewardsClaimed.value = emptySet()
+                            }
                             loginChainDays.value = nextDay
                         } else {
+                            // Пропустили день — сброс
                             loginChainDays.value = 1
                             rewardsClaimed.value = emptySet()
                         }
@@ -148,6 +156,7 @@ object UserProfile {
                 putInt("dustRare", dustRare.value)
                 putInt("dustEpic", dustEpic.value)
                 putInt("dustLegendary", dustLegendary.value)
+                putInt("dustMythic", dustMythic.value)
 
                 putInt("loginChainDays", loginChainDays.value)
                 putLong("lastLoginTimestamp", lastLoginTimestamp.value)
@@ -176,12 +185,14 @@ object UserProfile {
                     Rarity.RARE -> 20
                     Rarity.EPIC -> 50
                     Rarity.LEGENDARY -> 100
+                    Rarity.MYTHIC -> 500
                 }
                 when (rarity) {
                     Rarity.COMMON -> dustCommon.value += extras * dustAmount
                     Rarity.RARE -> dustRare.value += extras * dustAmount
                     Rarity.EPIC -> dustEpic.value += extras * dustAmount
                     Rarity.LEGENDARY -> dustLegendary.value += extras * dustAmount
+                    Rarity.MYTHIC -> dustMythic.value += extras * dustAmount
                 }
                 newCollection.addAll(cards.take(2))
             } else newCollection.addAll(cards)
@@ -201,12 +212,14 @@ object UserProfile {
             Rarity.RARE -> 100
             Rarity.EPIC -> 400
             Rarity.LEGENDARY -> 1600
+            Rarity.MYTHIC -> 5000
         }
         val currentDust = when (rarity) {
             Rarity.COMMON -> dustCommon
             Rarity.RARE -> dustRare
             Rarity.EPIC -> dustEpic
             Rarity.LEGENDARY -> dustLegendary
+            Rarity.MYTHIC -> dustMythic
         }
         
         if (currentDust.value >= cost) {
@@ -241,6 +254,13 @@ object UserProfile {
                 if (dustEpic.value >= 100) {
                     dustEpic.value -= 100
                     dustLegendary.value += 10
+                    save(); true
+                } else false
+            }
+            Rarity.LEGENDARY -> {
+                if (dustLegendary.value >= 100) {
+                    dustLegendary.value -= 100
+                    dustMythic.value += 10
                     save(); true
                 } else false
             }

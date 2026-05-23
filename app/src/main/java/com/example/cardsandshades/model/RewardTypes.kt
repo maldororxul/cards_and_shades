@@ -7,8 +7,9 @@ data class RewardSetModel(
     val dustRare: Int = 0,
     val dustEpic: Int = 0,
     val dustLegendary: Int = 0,
+    val dustMythic: Int = 0,
     val cardName: String? = null
 ) {
     val isEmpty: Boolean get() = gold == 0 && crystals == 0 && dustCommon == 0 && 
-            dustRare == 0 && dustEpic == 0 && dustLegendary == 0 && cardName == null
+            dustRare == 0 && dustEpic == 0 && dustLegendary == 0 && dustMythic == 0 && cardName == null
 }

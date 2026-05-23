@@ -35,6 +35,7 @@ fun ForgeScreen(
     val dustR by UserProfile.dustRare.collectAsState()
     val dustE by UserProfile.dustEpic.collectAsState()
     val dustL by UserProfile.dustLegendary.collectAsState()
+    val dustM by UserProfile.dustMythic.collectAsState()
 
     var forgedCard by remember { mutableStateOf<CardModel?>(null) }
     val welcomeMsg = stringResource(R.string.forge_welcome)
@@ -46,6 +47,7 @@ fun ForgeScreen(
     val rareLabel = stringResource(R.string.rarity_rare)
     val epicLabel = stringResource(R.string.rarity_epic)
     val legendaryLabel = stringResource(R.string.rarity_legendary)
+    val mythicLabel = stringResource(R.string.rarity_mythic)
     val craftSuccess = stringResource(R.string.forge_craft_success)
     val forgeLegendaryReady = stringResource(R.string.forge_legendary_ready)
     val mergeSuccess = stringResource(R.string.forge_merge_success)
@@ -58,6 +60,20 @@ fun ForgeScreen(
     ) {
         GameText(stringResource(R.string.forge_title), fontSize = 28.sp, fontWeight = FontWeight.Black, color = Color.White)
         
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // ИНФОРМАЦИЯ О ПЫЛИ (всегда сверху)
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            DustChip("C", Color.Gray, dustC)
+            DustChip("R", Color(0xFF1E88E5), dustR)
+            DustChip("E", Color(0xFF8E24AA), dustE)
+            DustChip("L", Color(0xFFFDD835), dustL)
+            DustChip("M", Color(0xFFFF3D00), dustM)
+        }
+
         Spacer(modifier = Modifier.height(16.dp))
 
         TabRow(
@@ -139,6 +155,13 @@ fun ForgeScreen(
                         message = forgeLegendaryReady
                     } else message = craftFail
                 }
+                Spacer(modifier = Modifier.height(8.dp))
+                ForgeRow(Rarity.MYTHIC, Color(0xFFFF3D00), dustM, 5000) {
+                    if (UserProfile.craftCard(Rarity.MYTHIC)) {
+                        forgedCard = UserProfile.collection.lastOrNull()
+                        message = craftSuccess.format(mythicLabel)
+                    } else message = craftFail
+                }
             }
         } else {
             Column(
@@ -162,6 +185,11 @@ fun ForgeScreen(
                     if (UserProfile.mergeDust(Rarity.EPIC)) message = mergeSuccess.format(epicLabel, legendaryLabel)
                     else message = mergeFail
                 }
+                Spacer(modifier = Modifier.height(16.dp))
+                MergeRow(legendaryLabel, mythicLabel, Color(0xFFFDD835), Color(0xFFFF3D00), dustL) {
+                    if (UserProfile.mergeDust(Rarity.LEGENDARY)) message = mergeSuccess.format(legendaryLabel, mythicLabel)
+                    else message = mergeFail
+                }
                 
                 Spacer(modifier = Modifier.height(32.dp))
                 GameText(text = message, color = Color.Yellow, fontSize = 14.sp, fontWeight = FontWeight.Medium)
@@ -169,6 +197,14 @@ fun ForgeScreen(
         }
         
         Spacer(modifier = Modifier.height(70.dp))
+    }
+}
+
+@Composable
+private fun DustChip(label: String, color: Color, amount: Int) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        GameText(label, color = color, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+        GameText(amount.toString(), color = Color.White, fontSize = 11.sp)
     }
 }
 
@@ -185,6 +221,7 @@ private fun ForgeRow(rarity: Rarity, color: Color, dust: Int, cost: Int, onClick
                 Rarity.RARE -> stringResource(R.string.rarity_rare)
                 Rarity.EPIC -> stringResource(R.string.rarity_epic)
                 Rarity.LEGENDARY -> stringResource(R.string.rarity_legendary)
+                Rarity.MYTHIC -> stringResource(R.string.rarity_mythic)
             }
             GameText(rarityLabel, color = color, fontSize = 14.sp, fontWeight = FontWeight.Bold)
             GameText(stringResource(R.string.dust_label, dust), fontSize = 12.sp, color = if (dust >= cost) Color.Green else Color.Gray)

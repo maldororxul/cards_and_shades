@@ -16,6 +16,8 @@ import androidx.compose.ui.unit.sp
 import com.example.cardsandshades.R
 import com.example.cardsandshades.sound.SoundManager
 import com.example.cardsandshades.ui.components.GameButton
+import com.example.cardsandshades.ui.components.GameText
+import com.example.cardsandshades.ui.components.GameBackground
 import com.example.cardsandshades.utils.changeLocale
 
 @Composable
@@ -32,7 +34,7 @@ fun SettingsScreen(onBack: () -> Unit) {
         onBack()
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    GameBackground(screenId = "settings") {
         Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.5f)))
 
         Column(
@@ -54,11 +56,11 @@ fun SettingsScreen(onBack: () -> Unit) {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            Text(text = stringResource(id = R.string.settings), fontSize = 28.sp, color = Color.White)
+            GameText(text = stringResource(id = R.string.settings), fontSize = 28.sp, color = Color.White)
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            Text(
+            GameText(
                 text = stringResource(R.string.music, (musicVol * 100).toInt()),
                 color = Color.White,
                 fontSize = 18.sp
@@ -74,7 +76,7 @@ fun SettingsScreen(onBack: () -> Unit) {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            Text(
+            GameText(
                 text = stringResource(R.string.sounds, (soundVol * 100).toInt()),
                 color = Color.White,
                 fontSize = 18.sp
@@ -101,7 +103,7 @@ fun SettingsScreen(onBack: () -> Unit) {
                     onClick = { expanded = true },
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
                 ) {
-                    Text(text = stringResource(R.string.lang_selection_format, stringResource(R.string.language), currentLangName))
+                    GameText(text = stringResource(R.string.lang_selection_format, stringResource(R.string.language), currentLangName))
                 }
 
                 DropdownMenu(
@@ -110,21 +112,21 @@ fun SettingsScreen(onBack: () -> Unit) {
                     modifier = Modifier.background(Color(0xFF222222))
                 ) {
                     DropdownMenuItem(
-                        text = { Text(stringResource(R.string.lang_en), color = Color.White) },
+                        text = { GameText(stringResource(R.string.lang_en), color = Color.White) },
                         onClick = {
                             expanded = false
                             changeLocale(context = context, langCode = "en")
                         }
                     )
                     DropdownMenuItem(
-                        text = { Text(stringResource(R.string.lang_es), color = Color.White) },
+                        text = { GameText(stringResource(R.string.lang_es), color = Color.White) },
                         onClick = {
                             expanded = false
                             changeLocale(context = context, langCode = "es")
                         }
                     )
                     DropdownMenuItem(
-                        text = { Text(stringResource(R.string.lang_ru), color = Color.White) },
+                        text = { GameText(stringResource(R.string.lang_ru), color = Color.White) },
                         onClick = {
                             expanded = false
                             changeLocale(context = context, langCode = "ru")

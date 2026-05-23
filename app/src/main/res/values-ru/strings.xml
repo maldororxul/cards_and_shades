@@ -60,6 +60,10 @@
     <string name="ach_progress">Прогресс: %1$d / %2$d</string>
     <string name="ach_claim">Забрать</string>
     <string name="ach_completed">Выполнено!</string>
+    <string name="ach_collection_desc">Соберите %d уникальных карт в коллекции.</string>
+    <string name="ach_epic_desc">Соберите %d эпических карт.</string>
+    <string name="ach_campaign_desc">Пройдите %d уровень кампании.</string>
+    <string name="ach_forge_desc">Выкуйте %d карт в кузнице.</string>
 
     <!-- Opponent Header -->
     <string name="opponent_stats">В руке: %1$d | В колоде: %2$d | Мана: %3$d/%4$d</string>
@@ -118,6 +122,9 @@
     <string name="booster_wait">📦 Выберите пак ниже</string>
     <string name="booster_opened">Пак [%s] открыт!</string>
     <string name="booster_no_resources">Недостаточно ресурсов!</string>
+    <string name="mythic_alert">🌌 МИФИЧЕСКАЯ! 🌌</string>
+    <string name="legendary_alert">🌟 ЛЕГЕНДАРНАЯ! 🌟</string>
+    <string name="epic_alert">✨ ЭПИЧЕСКАЯ! ✨</string>
     <string name="booster_gold">Золото: %d 🪙</string>
     <string name="booster_crystals">Кристаллы: %d 💎</string>
 
@@ -218,6 +225,7 @@
     <string name="rarity_rare">РЕДКАЯ</string>
     <string name="rarity_epic">ЭПИЧЕСКАЯ</string>
     <string name="rarity_legendary">ЛЕГЕНДАРНАЯ</string>
+    <string name="rarity_mythic">МИФИЧЕСКАЯ</string>
 
     <!-- Effects -->
     <string name="effect_rush">Рывок</string>
@@ -238,9 +246,9 @@
     <string name="lang_es">Español</string>
     <string name="lang_ru">Русский</string>
     <string name="lang_selection_format">%1$s: %2$s</string>
-    <string name="effect_normal_desc">effect_normal_desc</string>
-    <string name="effect_active_buffs">effect_active_buffs</string>
-    <string name="stat_attack">stat_attack</string>
-    <string name="stat_health">stat_health</string>
-    <string name="close">close</string>
+    <string name="effect_normal_desc">У этого существа нет особых способностей.</string>
+    <string name="effect_active_buffs">Активные усиления:\n%s</string>
+    <string name="stat_attack">Атака</string>
+    <string name="stat_health">Здоровье</string>
+    <string name="close">Закрыть</string>
 </resources>

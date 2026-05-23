@@ -1,12 +1,12 @@
 package com.example.cardsandshades.ui.game
 
-import BattleLogZone
-import EnemyBoardZone
+import com.example.cardsandshades.ui.battle.BattleLogZone
+import com.example.cardsandshades.ui.battle.EnemyBoardZone
 import com.example.cardsandshades.ui.battle.GameOverOverlay
-import OpponentHeaderZone
-import PlayerBoardZone
-import PlayerControlsZone
-import RenderAttackArrows
+import com.example.cardsandshades.ui.battle.OpponentHeaderZone
+import com.example.cardsandshades.ui.battle.PlayerBoardZone
+import com.example.cardsandshades.ui.battle.PlayerControlsZone
+import com.example.cardsandshades.ui.battle.RenderAttackArrows
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -108,6 +108,8 @@ private fun GameScreenContent(
         )
     }
 
+    val selectedHint = stringResource(R.string.battle_selected_hint)
+
     com.example.cardsandshades.ui.components.DragAndDropContainer(modifier = modifier) {
         Box(modifier = Modifier.fillMaxSize()) {
             Column(
@@ -183,7 +185,7 @@ private fun GameScreenContent(
                                         startArrowOffset = offset
                                         isDrawingArrow = true
                                         val cardName = getStringResourceByName(context, card.name)
-                                        battleLog = context.getString(R.string.battle_selected_hint, cardName)
+                                        battleLog = selectedHint.format(cardName)
                                     }
                                 }
                             }

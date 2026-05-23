@@ -7,7 +7,7 @@ enum class EffectTag {
     RUSH, TAUNT, RANGED, SPLASH, LIFESTEAL, BUFF
 }
 
-enum class Rarity { COMMON, RARE, EPIC, LEGENDARY }
+enum class Rarity { COMMON, RARE, EPIC, LEGENDARY, MYTHIC }
 
 data class BuffModel(
     val id: String,

@@ -202,6 +202,7 @@ private fun AchievementGroupItem(group: com.example.cardsandshades.catalog.Achie
             .padding(12.dp)
     ) {
         GameText(getStringResourceByName(context, group.nameKey), fontWeight = FontWeight.Bold, fontSize = 16.sp)
+        GameText(getStringResourceByName(context, group.descKey).format(currentTier?.goal ?: 0), color = Color.Gray, fontSize = 12.sp)
         
         if (currentTier != null) {
             val progress = state.progressValue

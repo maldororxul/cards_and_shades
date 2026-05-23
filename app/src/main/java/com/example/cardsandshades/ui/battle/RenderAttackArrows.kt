@@ -1,3 +1,5 @@
+package com.example.cardsandshades.ui.battle
+
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.geometry.Offset
 import com.example.cardsandshades.ui.components.AttackArrow

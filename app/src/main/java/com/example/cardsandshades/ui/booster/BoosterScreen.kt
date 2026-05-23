@@ -5,6 +5,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -109,7 +110,6 @@ private fun PacksTab(gold: Int, crystals: Int, context: android.content.Context)
     val choosePackMsg = stringResource(R.string.booster_choose)
     var message by remember { mutableStateOf(choosePackMsg) }
     
-    // Стейт для полноэкранной анимации редкой карты
     var highlightedCard by remember { mutableStateOf<CardModel?>(null) }
 
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -170,9 +170,15 @@ private fun PacksTab(gold: Int, crystals: Int, context: android.content.Context)
                             UserProfile.save()
                             message = packOpenedMsg.format(getStringResourceByName(context, booster.name))
                             
-                            // Проверка на легендарку/эпик для анимации
-                            val best = newCards.filter { it.rarity == Rarity.LEGENDARY || it.rarity == Rarity.EPIC }
-                                .maxByOrNull { if (it.rarity == Rarity.LEGENDARY) 2 else 1 }
+                            val best = newCards.filter { it.rarity == Rarity.MYTHIC || it.rarity == Rarity.LEGENDARY || it.rarity == Rarity.EPIC }
+                                .maxByOrNull { 
+                                    when(it.rarity) {
+                                        Rarity.MYTHIC -> 3
+                                        Rarity.LEGENDARY -> 2
+                                        Rarity.EPIC -> 1
+                                        else -> 0
+                                    }
+                                }
                             
                             if (best != null) {
                                 highlightedCard = best
@@ -187,18 +193,27 @@ private fun PacksTab(gold: Int, crystals: Int, context: android.content.Context)
     }
 
     if (highlightedCard != null) {
-        val color = if (highlightedCard!!.rarity == Rarity.LEGENDARY) Color(0xFFFDD835) else Color(0xFF8E24AA)
+        val rarityColor = when(highlightedCard!!.rarity) {
+            Rarity.MYTHIC -> Color(0xFFFF3D00)
+            Rarity.LEGENDARY -> Color(0xFFFDD835)
+            Rarity.EPIC -> Color(0xFF8E24AA)
+            else -> Color.White
+        }
         
-        Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.85f)).clickable { highlightedCard = null }, contentAlignment = Alignment.Center) {
+        val rarityText = when(highlightedCard!!.rarity) {
+            Rarity.MYTHIC -> stringResource(R.string.mythic_alert)
+            Rarity.LEGENDARY -> stringResource(R.string.legendary_alert)
+            Rarity.EPIC -> stringResource(R.string.epic_alert)
+            else -> ""
+        }
+
+        Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.9f)).clickable { highlightedCard = null }, contentAlignment = Alignment.Center) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                GameText(
-                    text = if (highlightedCard!!.rarity == Rarity.LEGENDARY) "🌟 LEGENDARY! 🌟" else "✨ EPIC! ✨",
-                    color = color,
-                    fontSize = 32.sp,
-                    fontWeight = FontWeight.Black
-                )
+                GameText(text = rarityText, color = rarityColor, fontSize = 36.sp, fontWeight = FontWeight.Black)
                 Spacer(modifier = Modifier.height(24.dp))
-                CardComponent(card = highlightedCard!!, modifier = Modifier.size(200.dp, 300.dp))
+                CardComponent(card = highlightedCard!!, modifier = Modifier.size(240.dp, 360.dp))
+                Spacer(modifier = Modifier.height(32.dp))
+                GameText(stringResource(R.string.close), color = Color.Gray, fontSize = 14.sp)
             }
         }
     }
@@ -262,17 +277,20 @@ private fun FusionAccordion(recipe: FusionRecipe, context: android.content.Conte
             GameText(stringResource(R.string.fusion_cost), fontSize = 12.sp, color = Color.Gray)
             Spacer(modifier = Modifier.height(8.dp))
             
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
+            Row(modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.Start) {
                 recipe.inputs.forEach { input ->
                     val hasCount = userCards.count { it.name == input.key }
-                    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(end = 12.dp)) {
-                        CardComponent(
-                            card = CardCatalog.createCardInstance(input.key)!!, 
-                            isPreview = true, 
-                            modifier = Modifier.size(60.dp, 90.dp),
-                            onClick = { inspectedCard = CardCatalog.createCardInstance(input.key) }
-                        )
-                        GameText("${hasCount}/${input.count}", fontSize = 10.sp, color = if (hasCount >= input.count) Color.Green else Color.Red)
+                    val cardInstance = CardCatalog.createCardInstance(input.key)
+                    if (cardInstance != null) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(end = 12.dp)) {
+                            CardComponent(
+                                card = cardInstance, 
+                                isPreview = true, 
+                                modifier = Modifier.size(60.dp, 90.dp),
+                                onClick = { inspectedCard = CardCatalog.createCardInstance(input.key) }
+                            )
+                            GameText("${hasCount}/${input.count}", fontSize = 10.sp, color = if (hasCount >= input.count) Color.Green else Color.Red)
+                        }
                     }
                 }
             }
@@ -282,12 +300,15 @@ private fun FusionAccordion(recipe: FusionRecipe, context: android.content.Conte
             Spacer(modifier = Modifier.height(8.dp))
             
             Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                CardComponent(
-                    card = CardCatalog.createCardInstance(recipe.outputKey)!!, 
-                    isPreview = true, 
-                    modifier = Modifier.size(100.dp, 150.dp),
-                    onClick = { inspectedCard = CardCatalog.createCardInstance(recipe.outputKey) }
-                )
+                val outputInstance = CardCatalog.createCardInstance(recipe.outputKey)
+                if (outputInstance != null) {
+                    CardComponent(
+                        card = outputInstance, 
+                        isPreview = true, 
+                        modifier = Modifier.size(100.dp, 150.dp),
+                        onClick = { inspectedCard = CardCatalog.createCardInstance(recipe.outputKey) }
+                    )
+                }
             }
             
             Spacer(modifier = Modifier.height(16.dp))
@@ -301,10 +322,12 @@ private fun FusionAccordion(recipe: FusionRecipe, context: android.content.Conte
                             if (card != null) UserProfile.collection.remove(card)
                         }
                     }
-                    val newCard = CardCatalog.createCardInstance(recipe.outputKey)!!
-                    UserProfile.collection.add(newCard)
-                    UserProfile.save()
-                    com.example.cardsandshades.sound.SoundManager.playSoundByName(context, "victory")
+                    val newCard = CardCatalog.createCardInstance(recipe.outputKey)
+                    if (newCard != null) {
+                        UserProfile.collection.add(newCard)
+                        UserProfile.save()
+                        com.example.cardsandshades.sound.SoundManager.playSoundByName(context, "victory")
+                    }
                 },
                 enabled = canFuse,
                 modifier = Modifier.fillMaxWidth()
@@ -352,6 +375,7 @@ private fun BoosterItem(booster: BoosterModel, canAfford: Boolean, onBuy: () -> 
             ChanceInfo("R", Color(0xFF1E88E5), booster.chances.rare)
             ChanceInfo("E", Color(0xFF8E24AA), booster.chances.epic)
             ChanceInfo("L", Color(0xFFFDD835), booster.chances.legendary)
+            ChanceInfo("M", Color(0xFFFF3D00), 1) // Mythic chance
         }
     }
 }
@@ -383,11 +407,12 @@ private fun buyBooster(booster: BoosterModel): Boolean {
 private fun generatePack(booster: BoosterModel): List<CardModel> {
     val pack = mutableListOf<CardModel>()
     repeat(5) {
-        val roll = (1..100).random()
+        val roll = (1..1000).random() // Higher resolution for Mythic
         val rarity = when {
-            roll <= booster.chances.legendary -> Rarity.LEGENDARY
-            roll <= booster.chances.legendary + booster.chances.epic -> Rarity.EPIC
-            roll <= booster.chances.legendary + booster.chances.epic + booster.chances.rare -> Rarity.RARE
+            roll <= 10 -> Rarity.MYTHIC // 1%
+            roll <= booster.chances.legendary * 10 -> Rarity.LEGENDARY
+            roll <= (booster.chances.legendary + booster.chances.epic) * 10 -> Rarity.EPIC
+            roll <= (booster.chances.legendary + booster.chances.epic + booster.chances.rare) * 10 -> Rarity.RARE
             else -> Rarity.COMMON
         }
         val card = CardCatalog.generateRandomCardByRarityOnly(rarity) ?: CardCatalog.generateRandomCardByRarityOnly(Rarity.COMMON)!!

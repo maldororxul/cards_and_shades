@@ -1,8 +1,9 @@
+package com.example.cardsandshades.ui.battle
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -12,14 +13,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.cardsandshades.ui.components.GameText
 
+import androidx.compose.ui.graphics.Brush
+
 @Composable
 fun BattleLogZone(battleLog: String) {
     val context = androidx.compose.ui.platform.LocalContext.current
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color(0xFF222222), RoundedCornerShape(4.dp))
-            .padding(6.dp),
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.5f), Color.Transparent)
+                )
+            )
+            .padding(vertical = 12.dp, horizontal = 16.dp),
         contentAlignment = Alignment.Center
     ) {
         val cleanLog = if (battleLog.startsWith("card_") || battleLog == "draw") {
@@ -30,9 +37,10 @@ fun BattleLogZone(battleLog: String) {
         
         GameText(
             text = cleanLog,
-            color = if (battleLog.contains("❌")) Color.Red else Color.Yellow,
-            fontSize = 13.sp,
-            fontWeight = FontWeight.Medium
+            color = if (battleLog.contains("❌")) Color.Red else Color(0xFFFFEB3B),
+            fontSize = 15.sp,
+            fontWeight = FontWeight.Bold,
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center
         )
     }
 }

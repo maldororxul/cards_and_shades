@@ -1,3 +1,5 @@
+package com.example.cardsandshades.ui.battle
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -33,8 +35,8 @@ fun EnemyBoardZone(
         modifier = Modifier
             .fillMaxWidth()
             .height(150.dp)
-            .border(1.dp, Color(0xFF3A2323), RoundedCornerShape(8.dp))
-            .background(Color(0xFF1F1818)),
+            .border(2.dp, Color(0xFF3A2323).copy(alpha = 0.3f), RoundedCornerShape(12.dp))
+            .background(Color.Black.copy(alpha = 0.1f)),
         contentAlignment = Alignment.Center
     ) {
         if (boardCards.isEmpty()) {
