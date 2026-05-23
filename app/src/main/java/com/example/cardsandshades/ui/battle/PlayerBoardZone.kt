@@ -38,7 +38,7 @@ fun PlayerBoardZone(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(180.dp) // Increased height
+            .height(200.dp) // Increased height
             .border(2.dp, boardBorderColor.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
             .background(Color.Black.copy(alpha = 0.1f)),
         contentAlignment = Alignment.Center

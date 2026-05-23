@@ -19,14 +19,14 @@ import com.example.cardsandshades.model.CardModel
 @Composable
 fun CardVisual(
     card: CardModel,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    contentScale: ContentScale = ContentScale.Crop
 ) {
     val context = LocalContext.current
     val resName = card.name
 
     Box(
-        modifier = modifier
-            .fillMaxSize(),
+        modifier = modifier,
         contentAlignment = Alignment.Center
     ) {
         if (resName.isNotEmpty()) {
@@ -62,7 +62,7 @@ fun CardVisual(
                         painter = painterResource(id = drawableResId),
                         contentDescription = card.name,
                         modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
+                        contentScale = contentScale
                     )
                 }
                 else -> {

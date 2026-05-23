@@ -30,7 +30,7 @@ fun EnemyBoardZone(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(180.dp) // Increased height
+            .height(200.dp) // Increased height to match player board logic
             .border(2.dp, Color(0xFF3A2323).copy(alpha = 0.3f), RoundedCornerShape(12.dp))
             .background(Color.Black.copy(alpha = 0.1f)),
         contentAlignment = Alignment.Center
@@ -43,6 +43,7 @@ fun EnemyBoardZone(
                     CardComponent(
                         card = enemyCard,
                         modifier = Modifier
+                            .size(105.dp, 150.dp) // FIXED: Standard size, no stretching
                             .padding(4.dp)
                             .onGloballyPositioned { coords ->
                                 val pos = coords.positionInWindow()

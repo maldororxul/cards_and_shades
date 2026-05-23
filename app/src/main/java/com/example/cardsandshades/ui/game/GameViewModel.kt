@@ -329,11 +329,11 @@ class GameViewModel : ViewModel() {
         delay(1000)
         if (!isActive) return@launch
 
-        // ФАЗА 1: Розыгрыш карт
+        // ФАЗА 1: Розыгрыш карт (Сначала самые дорогие для оптимизации маны)
         _gameState.update { currentState ->
             currentState?.deepCopy()?.apply {
                 val actor = if (isOpponent) opponent else player
-                val cardsInHand = actor.hand.toList()
+                val cardsInHand = actor.hand.sortedByDescending { it.manaCost }
                 for (card in cardsInHand) {
                     GameEngine.playCard(this, card)
                 }
@@ -464,10 +464,16 @@ class GameViewModel : ViewModel() {
             }
         }
         
-        // Если после передачи хода ход игрока и включен автобой — запускаем заново
+        // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Триггерим ход следующего игрока
         val finalState = _gameState.value
-        if (finalState != null && finalState.currentTurn == Turn.PLAYER && isAutoBattleActive && !finalState.isGameOver) {
-            autoTurnJob = executeGenericTurn(isOpponent = false)
+        if (finalState != null && !finalState.isGameOver) {
+            if (finalState.currentTurn == Turn.OPPONENT) {
+                // Если сейчас ход оппонента — запускаем его ИИ
+                autoTurnJob = executeGenericTurn(isOpponent = true)
+            } else if (finalState.currentTurn == Turn.PLAYER && isAutoBattleActive) {
+                // Если сейчас ход игрока и включен автобой — запускаем автобой игрока
+                autoTurnJob = executeGenericTurn(isOpponent = false)
+            }
         }
     }
 }

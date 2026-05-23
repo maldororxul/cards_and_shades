@@ -11,10 +11,13 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.*
+import com.example.cardsandshades.model.UserProfile
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
@@ -44,6 +47,9 @@ fun CardInspectionDialog(
     var isFocusMode by remember { mutableStateOf(false) }
     var selectedEffectDesc by remember { mutableStateOf<String?>(null) }
 
+    val ownedCount = UserProfile.collection.count { it.name == card.name }
+    val isOwned = ownedCount > 0
+
     val rarityColor = when (card.rarity) {
         Rarity.COMMON -> Color.Gray
         Rarity.RARE -> Color(0xFF1E88E5)
@@ -57,15 +63,21 @@ fun CardInspectionDialog(
         properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
-            // ФОН: КАРТИНКА КАРТЫ НА ВЕСЬ ЭКРАН
-            CardVisual(card = card, modifier = Modifier.fillMaxSize())
+            // ФОН: КАРТИНКА КАРТЫ НА ВЕСЬ ЭКРАН (С искажением для полного заполнения)
+            CardVisual(
+                card = card, 
+                modifier = Modifier
+                    .fillMaxSize()
+                    .then(if (!isOwned) Modifier.blur(20.dp) else Modifier),
+                contentScale = androidx.compose.ui.layout.ContentScale.FillBounds
+            )
             
             if (!isFocusMode) {
                 // ХЕДЕР (ЗАТЕМНЕНИЕ ТОЛЬКО СВЕРХУ)
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(150.dp)
+                        .height(180.dp)
                         .background(Brush.verticalGradient(listOf(Color.Black.copy(alpha = 0.8f), Color.Transparent)))
                         .padding(24.dp)
                 ) {
@@ -164,7 +176,7 @@ fun CardInspectionDialog(
                 }
             }
 
-            // КНОПКА ГЛАЗА
+            // КНОПКА ГЛАЗА - Смещена к середине края, чтобы не мешать хедеру
             IconButton(
                 onClick = { isFocusMode = !isFocusMode },
                 modifier = Modifier.align(Alignment.CenterEnd).padding(16.dp).background(Color.Black.copy(alpha = 0.5f), CircleShape)

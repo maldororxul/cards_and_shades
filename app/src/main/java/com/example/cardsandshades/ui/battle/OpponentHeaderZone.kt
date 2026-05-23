@@ -80,7 +80,7 @@ fun OpponentHeaderZone(
             }
         }
 
-        // ГЕРОЙ ВРАГА (HEALTH ORB)
+        // ГЕРОЙ ВРАГА (HEALTH ORB) - Moved to the RIGHT
         Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(top = 8.dp)) {
             Box(
                 modifier = Modifier
@@ -110,7 +110,5 @@ fun OpponentHeaderZone(
                 )
             }
         }
-        
-        Spacer(modifier = Modifier.size(60.dp))
     }
 }
