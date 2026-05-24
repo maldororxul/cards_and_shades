@@ -185,12 +185,17 @@ object GameEngine {
         target.activeEffects.forEach { damageToTarget = it.modifyIncomingDamage(target, damageToTarget) }
 
         // 2. РАСЧЕТ ОТВЕТНОГО УРОНА (Только если атакующий - MELEE)
-        // Проверяем группы атакующего на наличие MELEE
-        val isMelee = attacker.groups.contains(GroupTag.MELEE)
-        var counterDamageToAttacker = if (isMelee) target.currentAttack else 0
+        // Проверяем группы атакующего на наличие MELEE. Если атакующий - ближник, он получает сдачи.
+        val isMeleeAttacker = attacker.groups.contains(GroupTag.MELEE)
+        var counterDamageToAttacker = if (isMeleeAttacker) target.currentAttack else 0
+        
+        // Модификаторы ответного урона (эффекты цели и атакующего)
+        target.activeEffects.forEach { counterDamageToAttacker = it.modifyOutgoingDamage(target, attacker, counterDamageToAttacker) }
         attacker.activeEffects.forEach { counterDamageToAttacker = it.modifyCounterDamage(attacker, target, counterDamageToAttacker) }
 
-        // 3. НАНЕСЕНИЕ УРОНА (Симультанно, даже если защитник умирает)
+        // 3. НАНЕСЕНИЕ УРОНА (Симультанно)
+        // Важно: мы рассчитываем урон заранее, поэтому даже если одна из карт "погибает" в процессе, 
+        // она успевает нанести ответный урон.
         target.currentHealth -= damageToTarget
         attacker.currentHealth -= counterDamageToAttacker
 

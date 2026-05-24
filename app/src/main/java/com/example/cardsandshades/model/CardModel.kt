@@ -36,8 +36,8 @@ data class CardModel(
     val baseAttack: Int,
     val baseHealth: Int,
     val rarity: Rarity,
-    var currentAttack: Int = 0,
-    var currentHealth: Int = 0,
+    var currentAttack: Int = -1,
+    var currentHealth: Int = -1,
 
     // backing fields for Gson null-safety
     private val groupTags: List<GroupTag>? = emptyList(),
@@ -57,8 +57,8 @@ data class CardModel(
     var critMultiplier: Float = 1.0f
 ) {
     init {
-        if (currentAttack == 0) currentAttack = baseAttack
-        if (currentHealth == 0) currentHealth = baseHealth
+        if (currentAttack == -1) currentAttack = baseAttack
+        if (currentHealth == -1) currentHealth = baseHealth
     }
 
     val isDead: Boolean get() = currentHealth <= 0

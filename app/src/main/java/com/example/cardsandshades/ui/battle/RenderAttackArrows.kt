@@ -9,6 +9,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.unit.dp
+import kotlin.math.atan2
+import kotlin.math.cos
+import kotlin.math.sin
+import kotlin.math.PI
 
 @Composable
 fun RenderAttackArrows(
@@ -27,11 +31,16 @@ fun RenderAttackArrows(
     Canvas(modifier = Modifier.fillMaxSize()) {
         // 1. Рисуем стрелку прицеливания игрока
         if (isPlayerDrawing) {
-            // fingerOffset передается как playerTargetOffset
-            val finalArrowEnd = if (playerTargetOffset != Offset.Zero && playerTargetOffset != null) playerTargetOffset 
-                               else enemyHeroOffset.takeIf { isEnemyBoardEmpty } ?: playerStart
+            val finalArrowEnd = if (playerTargetOffset != null && playerTargetOffset != Offset.Zero && playerTargetOffset != playerStart) {
+                playerTargetOffset
+            } else if (isEnemyBoardEmpty && enemyHeroOffset != Offset.Zero) {
+                enemyHeroOffset
+            } else {
+                // Если нет цели и вражеское поле не пустое, рисуем небольшую стрелку вверх для подсказки
+                Offset(playerStart.x, playerStart.y - 100f)
+            }
             
-            drawAttackArrow(start = playerStart, end = finalArrowEnd, color = Color.Red)
+            drawAttackArrow(start = playerStart, end = finalArrowEnd, color = Color.Red.copy(alpha = 0.8f))
         }
 
         // 2. Рисуем стрелку прицеливания ИИ в его ход
@@ -40,7 +49,7 @@ fun RenderAttackArrows(
             val aiEnd = if (isAiTargetingHero) playerHeroOffset else playerCardsOffsets[aiTargetId]
 
             if (aiStart != null && aiEnd != null) {
-                drawAttackArrow(start = aiStart, end = aiEnd, color = Color.Yellow)
+                drawAttackArrow(start = aiStart, end = aiEnd, color = Color.Yellow.copy(alpha = 0.8f))
             }
         }
     }
@@ -61,16 +70,16 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawAttackArrow(sta
     )
     
     // Наконечник стрелки
-    val angle = Math.atan2((end.y - start.y).toDouble(), (end.x - start.x).toDouble())
+    val angle = atan2((end.y - start.y).toDouble(), (end.x - start.x).toDouble())
     val arrowSize = 20.dp.toPx()
     
     val p1 = Offset(
-        (end.x - arrowSize * Math.cos(angle - Math.PI / 6)).toFloat(),
-        (end.y - arrowSize * Math.sin(angle - Math.PI / 6)).toFloat()
+        (end.x - arrowSize * cos(angle - PI / 6)).toFloat(),
+        (end.y - arrowSize * sin(angle - PI / 6)).toFloat()
     )
     val p2 = Offset(
-        (end.x - arrowSize * Math.cos(angle + Math.PI / 6)).toFloat(),
-        (end.y - arrowSize * Math.sin(angle + Math.PI / 6)).toFloat()
+        (end.x - arrowSize * cos(angle + PI / 6)).toFloat(),
+        (end.y - arrowSize * sin(angle + PI / 6)).toFloat()
     )
     
     val path = Path().apply {

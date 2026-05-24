@@ -228,12 +228,29 @@ class GameViewModel : ViewModel() {
                         if (aCard != null && tCard != null) {
                             tCard.isTakingDamage = true
                             aCard.isTakingDamage = true
+                            if (aCard.groups.contains(GroupTag.MELEE)) {
+                                tCard.isAttacking = true
+                            }
                             GameEngine.calculateCombat(this, aCard, tCard)
                         }
                     }
                 }
-                updateCardAnimation(attacker.id, isAttacking = false)
-                delay(getDelay(500))
+                
+                delay(getDelay(400)) // Время на показ ударов
+
+                _gameState.update { currentState ->
+                    currentState?.deepCopy()?.apply {
+                        // Сбрасываем все флаги анимаций атаки
+                        player.board.filterNotNull().forEach { it.isAttacking = false }
+                        opponent.board.filterNotNull().forEach { it.isAttacking = false }
+                        
+                        // Переходим к фазе получения урона (тряска)
+                        player.board.filterNotNull().forEach { if (it.lastDamageTaken > 0) it.isTakingDamage = true }
+                        opponent.board.filterNotNull().forEach { if (it.lastDamageTaken > 0) it.isTakingDamage = true }
+                    }
+                }
+                
+                delay(getDelay(400))
 
                 _gameState.update { currentState ->
                     currentState?.deepCopy()?.apply {
@@ -424,6 +441,9 @@ class GameViewModel : ViewModel() {
                                 if (nextTarget != null) {
                                     nextTarget.isTakingDamage = true
                                     nextAttacker.isTakingDamage = true
+                                    if (nextAttacker.groups.contains(GroupTag.MELEE)) {
+                                        nextTarget.isAttacking = true
+                                    }
                                     GameEngine.calculateCombat(this, nextAttacker, nextTarget)
                                 }
                             } else {
@@ -440,10 +460,18 @@ class GameViewModel : ViewModel() {
                     }
                 }
 
-                updateCardAnimation(activeAttacker.id, isAttacking = false)
-                delay(getDelay(500))
-                playerHeroTakingDamage = false
-                opponentHeroTakingDamage = false
+                delay(getDelay(400))
+                
+                _gameState.update { currentState ->
+                    currentState?.deepCopy()?.apply {
+                        player.board.filterNotNull().forEach { it.isAttacking = false }
+                        opponent.board.filterNotNull().forEach { it.isAttacking = false }
+                        playerHeroTakingDamage = false
+                        opponentHeroTakingDamage = false
+                    }
+                }
+                
+                delay(getDelay(400))
 
                 _gameState.update { currentState ->
                     currentState?.deepCopy()?.apply {

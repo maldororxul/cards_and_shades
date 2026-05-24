@@ -16,7 +16,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -124,16 +124,17 @@ private fun GameScreenContent(
     com.example.cardsandshades.ui.components.DragAndDropContainer(modifier = modifier) {
         Box(
             modifier = Modifier.fillMaxSize()
-                .pointerInput(isDrawingArrow) {
-                    if (isDrawingArrow) {
-                        detectDragGestures(
-                            onDragStart = { offset -> fingerOffset = offset },
-                            onDrag = { change, _ ->
-                                fingerOffset = change.position
-                            },
-                            onDragEnd = { },
-                            onDragCancel = { }
-                        )
+                .pointerInput(Unit) {
+                    // Отслеживаем движение пальца даже если оно перехвачено дочерними элементами
+                    awaitPointerEventScope {
+                        while (true) {
+                            val event = awaitPointerEvent(PointerEventPass.Initial)
+                            if (isDrawingArrow) {
+                                event.changes.firstOrNull()?.let {
+                                    fingerOffset = it.position
+                                }
+                            }
+                        }
                     }
                 }
         ) {
@@ -214,7 +215,8 @@ private fun GameScreenContent(
                                     selectedCardForAttack = card
                                     startArrowOffset = offset
                                     isDrawingArrow = true
-                                    fingerOffset = offset // Начальная позиция
+                                    // Устанавливаем fingerOffset чуть выше карты, чтобы стрелка была сразу видна
+                                    fingerOffset = Offset(offset.x, offset.y - 50f)
                                     val cardName = getStringResourceByName(context, card.name)
                                     battleLog = selectedHint.format(cardName)
                                 } else {
@@ -255,17 +257,6 @@ private fun GameScreenContent(
                         initialInspectedIndex = state.player.hand.indexOfFirst { it.id == card.id }.coerceAtLeast(0)
                     },
                     viewModel = viewModel
-                )
-            }
-
-            // КНОПКА СКОРОСТИ - Как оверлей в углу
-            Box(modifier = Modifier.fillMaxSize().padding(16.dp), contentAlignment = Alignment.TopEnd) {
-                GameButton(
-                    text = "x${viewModel.animationSpeed}",
-                    onClick = { viewModel.cycleAnimationSpeed() },
-                    containerColor = Color.DarkGray.copy(alpha = 0.8f),
-                    modifier = Modifier.size(55.dp).clip(CircleShape),
-                    fontSize = 14.sp
                 )
             }
 
