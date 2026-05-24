@@ -108,16 +108,31 @@ object GameEngine {
     private fun applyNeighborBuffs(player: PlayerModel, card: CardModel, slotIndex: Int) {
         val left = if (slotIndex > 0) player.board[slotIndex - 1] else null
         val right = if (slotIndex < MAX_BOARD_SIZE - 1) player.board[slotIndex + 1] else null
+        val neighbors = listOfNotNull(left, right)
 
-        val atkBonus = if (card.activeTags.contains(EffectTag.NEIGHBOR_BUFF_ATTACK)) 1 else 0
-        val hpBonus = if (card.activeTags.contains(EffectTag.NEIGHBOR_BUFF_HEALTH)) 2 else 0
+        // 1. Карта баффает соседей
+        val atkBonusFromCard = if (card.activeTags.contains(EffectTag.NEIGHBOR_BUFF_ATTACK)) 1 else 0
+        val hpBonusFromCard = if (card.activeTags.contains(EffectTag.NEIGHBOR_BUFF_HEALTH)) 2 else 0
 
-        listOfNotNull(left, right).forEach { neighbor ->
-            if (atkBonus > 0 || hpBonus > 0) {
-                val buff = BuffModel(java.util.UUID.randomUUID().toString(), "neighbor_buff", atkBonus, hpBonus, 999)
+        neighbors.forEach { neighbor ->
+            if (atkBonusFromCard > 0 || hpBonusFromCard > 0) {
+                val buff = BuffModel(java.util.UUID.randomUUID().toString(), "neighbor_buff", atkBonusFromCard, hpBonusFromCard, 999)
                 neighbor.addBuff(buff)
-                neighbor.currentAttack += atkBonus
-                neighbor.currentHealth += hpBonus
+                neighbor.currentAttack += atkBonusFromCard
+                neighbor.currentHealth += hpBonusFromCard
+            }
+        }
+
+        // 2. Соседи баффают карту
+        neighbors.forEach { neighbor ->
+            val atkBonusFromNeighbor = if (neighbor.activeTags.contains(EffectTag.NEIGHBOR_BUFF_ATTACK)) 1 else 0
+            val hpBonusFromNeighbor = if (neighbor.activeTags.contains(EffectTag.NEIGHBOR_BUFF_HEALTH)) 2 else 0
+
+            if (atkBonusFromNeighbor > 0 || hpBonusFromNeighbor > 0) {
+                val buff = BuffModel(java.util.UUID.randomUUID().toString(), "neighbor_buff", atkBonusFromNeighbor, hpBonusFromNeighbor, 999)
+                card.addBuff(buff)
+                card.currentAttack += atkBonusFromNeighbor
+                card.currentHealth += hpBonusFromNeighbor
             }
         }
     }
@@ -128,8 +143,10 @@ object GameEngine {
         indicesToCheck.forEach { i ->
             val ambushCard = opponent.board[i]
             if (ambushCard != null && ambushCard.activeTags.contains(EffectTag.AUTO_ATTACK_PLAYED)) {
-                // Авто-атака!
-                calculateCombat(state, ambushCard, playedCard, isCounterRetaliation = true)
+                // Если карта оглушена, заморожена или спит - она не может амбушить
+                if (!ambushCard.isFrozen && !ambushCard.isStunned && !ambushCard.isSleeping) {
+                    calculateCombat(state, ambushCard, playedCard, isCounterRetaliation = true)
+                }
             }
         }
     }
@@ -191,8 +208,10 @@ object GameEngine {
         val neighbors = listOf(slot - 1, slot + 1).filter { it in 0 until MAX_BOARD_SIZE }.mapNotNull { owner.board[it] }
         neighbors.forEach { neighbor ->
             if (neighbor.activeTags.contains(EffectTag.RETRIBUTION)) {
-                // Сосед мстит за атаку!
-                calculateCombat(state, neighbor, attacker, isCounterRetaliation = true)
+                // Если сосед оглушен, заморожен или спит - он не может мстить
+                if (!neighbor.isFrozen && !neighbor.isStunned && !neighbor.isSleeping) {
+                    calculateCombat(state, neighbor, attacker, isCounterRetaliation = true)
+                }
             }
         }
     }

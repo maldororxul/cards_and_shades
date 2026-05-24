@@ -222,6 +222,7 @@
 
     <!-- Rarities -->
     <string name="rarity_common">ОБЫЧНАЯ</string>
+    <string name="rarity_uncommon">НЕОБЫЧНАЯ</string>
     <string name="rarity_rare">РЕДКАЯ</string>
     <string name="rarity_epic">ЭПИЧЕСКАЯ</string>
     <string name="rarity_legendary">ЛЕГЕНДАРНАЯ</string>

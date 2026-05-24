@@ -32,6 +32,7 @@ fun ForgeScreen(
     val tabs = listOf(stringResource(R.string.forge), stringResource(R.string.merge_dust))
 
     val dustC by UserProfile.dustCommon.collectAsState()
+    val dustU by UserProfile.dustUncommon.collectAsState()
     val dustR by UserProfile.dustRare.collectAsState()
     val dustE by UserProfile.dustEpic.collectAsState()
     val dustL by UserProfile.dustLegendary.collectAsState()
@@ -44,6 +45,7 @@ fun ForgeScreen(
     val mergeFail = stringResource(R.string.forge_merge_fail)
     val craftFail = stringResource(R.string.forge_craft_fail)
     val commonLabel = stringResource(R.string.rarity_common)
+    val uncommonLabel = stringResource(R.string.rarity_uncommon)
     val rareLabel = stringResource(R.string.rarity_rare)
     val epicLabel = stringResource(R.string.rarity_epic)
     val legendaryLabel = stringResource(R.string.rarity_legendary)
@@ -67,11 +69,12 @@ fun ForgeScreen(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            DustChip("C", Color.Gray, dustC)
-            DustChip("R", Color(0xFF1E88E5), dustR)
-            DustChip("E", Color(0xFF8E24AA), dustE)
-            DustChip("L", Color(0xFFFDD835), dustL)
-            DustChip("M", Color(0xFFFF3D00), dustM)
+            DustChip("C", Color.White, dustC)
+            DustChip("U", Color.Green, dustU)
+            DustChip("R", Color(0xFF2196F3), dustR)
+            DustChip("E", Color(0xFF9C27B0), dustE)
+            DustChip("L", Color.Yellow, dustL)
+            DustChip("M", Color.Red, dustM)
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -128,35 +131,42 @@ fun ForgeScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                ForgeRow(Rarity.COMMON, Color.Gray, dustC, 40) {
+                ForgeRow(Rarity.COMMON, Color.White, dustC, 40) {
                     if (UserProfile.craftCard(Rarity.COMMON)) {
                         forgedCard = UserProfile.collection.lastOrNull()
                         message = craftSuccess.format(commonLabel)
                     } else message = craftFail
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                ForgeRow(Rarity.RARE, Color(0xFF1E88E5), dustR, 100) {
+                ForgeRow(Rarity.UNCOMMON, Color.Green, dustU, 80) {
+                    if (UserProfile.craftCard(Rarity.UNCOMMON)) {
+                        forgedCard = UserProfile.collection.lastOrNull()
+                        message = craftSuccess.format(uncommonLabel)
+                    } else message = craftFail
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                ForgeRow(Rarity.RARE, Color(0xFF2196F3), dustR, 100) {
                     if (UserProfile.craftCard(Rarity.RARE)) {
                         forgedCard = UserProfile.collection.lastOrNull()
                         message = craftSuccess.format(rareLabel)
                     } else message = craftFail
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                ForgeRow(Rarity.EPIC, Color(0xFF8E24AA), dustE, 400) {
+                ForgeRow(Rarity.EPIC, Color(0xFF9C27B0), dustE, 400) {
                     if (UserProfile.craftCard(Rarity.EPIC)) {
                         forgedCard = UserProfile.collection.lastOrNull()
                         message = craftSuccess.format(epicLabel)
                     } else message = craftFail
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                ForgeRow(Rarity.LEGENDARY, Color(0xFFFDD835), dustL, 1600) {
+                ForgeRow(Rarity.LEGENDARY, Color.Yellow, dustL, 1600) {
                     if (UserProfile.craftCard(Rarity.LEGENDARY)) {
                         forgedCard = UserProfile.collection.lastOrNull()
                         message = forgeLegendaryReady
                     } else message = craftFail
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                ForgeRow(Rarity.MYTHIC, Color(0xFFFF3D00), dustM, 5000) {
+                ForgeRow(Rarity.MYTHIC, Color.Red, dustM, 5000) {
                     if (UserProfile.craftCard(Rarity.MYTHIC)) {
                         forgedCard = UserProfile.collection.lastOrNull()
                         message = craftSuccess.format(mythicLabel)
@@ -171,22 +181,27 @@ fun ForgeScreen(
                 GameText(stringResource(R.string.merge_dust_desc), fontSize = 14.sp, color = Color.Gray)
                 Spacer(modifier = Modifier.height(32.dp))
 
-                MergeRow(commonLabel, rareLabel, Color.Gray, Color(0xFF1E88E5), dustC) {
-                    if (UserProfile.mergeDust(Rarity.COMMON)) message = mergeSuccess.format(commonLabel, rareLabel)
+                MergeRow(commonLabel, uncommonLabel, Color.White, Color.Green, dustC) {
+                    if (UserProfile.mergeDust(Rarity.COMMON)) message = mergeSuccess.format(commonLabel, uncommonLabel)
                     else message = mergeFail
                 }
                 Spacer(modifier = Modifier.height(16.dp))
-                MergeRow(rareLabel, epicLabel, Color(0xFF1E88E5), Color(0xFF8E24AA), dustR) {
+                MergeRow(uncommonLabel, rareLabel, Color.Green, Color(0xFF2196F3), dustU) {
+                    if (UserProfile.mergeDust(Rarity.UNCOMMON)) message = mergeSuccess.format(uncommonLabel, rareLabel)
+                    else message = mergeFail
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                MergeRow(rareLabel, epicLabel, Color(0xFF2196F3), Color(0xFF9C27B0), dustR) {
                     if (UserProfile.mergeDust(Rarity.RARE)) message = mergeSuccess.format(rareLabel, epicLabel)
                     else message = mergeFail
                 }
                 Spacer(modifier = Modifier.height(16.dp))
-                MergeRow(epicLabel, legendaryLabel, Color(0xFF8E24AA), Color(0xFFFDD835), dustE) {
+                MergeRow(epicLabel, legendaryLabel, Color(0xFF9C27B0), Color.Yellow, dustE) {
                     if (UserProfile.mergeDust(Rarity.EPIC)) message = mergeSuccess.format(epicLabel, legendaryLabel)
                     else message = mergeFail
                 }
                 Spacer(modifier = Modifier.height(16.dp))
-                MergeRow(legendaryLabel, mythicLabel, Color(0xFFFDD835), Color(0xFFFF3D00), dustL) {
+                MergeRow(legendaryLabel, mythicLabel, Color.Yellow, Color.Red, dustL) {
                     if (UserProfile.mergeDust(Rarity.LEGENDARY)) message = mergeSuccess.format(legendaryLabel, mythicLabel)
                     else message = mergeFail
                 }
@@ -218,6 +233,7 @@ private fun ForgeRow(rarity: Rarity, color: Color, dust: Int, cost: Int, onClick
         Column {
             val rarityLabel = when(rarity) {
                 Rarity.COMMON -> stringResource(R.string.rarity_common)
+                Rarity.UNCOMMON -> stringResource(R.string.rarity_uncommon)
                 Rarity.RARE -> stringResource(R.string.rarity_rare)
                 Rarity.EPIC -> stringResource(R.string.rarity_epic)
                 Rarity.LEGENDARY -> stringResource(R.string.rarity_legendary)

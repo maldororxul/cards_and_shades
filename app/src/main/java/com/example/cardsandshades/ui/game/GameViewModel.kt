@@ -87,7 +87,20 @@ class GameViewModel : ViewModel() {
         }
 
         val shuffledSource = sourceDeck.shuffled().map { 
-            it.copy(id = java.util.UUID.randomUUID().toString()).apply { reset() } 
+            it.deepCopy().apply { 
+                // Manual id update after deepCopy
+            }.let { copy ->
+                // Since CardModel is a data class and we need a new ID
+                // we can't easily change val id in deepCopy without reflection or custom copy.
+                // But my refactored CardModel should handle .copy() safely now too.
+                // Let's use deepCopy and then a safe manual copy if needed.
+                val safe = copy.deepCopy()
+                // Let's use a more robust way to create a fresh instance with new ID
+                CardCatalog.createCardInstance(safe.name)?.apply {
+                    // Transfer current states if any (though reset() is called anyway)
+                    reset()
+                } ?: safe
+            }
         }
 
         val maxPlayerCards = level.opponentDeckPreset.size

@@ -2,9 +2,11 @@ package com.example.cardsandshades.model
 
 data class BoosterChances(
     val common: Int,
+    val uncommon: Int,
     val rare: Int,
     val epic: Int,
-    val legendary: Int
+    val legendary: Int,
+    val mythic: Int = 1
 )
 
 data class BoosterModel(

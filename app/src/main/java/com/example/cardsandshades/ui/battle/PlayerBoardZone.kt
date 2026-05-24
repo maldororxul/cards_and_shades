@@ -30,6 +30,7 @@ fun PlayerBoardZone(
     selectedCard: CardModel?,
     onCardPositioned: (String, Offset) -> Unit,
     onCardClick: (CardModel, Offset) -> Unit,
+    onCardLongClick: (CardModel) -> Unit,
     onCardDroppedInSlot: (CardModel, Int) -> Unit
 ) {
     Row(
@@ -93,7 +94,8 @@ fun PlayerBoardZone(
                                 if (isSelected) Modifier.border(3.dp, Color.Green, RoundedCornerShape(10.dp))
                                 else Modifier
                             ),
-                        onClick = { onCardClick(card, cardOffset) }
+                        onClick = { onCardClick(card, cardOffset) },
+                        onLongClick = { onCardLongClick(card) }
                     )
                 }
             }

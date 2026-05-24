@@ -88,6 +88,7 @@ object UserProfile {
                         val first = entry.value.first()
                         val limit = when(first.rarity) {
                             Rarity.COMMON -> 3
+                            Rarity.UNCOMMON -> 2
                             Rarity.RARE, Rarity.EPIC -> 2
                             Rarity.LEGENDARY, Rarity.MYTHIC -> 1
                         }

@@ -61,7 +61,11 @@ private fun GameScreenContent(
 ) {
     val context = LocalContext.current
     var selectedCardForAttack by remember { mutableStateOf<CardModel?>(null) }
-    var inspectedCard by remember { mutableStateOf<CardModel?>(null) }
+    
+    // ПРОСМОТР КАРТ
+    var inspectedCardsList by remember { mutableStateOf<List<CardModel>>(emptyList()) }
+    var initialInspectedIndex by remember { mutableIntStateOf(0) }
+
     var showExitDialog by remember { mutableStateOf(false) }
 
     // Обработка кнопки Назад
@@ -138,17 +142,6 @@ private fun GameScreenContent(
                     }
                 )
 
-                // КНОПКА СКОРОСТИ
-                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
-                    GameButton(
-                        text = "x${viewModel.animationSpeed}",
-                        onClick = { viewModel.cycleAnimationSpeed() },
-                        containerColor = Color.DarkGray.copy(alpha = 0.6f),
-                        modifier = Modifier.size(50.dp, 40.dp),
-                        fontSize = 12.sp
-                    )
-                }
-
                 val cardAttackMsg = stringResource(R.string.battle_card_attack)
                 EnemyBoardZone(
                     boardSlots = state.opponent.board,
@@ -160,7 +153,17 @@ private fun GameScreenContent(
                             battleLog = cardAttackMsg.format(getStringResourceByName(context, attacker.name), getStringResourceByName(context, enemyCard.name))
                             selectedCardForAttack = null
                             isDrawingArrow = false
+                        } else {
+                            // Клик по карте врага без выделенного атакующего - инспекция
+                            val allBoardCards = (state.opponent.board.filterNotNull() + state.player.board.filterNotNull())
+                            inspectedCardsList = allBoardCards
+                            initialInspectedIndex = allBoardCards.indexOfFirst { it.id == enemyCard.id }.coerceAtLeast(0)
                         }
+                    },
+                    onCardLongClick = { card ->
+                        val allBoardCards = (state.opponent.board.filterNotNull() + state.player.board.filterNotNull())
+                        inspectedCardsList = allBoardCards
+                        initialInspectedIndex = allBoardCards.indexOfFirst { it.id == card.id }.coerceAtLeast(0)
                     }
                 )
 
@@ -189,9 +192,24 @@ private fun GameScreenContent(
                                     isDrawingArrow = true
                                     val cardName = getStringResourceByName(context, card.name)
                                     battleLog = selectedHint.format(cardName)
+                                } else {
+                                    // Инспекция если не может атаковать
+                                    val allBoardCards = (state.opponent.board.filterNotNull() + state.player.board.filterNotNull())
+                                    inspectedCardsList = allBoardCards
+                                    initialInspectedIndex = allBoardCards.indexOfFirst { it.id == card.id }.coerceAtLeast(0)
                                 }
                             }
+                        } else {
+                            // Инспекция если не ваш ход
+                            val allBoardCards = (state.opponent.board.filterNotNull() + state.player.board.filterNotNull())
+                            inspectedCardsList = allBoardCards
+                            initialInspectedIndex = allBoardCards.indexOfFirst { it.id == card.id }.coerceAtLeast(0)
                         }
+                    },
+                    onCardLongClick = { card ->
+                        val allBoardCards = (state.opponent.board.filterNotNull() + state.player.board.filterNotNull())
+                        inspectedCardsList = allBoardCards
+                        initialInspectedIndex = allBoardCards.indexOfFirst { it.id == card.id }.coerceAtLeast(0)
                     },
                     onCardDroppedInSlot = { droppedCard, slotIndex ->
                         val success = viewModel.playCard(droppedCard, slotIndex)
@@ -206,14 +224,30 @@ private fun GameScreenContent(
                     isHeroTakingDamage = viewModel.playerHeroTakingDamage,
                     damageValue = viewModel.playerHeroDamageValue,
                     onPlayerHeroPositioned = { playerHeroOffset = it },
+                    onCardLongClick = { card ->
+                        // Свайп по руке
+                        inspectedCardsList = state.player.hand
+                        initialInspectedIndex = state.player.hand.indexOfFirst { it.id == card.id }.coerceAtLeast(0)
+                    },
                     viewModel = viewModel
+                )
+            }
+
+            // КНОПКА СКОРОСТИ - Как оверлей в углу
+            Box(modifier = Modifier.fillMaxSize().padding(16.dp), contentAlignment = Alignment.TopEnd) {
+                GameButton(
+                    text = "x${viewModel.animationSpeed}",
+                    onClick = { viewModel.cycleAnimationSpeed() },
+                    containerColor = Color.DarkGray.copy(alpha = 0.8f),
+                    modifier = Modifier.size(55.dp, 45.dp),
+                    fontSize = 14.sp
                 )
             }
 
             RenderAttackArrows(
                 isPlayerDrawing = (isDrawingArrow && selectedCardForAttack != null),
                 playerStart = startArrowOffset,
-                playerTargetOffset = state.opponent.board.filterNotNull().firstOrNull()?.id?.let { enemyCardsOffsets[it] },
+                playerTargetOffset = null,
                 enemyHeroOffset = enemyHeroOffset,
                 isEnemyBoardEmpty = state.opponent.board.all { it == null },
                 aiAttackerId = viewModel.opponentAttackerId,
@@ -241,8 +275,12 @@ private fun GameScreenContent(
                 }
             )
 
-            if (inspectedCard != null) {
-                CardInspectionDialog(card = inspectedCard!!, onDismiss = { inspectedCard = null })
+            if (inspectedCardsList.isNotEmpty()) {
+                CardInspectionDialog(
+                    cards = inspectedCardsList, 
+                    initialIndex = initialInspectedIndex, 
+                    onDismiss = { inspectedCardsList = emptyList() }
+                )
             }
         }
     }

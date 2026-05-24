@@ -442,7 +442,7 @@ cards:
     baseAttack: 7
     baseHealth: 8
     rarity: "EPIC"
-    effectTags: ["LIFESTEAL", "BUFF", "UNDEAD_IMMUNITIES"]
+    effectTags: ["LIFESTEAL", "BUFF"]
     groupTags: ["UNDEAD"]
   - name: "card_guardian_angel"
     manaCost: 6

@@ -44,9 +44,9 @@ fun PlayerControlsZone(
     isHeroTakingDamage: Boolean,
     damageValue: Int,
     onPlayerHeroPositioned: (Offset) -> Unit,
+    onCardLongClick: (CardModel) -> Unit,
     viewModel: GameViewModel
 ) {
-    var inspectedCard by remember { mutableStateOf<CardModel?>(null) }
     val playerHeroScale by animateFloatAsState(targetValue = if (isHeroTakingDamage) 1.2f else 1f)
     
     val endTurnButtonColor by animateColorAsState(
@@ -84,7 +84,7 @@ fun PlayerControlsZone(
                 items(player.hand, key = { it.id }) { card ->
                     DragTarget(
                         card = card,
-                        onLongClick = { inspectedCard = card }
+                        onLongClick = { onCardLongClick(card) }
                     ) {
                         CardComponent(card = card, isPreview = true, modifier = Modifier.size(90.dp, 130.dp))
                     }
@@ -183,9 +183,5 @@ fun PlayerControlsZone(
                 }
             }
         }
-    }
-
-    if (inspectedCard != null) {
-        CardInspectionDialog(card = inspectedCard!!, onDismiss = { inspectedCard = null })
     }
 }

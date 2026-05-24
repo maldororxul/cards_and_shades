@@ -274,6 +274,7 @@ private fun AchievementGroupItem(
                     UserProfile.dustRare.value += r.dustRare
                     UserProfile.dustEpic.value += r.dustEpic
                     UserProfile.dustLegendary.value += r.dustLegendary
+                    UserProfile.dustMythic.value += r.dustMythic
                     
                     state.claimedTiers.add(state.currentTierIndex)
                     state.currentTierIndex++
@@ -329,6 +330,7 @@ private fun claimReward(day: Int) {
         "dust_rare" -> UserProfile.dustRare.value += reward.amount
         "dust_epic" -> UserProfile.dustEpic.value += reward.amount
         "dust_legendary" -> UserProfile.dustLegendary.value += reward.amount
+        "dust_mythic" -> UserProfile.dustMythic.value += reward.amount
         "card" -> {
             reward.cardKey?.let { key ->
                 CardCatalog.createCardInstance(key)?.let { UserProfile.collection.add(it) }

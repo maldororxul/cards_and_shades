@@ -40,17 +40,17 @@ class SplashEffect : CardEffect {
             // Урон соседу слева
             if (targetIndex > 0) {
                 val neighbor = enemyBoard[targetIndex - 1]
-                neighbor.currentHealth -= 1
-                neighbor.lastDamageTaken = 1
-                neighbor.isTakingDamage = true
+                neighbor?.currentHealth -= 1
+                neighbor?.lastDamageTaken = 1
+                neighbor?.isTakingDamage = true
                 attacker.activeEffects.forEach { it.onDamageDealt(state, attacker, 1) }
             }
             // Урон соседу справа
             if (targetIndex < enemyBoard.lastIndex) {
                 val neighbor = enemyBoard[targetIndex + 1]
-                neighbor.currentHealth -= 1
-                neighbor.lastDamageTaken = 1
-                neighbor.isTakingDamage = true
+                neighbor?.currentHealth -= 1
+                neighbor?.lastDamageTaken = 1
+                neighbor?.isTakingDamage = true
                 attacker.activeEffects.forEach { it.onDamageDealt(state, attacker, 1) }
             }
         }
@@ -62,7 +62,7 @@ class LifestealEffect : CardEffect {
     override val name = "effect_lifesteal"
     override val description = "effect_lifesteal_desc"
     override fun onDamageDealt(state: GameState, attacker: CardModel, amount: Int) {
-        val owner = if (state.player.board.any { it.id == attacker.id }) state.player else state.opponent
+        val owner = if (state.player.board.any { it?.id == attacker.id }) state.player else state.opponent
         owner.currentHp = (owner.currentHp + amount).coerceAtMost(owner.maxHp)
     }
 }
@@ -72,7 +72,7 @@ class BuffEffect : CardEffect {
     override val name = "effect_blessing"
     override val description = "effect_blessing_desc"
     override fun onSummon(state: GameState, owner: PlayerModel, card: CardModel) {
-        val allies = owner.board.filter { it.id != card.id }
+        val allies = owner.board.filter { it?.id != card.id }
         if (allies.isNotEmpty()) {
             val target = allies.random()
             val buff = com.example.cardsandshades.model.BuffModel(
@@ -82,9 +82,9 @@ class BuffEffect : CardEffect {
                 healthBonus = 2,
                 duration = 2
             )
-            target.addBuff(buff)
-            target.currentAttack += buff.attackBonus
-            target.currentHealth += buff.healthBonus
+            target?.addBuff(buff)
+            target?.currentAttack += buff.attackBonus
+            target?.currentHealth += buff.healthBonus
         }
     }
 }

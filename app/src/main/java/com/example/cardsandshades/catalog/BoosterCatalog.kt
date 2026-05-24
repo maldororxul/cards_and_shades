@@ -25,9 +25,11 @@ object BoosterCatalog {
                 description = map["description"] as String,
                 chances = BoosterChances(
                     common = chancesMap["common"] ?: 0,
+                    uncommon = chancesMap["uncommon"] ?: 0,
                     rare = chancesMap["rare"] ?: 0,
                     epic = chancesMap["epic"] ?: 0,
-                    legendary = chancesMap["legendary"] ?: 0
+                    legendary = chancesMap["legendary"] ?: 0,
+                    mythic = chancesMap["mythic"] ?: 1
                 )
             )
         }

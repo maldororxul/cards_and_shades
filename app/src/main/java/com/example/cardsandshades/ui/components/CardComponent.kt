@@ -104,7 +104,7 @@ private fun CardInspectionContent(
                     GameText(getStringResourceByName(context, card.name), fontSize = 24.sp, fontWeight = FontWeight.Black)
                     val rarityLabel = when(card.rarity) {
                         Rarity.COMMON -> stringResource(R.string.rarity_common)
-                        Rarity.UNCOMMON -> "UNCOMMON"
+                        Rarity.UNCOMMON -> stringResource(R.string.rarity_uncommon)
                         Rarity.RARE -> stringResource(R.string.rarity_rare)
                         Rarity.EPIC -> stringResource(R.string.rarity_epic)
                         Rarity.LEGENDARY -> stringResource(R.string.rarity_legendary)
@@ -227,7 +227,8 @@ fun CardComponent(
     card: CardModel,
     modifier: Modifier = Modifier,
     isPreview: Boolean = false,
-    onClick: (() -> Unit)? = null
+    onClick: (() -> Unit)? = null,
+    onLongClick: (() -> Unit)? = null
 ) {
     var showInspectDialog by remember { mutableStateOf(false) }
 
@@ -294,7 +295,11 @@ fun CardComponent(
                         }
                     },
                     onLongClick = {
-                        showInspectDialog = true
+                        if (onLongClick != null) {
+                            onLongClick()
+                        } else {
+                            showInspectDialog = true
+                        }
                     }
                 ),
             shape = RoundedCornerShape(8.dp),
@@ -357,7 +362,7 @@ private fun BoxScope.CardContent(card: CardModel, borderColor: Color) {
         
         val rarityLabel = when(card.rarity) {
             Rarity.COMMON -> stringResource(R.string.rarity_common)
-            Rarity.UNCOMMON -> "UNCOMMON"
+            Rarity.UNCOMMON -> stringResource(R.string.rarity_uncommon)
             Rarity.RARE -> stringResource(R.string.rarity_rare)
             Rarity.EPIC -> stringResource(R.string.rarity_epic)
             Rarity.LEGENDARY -> stringResource(R.string.rarity_legendary)

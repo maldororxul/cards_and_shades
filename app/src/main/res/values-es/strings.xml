@@ -222,6 +222,7 @@
 
     <!-- Rarities -->
     <string name="rarity_common">COMÚN</string>
+    <string name="rarity_uncommon">POCO COMÚN</string>
     <string name="rarity_rare">RARA</string>
     <string name="rarity_epic">ÉPICA</string>
     <string name="rarity_legendary">LEGENDARIA</string>

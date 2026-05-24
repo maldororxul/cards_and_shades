@@ -21,7 +21,8 @@ import com.example.cardsandshades.ui.components.GameText
 fun EnemyBoardZone(
     boardSlots: Array<CardModel?>,
     onCardPositioned: (String, Offset) -> Unit,
-    onCardClick: (CardModel) -> Unit
+    onCardClick: (CardModel) -> Unit,
+    onCardLongClick: (CardModel) -> Unit
 ) {
     Row(
         modifier = Modifier
@@ -71,7 +72,8 @@ fun EnemyBoardZone(
                                 val pos = coords.positionInWindow()
                                 onCardPositioned(card.id, Offset(pos.x + coords.size.width / 2, pos.y + coords.size.height / 2))
                             },
-                        onClick = { onCardClick(card) }
+                        onClick = { onCardClick(card) },
+                        onLongClick = { onCardLongClick(card) }
                     )
                 }
             }

@@ -35,15 +35,13 @@ data class CardModel(
     val baseAttack: Int,
     val baseHealth: Int,
     val rarity: Rarity,
-    var currentAttack: Int = baseAttack,
-    var currentHealth: Int = baseHealth,
+    var currentAttack: Int = 0,
+    var currentHealth: Int = 0,
 
-    // ГРУППЫ КАРТЫ
+    // backing fields for Gson null-safety
     private val groupTags: List<GroupTag>? = emptyList(),
-
-    // Gson может записать сюда null при десериализации старого кэша, если поле отсутствовало
     private val effectTags: List<EffectTag>? = emptyList(),
-    private val activeBuffs: List<BuffModel>? = emptyList(),
+    private var activeBuffs: List<BuffModel>? = emptyList(),
 
     var isSleeping: Boolean = true,
     var hasAttackedThisTurn: Boolean = false,
@@ -55,32 +53,34 @@ data class CardModel(
     // НОВЫЕ СОСТОЯНИЯ
     var isFrozen: Boolean = false,
     var isStunned: Boolean = false,
-    var critMultiplier: Float = 2.0f
+    var critMultiplier: Float = 1.0f
 ) {
+    init {
+        if (currentAttack == 0) currentAttack = baseAttack
+        if (currentHealth == 0) currentHealth = baseHealth
+    }
+
     val isDead: Boolean get() = currentHealth <= 0
 
-    // ИСПРАВЛЕНИЕ: Безопасный публичный доступ к тегам
+    // ИСПРАВЛЕНИЕ: Безопасный публичный доступ к тегам (Gson может подсунуть null в non-nullable поле)
     val activeTags: List<EffectTag> get() = effectTags ?: emptyList()
     val groups: List<GroupTag> get() = groupTags ?: emptyList()
 
     // ИСПРАВЛЕНИЕ: Проверка нежити
     val isUndead: Boolean get() = groups.contains(GroupTag.UNDEAD)
 
-    // ИСПРАВЛЕНИЕ: Безопасный доступ к баффам (теперь они приватные и копируются при изменении)
-    private var currentBuffs: List<BuffModel> = activeBuffs ?: emptyList()
-
-    val buffs: List<BuffModel> get() = currentBuffs
+    val buffs: List<BuffModel> get() = activeBuffs ?: emptyList()
 
     fun addBuff(buff: BuffModel) {
-        currentBuffs = currentBuffs + buff
+        activeBuffs = (activeBuffs ?: emptyList()) + buff
     }
 
     fun removeBuffs(expired: List<BuffModel>) {
-        currentBuffs = currentBuffs.filter { !expired.contains(it) }
+        activeBuffs = (activeBuffs ?: emptyList()).filter { !expired.contains(it) }
     }
 
     fun clearBuffs() {
-        currentBuffs = emptyList()
+        activeBuffs = emptyList()
     }
 
     // ИСПРАВЛЕНИЕ: Проверка танка через activeTags
@@ -124,8 +124,8 @@ data class CardModel(
     }
 
     fun deepCopy(): CardModel {
-        val copy = this.copy()
-        copy.currentBuffs = this.currentBuffs.map { it.copy() }
+        val b = (activeBuffs ?: emptyList()).map { it.copy() }
+        val copy = this.copy(activeBuffs = b)
         return copy
     }
 

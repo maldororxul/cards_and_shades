@@ -399,11 +399,11 @@ private fun BoosterItem(booster: BoosterModel, canAfford: Boolean, onBuy: () -> 
         // ШАНСЫ ВЫПАДЕНИЯ
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
             ChanceInfo("C", Color.White, booster.chances.common)
-            ChanceInfo("U", Color.Green, 25)
+            ChanceInfo("U", Color.Green, booster.chances.uncommon)
             ChanceInfo("R", Color(0xFF2196F3), booster.chances.rare)
             ChanceInfo("E", Color(0xFF9C27B0), booster.chances.epic)
             ChanceInfo("L", Color.Yellow, booster.chances.legendary)
-            ChanceInfo("M", Color.Red, 1) // Mythic chance
+            ChanceInfo("M", Color.Red, booster.chances.mythic)
         }
     }
 }
@@ -435,13 +435,14 @@ private fun buyBooster(booster: BoosterModel): Boolean {
 private fun generatePack(booster: BoosterModel): List<CardModel> {
     val pack = mutableListOf<CardModel>()
     repeat(5) {
-        val roll = (1..1000).random() // Higher resolution for Mythic
+        val roll = (1..100).random()
+        val chances = booster.chances
         val rarity = when {
-            roll <= 10 -> Rarity.MYTHIC // 1%
-            roll <= booster.chances.legendary * 10 -> Rarity.LEGENDARY
-            roll <= (booster.chances.legendary + booster.chances.epic) * 10 -> Rarity.EPIC
-            roll <= (booster.chances.legendary + booster.chances.epic + booster.chances.rare) * 10 -> Rarity.RARE
-            roll <= (booster.chances.legendary + booster.chances.epic + booster.chances.rare + 25) * 10 -> Rarity.UNCOMMON
+            roll <= chances.mythic -> Rarity.MYTHIC
+            roll <= chances.mythic + chances.legendary -> Rarity.LEGENDARY
+            roll <= chances.mythic + chances.legendary + chances.epic -> Rarity.EPIC
+            roll <= chances.mythic + chances.legendary + chances.epic + chances.rare -> Rarity.RARE
+            roll <= chances.mythic + chances.legendary + chances.epic + chances.rare + chances.uncommon -> Rarity.UNCOMMON
             else -> Rarity.COMMON
         }
         val card = CardCatalog.generateRandomCardByRarityOnly(rarity) ?: CardCatalog.generateRandomCardByRarityOnly(Rarity.COMMON)!!
