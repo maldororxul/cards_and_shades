@@ -87,9 +87,9 @@ private fun CardInspectionContent(
     val infiniteTransition = rememberInfiniteTransition(label = "pulse")
     val pulseScale by infiniteTransition.animateFloat(
         initialValue = 1.0f,
-        targetValue = 1.06f, // В два раза больше приближение (было 1.03)
+        targetValue = 1.08f, // Увеличили степень приближения (было 1.06)
         animationSpec = infiniteRepeatable(
-            animation = tween(2500, easing = LinearEasing), // В 3 раза быстрее (было 4000)
+            animation = tween(2500, easing = LinearEasing), // В 3 раза быстрее (было 1300)
             repeatMode = RepeatMode.Reverse
         ),
         label = "scale"

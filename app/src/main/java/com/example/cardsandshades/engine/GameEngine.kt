@@ -190,9 +190,10 @@ object GameEngine {
         var counterDamageToAttacker = if (isMelee) target.currentAttack else 0
         attacker.activeEffects.forEach { counterDamageToAttacker = it.modifyCounterDamage(attacker, target, counterDamageToAttacker) }
 
-        // 3. НАНЕСЕНИЕ УРОНА
+        // 3. НАНЕСЕНИЕ УРОНА (Симультанно, даже если защитник умирает)
         target.currentHealth -= damageToTarget
         attacker.currentHealth -= counterDamageToAttacker
+
         target.lastDamageTaken = damageToTarget
         attacker.lastDamageTaken = counterDamageToAttacker
 

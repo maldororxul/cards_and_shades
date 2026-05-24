@@ -9,7 +9,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.unit.dp
-import com.example.cardsandshades.ui.components.LocalDragTargetInfo
 
 @Composable
 fun RenderAttackArrows(
@@ -25,16 +24,12 @@ fun RenderAttackArrows(
     playerCardsOffsets: Map<String, Offset>,
     playerHeroOffset: Offset
 ) {
-    val dragInfo = LocalDragTargetInfo.current
-    
     Canvas(modifier = Modifier.fillMaxSize()) {
         // 1. Рисуем стрелку прицеливания игрока
         if (isPlayerDrawing) {
-            // Если мы тянем стрелку, то концом является текущая позиция пальца (dragInfo.dragPosition)
-            // Но если мы кликнули и выбрали карту для атаки (старая механика), то используем playerTargetOffset
-            val fingerPos = dragInfo.dragPosition
-            val finalArrowEnd = if (fingerPos != Offset.Zero) fingerPos 
-                               else playerTargetOffset ?: enemyHeroOffset.takeIf { isEnemyBoardEmpty } ?: playerStart
+            // fingerOffset передается как playerTargetOffset
+            val finalArrowEnd = if (playerTargetOffset != Offset.Zero && playerTargetOffset != null) playerTargetOffset 
+                               else enemyHeroOffset.takeIf { isEnemyBoardEmpty } ?: playerStart
             
             drawAttackArrow(start = playerStart, end = finalArrowEnd, color = Color.Red)
         }
@@ -52,7 +47,7 @@ fun RenderAttackArrows(
 }
 
 private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawAttackArrow(start: Offset, end: Offset, color: Color) {
-    if (start == end) return
+    if (start == end || start == Offset.Zero || end == Offset.Zero) return
     
     val strokeWidth = 6.dp.toPx()
     
