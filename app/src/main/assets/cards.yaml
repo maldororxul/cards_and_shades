@@ -15,6 +15,7 @@ cards:
     baseAttack: 1
     baseHealth: 2
     rarity: "COMMON"
+    effectTags: ["BLEED"]
   - name: "card_order_adept"
     manaCost: 1
     baseAttack: 1
@@ -25,6 +26,7 @@ cards:
     baseAttack: 2
     baseHealth: 2
     rarity: "COMMON"
+    canDropFromBooster: false
   - name: "card_town_guard"
     manaCost: 2
     baseAttack: 2
@@ -52,7 +54,8 @@ cards:
     manaCost: 2
     baseAttack: 3
     baseHealth: 2
-    rarity: "COMMON"
+    rarity: "UNCOMMON"
+    effectTags: ["BURN"]
   - name: "card_elemental_wisp"
     manaCost: 2
     baseAttack: 2
@@ -79,7 +82,8 @@ cards:
     manaCost: 3
     baseAttack: 4
     baseHealth: 2
-    rarity: "COMMON"
+    rarity: "UNCOMMON"
+    effectTags: ["DEBUFF_ATTACK"]
   - name: "card_mage_apprentice"
     manaCost: 3
     baseAttack: 3
@@ -96,12 +100,12 @@ cards:
     baseAttack: 1
     baseHealth: 4
     rarity: "COMMON"
-    effectTags: ["TAUNT"]
+    effectTags: ["TAUNT", "POISON"]
   - name: "card_arcane_adept"
     manaCost: 3
     baseAttack: 4
     baseHealth: 3
-    rarity: "COMMON"
+    rarity: "UNCOMMON"
   - name: "card_elven_archer"
     manaCost: 3
     baseAttack: 2
@@ -123,7 +127,7 @@ cards:
     manaCost: 3
     baseAttack: 2
     baseHealth: 5
-    rarity: "COMMON"
+    rarity: "UNCOMMON"
     effectTags: ["TAUNT"]
   - name: "card_hired_crossbowman"
     manaCost: 4
@@ -135,13 +139,14 @@ cards:
     manaCost: 4
     baseAttack: 4
     baseHealth: 5
-    rarity: "COMMON"
+    rarity: "UNCOMMON"
+    effectTags: ["IMMUNE_BLEED"]
   - name: "card_forgotten_cadaver"
     manaCost: 4
     baseAttack: 4
     baseHealth: 3
     rarity: "COMMON"
-    effectTags: ["RUSH"]
+    effectTags: ["RUSH", "BLEED"]
   - name: "card_cult_mystic"
     manaCost: 4
     baseAttack: 2
@@ -151,45 +156,48 @@ cards:
     manaCost: 4
     baseAttack: 4
     baseHealth: 3
-    rarity: "COMMON"
+    rarity: "UNCOMMON"
+    effectTags: ["BURN"]
   - name: "card_kings_guardsman"
     manaCost: 5
     baseAttack: 3
     baseHealth: 6
-    rarity: "COMMON"
+    rarity: "UNCOMMON"
     effectTags: ["TAUNT"]
   - name: "card_hungry_crocolisk"
     manaCost: 5
     baseAttack: 5
     baseHealth: 6
-    rarity: "COMMON"
+    rarity: "UNCOMMON"
   - name: "card_lesser_demon"
     manaCost: 5
     baseAttack: 6
     baseHealth: 5
-    rarity: "COMMON"
+    rarity: "UNCOMMON"
+    effectTags: ["BLEED"]
   - name: "card_swamp_thing"
     manaCost: 5
     baseAttack: 4
     baseHealth: 5
-    rarity: "COMMON"
+    rarity: "UNCOMMON"
+    effectTags: ["POISON"]
   - name: "card_steel_golem"
     manaCost: 5
     baseAttack: 2
     baseHealth: 8
-    rarity: "COMMON"
-    effectTags: ["TAUNT"]
+    rarity: "UNCOMMON"
+    effectTags: ["TAUNT", "IMMUNE_POISON"]
   - name: "card_armored_rhino"
     manaCost: 6
     baseAttack: 4
     baseHealth: 7
-    rarity: "COMMON"
+    rarity: "UNCOMMON"
     effectTags: ["TAUNT"]
   - name: "card_siege_giant"
     manaCost: 6
     baseAttack: 5
     baseHealth: 6
-    rarity: "COMMON"
+    rarity: "UNCOMMON"
 
   # RARE (Superior Stats)
   - name: "card_levitation_adept"
@@ -209,54 +217,57 @@ cards:
     baseAttack: 2
     baseHealth: 3
     rarity: "RARE"
+    effectTags: ["IMMUNE_POISON"]
   - name: "card_sand_stalker"
     manaCost: 2
     baseAttack: 3
     baseHealth: 3
     rarity: "RARE"
-    effectTags: ["RUSH"]
+    effectTags: ["RUSH", "BLEED"]
   - name: "card_elven_warden"
     manaCost: 2
     baseAttack: 2
     baseHealth: 5
     rarity: "RARE"
     effectTags: ["TAUNT"]
+    canDropFromBooster: false
+    canCraftFromDust: false
   - name: "card_dawn_sentinel"
     manaCost: 3
     baseAttack: 2
     baseHealth: 7
     rarity: "RARE"
-    effectTags: ["TAUNT"]
+    effectTags: ["TAUNT", "IMMUNE_BURN"]
   - name: "card_shadow_blade"
     manaCost: 3
     baseAttack: 5
     baseHealth: 3
     rarity: "RARE"
-    effectTags: ["RUSH"]
+    effectTags: ["RUSH", "BLEED"]
   - name: "card_destruction_mage"
     manaCost: 3
     baseAttack: 4
     baseHealth: 4
     rarity: "RARE"
-    effectTags: ["SPLASH"]
+    effectTags: ["SPLASH", "BURN"]
   - name: "card_emerald_drake"
     manaCost: 4
     baseAttack: 4
     baseHealth: 6
     rarity: "RARE"
-    effectTags: ["RANGED"]
+    effectTags: ["RANGED", "POISON"]
   - name: "card_bone_golem"
     manaCost: 4
     baseAttack: 4
     baseHealth: 6
     rarity: "RARE"
-    effectTags: ["TAUNT", "LIFESTEAL"]
+    effectTags: ["TAUNT", "LIFESTEAL", "IMMUNE_BLEED"]
   - name: "card_ice_maiden"
     manaCost: 4
     baseAttack: 4
     baseHealth: 7
     rarity: "RARE"
-    effectTags: ["TAUNT"]
+    effectTags: ["TAUNT", "DEBUFF_ATTACK"]
   - name: "card_clan_berserk"
     manaCost: 4
     baseAttack: 6
@@ -280,13 +291,13 @@ cards:
     baseAttack: 4
     baseHealth: 9
     rarity: "RARE"
-    effectTags: ["TAUNT"]
+    effectTags: ["TAUNT", "IMMUNE_POISON"]
   - name: "card_soul_reaper"
     manaCost: 5
     baseAttack: 6
     baseHealth: 5
     rarity: "RARE"
-    effectTags: ["LIFESTEAL", "RUSH"]
+    effectTags: ["LIFESTEAL", "RUSH", "BLEED"]
   - name: "card_bastion_turtle"
     manaCost: 6
     baseAttack: 3
@@ -304,13 +315,13 @@ cards:
     baseAttack: 7
     baseHealth: 7
     rarity: "RARE"
-    effectTags: ["SPLASH", "RUSH"]
+    effectTags: ["SPLASH", "RUSH", "BURN"]
   - name: "card_fire_giant"
     manaCost: 7
     baseAttack: 8
     baseHealth: 8
     rarity: "RARE"
-    effectTags: ["SPLASH"]
+    effectTags: ["SPLASH", "BURN"]
 
   # EPIC (Strong Effects)
   - name: "card_light_squire"
@@ -319,12 +330,14 @@ cards:
     baseHealth: 8
     rarity: "EPIC"
     effectTags: ["TAUNT"]
+    canDropFromBooster: false
+    canCraftFromDust: false
   - name: "card_vampire_aristocrat"
     manaCost: 3
     baseAttack: 4
     baseHealth: 5
     rarity: "EPIC"
-    effectTags: ["LIFESTEAL"]
+    effectTags: ["LIFESTEAL", "BLEED"]
   - name: "card_void_sorcerer"
     manaCost: 4
     baseAttack: 5
@@ -336,13 +349,13 @@ cards:
     baseAttack: 6
     baseHealth: 6
     rarity: "EPIC"
-    effectTags: ["LIFESTEAL"]
+    effectTags: ["LIFESTEAL", "BLEED"]
   - name: "card_goblin_demolisher"
     manaCost: 3
     baseAttack: 5
     baseHealth: 4
     rarity: "EPIC"
-    effectTags: ["SPLASH"]
+    effectTags: ["SPLASH", "BURN"]
   - name: "card_dark_knight"
     manaCost: 5
     baseAttack: 6
@@ -380,18 +393,21 @@ cards:
     baseAttack: 8
     baseHealth: 7
     rarity: "LEGENDARY"
+    canDropFromBooster: false
   - name: "card_void_dragon"
     manaCost: 7
     baseAttack: 12
     baseHealth: 10
     rarity: "LEGENDARY"
-    effectTags: ["SPLASH"]
+    effectTags: ["SPLASH", "BURN"]
   - name: "card_shadow_reaper"
     manaCost: 5
     baseAttack: 6
     baseHealth: 6
     rarity: "LEGENDARY"
-    effectTags: ["LIFESTEAL", "RUSH"]
+    effectTags: ["LIFESTEAL", "RUSH", "BLEED"]
+    canDropFromBooster: false
+    canCraftFromDust: false
   - name: "card_spirit_mentor"
     manaCost: 2
     baseAttack: 3
@@ -403,19 +419,19 @@ cards:
     baseAttack: 5
     baseHealth: 12
     rarity: "LEGENDARY"
-    effectTags: ["TAUNT", "BUFF"]
+    effectTags: ["TAUNT", "BUFF", "IMMUNE_POISON"]
   - name: "card_ghost_reaper"
     manaCost: 5
     baseAttack: 6
     baseHealth: 5
     rarity: "LEGENDARY"
-    effectTags: ["RANGED", "LIFESTEAL"]
+    effectTags: ["RANGED", "LIFESTEAL", "BLEED"]
   - name: "card_void_archmage"
     manaCost: 8
     baseAttack: 8
     baseHealth: 10
     rarity: "LEGENDARY"
-    effectTags: ["SPLASH", "BUFF"]
+    effectTags: ["SPLASH", "BUFF", "BURN"]
 
   # MYTHIC (Godlike)
   - name: "card_world_eater"
@@ -423,19 +439,19 @@ cards:
     baseAttack: 15
     baseHealth: 15
     rarity: "MYTHIC"
-    effectTags: ["SPLASH", "LIFESTEAL"]
+    effectTags: ["SPLASH", "LIFESTEAL", "BLEED"]
   - name: "card_celestial_dragon"
     manaCost: 10
     baseAttack: 20
     baseHealth: 20
     rarity: "MYTHIC"
-    effectTags: ["RANGED", "BUFF"]
+    effectTags: ["RANGED", "BUFF", "BURN"]
   - name: "card_forgotten_titan"
     manaCost: 8
     baseAttack: 10
     baseHealth: 25
     rarity: "MYTHIC"
-    effectTags: ["TAUNT", "SPLASH"]
+    effectTags: ["TAUNT", "SPLASH", "IMMUNE_BURN", "IMMUNE_BLEED", "IMMUNE_POISON"]
 
   # COMMON
   - name: "card_tidal_siren"
@@ -470,7 +486,8 @@ cards:
     manaCost: 3
     baseAttack: 3
     baseHealth: 3
-    rarity: "COMMON"
+    rarity: "UNCOMMON"
+    effectTags: ["POISON"]
   - name: "card_blood_leech"
     manaCost: 2
     baseAttack: 2
@@ -481,13 +498,14 @@ cards:
     manaCost: 3
     baseAttack: 2
     baseHealth: 5
-    rarity: "COMMON"
+    rarity: "UNCOMMON"
     effectTags: ["TAUNT"]
   - name: "card_spore_shaman"
     manaCost: 3
     baseAttack: 3
     baseHealth: 3
-    rarity: "COMMON"
+    rarity: "UNCOMMON"
+    effectTags: ["POISON"]
   - name: "card_clockwork_spider"
     manaCost: 2
     baseAttack: 2
@@ -524,6 +542,7 @@ cards:
     baseAttack: 4
     baseHealth: 5
     rarity: "RARE"
+    effectTags: ["POISON"]
   - name: "card_sanguine_baron"
     manaCost: 5
     baseAttack: 6
@@ -590,13 +609,13 @@ cards:
     baseAttack: 8
     baseHealth: 5
     rarity: "EPIC"
-    effectTags: ["RUSH"]
+    effectTags: ["RUSH", "BLEED"]
   - name: "card_toxic_hydra"
     manaCost: 5
     baseAttack: 6
     baseHealth: 7
     rarity: "EPIC"
-    effectTags: ["SPLASH"]
+    effectTags: ["SPLASH", "POISON"]
   - name: "card_living_storm"
     manaCost: 7
     baseAttack: 7
@@ -646,20 +665,20 @@ cards:
     baseAttack: 9
     baseHealth: 10
     rarity: "LEGENDARY"
-    effectTags: ["SPLASH"]
+    effectTags: ["SPLASH", "POISON"]
   - name: "card_phoenix_of_ashes"
     manaCost: 7
     baseAttack: 10
     baseHealth: 9
     rarity: "LEGENDARY"
-    effectTags: ["RUSH", "LIFESTEAL"]
+    effectTags: ["RUSH", "LIFESTEAL", "BURN"]
   - name: "card_chrono_construct"
     manaCost: 6
     baseAttack: 8
     baseHealth: 10
     rarity: "LEGENDARY"
 
-  # MYTHIC (немного меньше, чтобы не перегружать)
+  # MYTHIC
   - name: "card_leviathan_awakened"
     manaCost: 9
     baseAttack: 13
@@ -677,13 +696,13 @@ cards:
     baseAttack: 15
     baseHealth: 12
     rarity: "MYTHIC"
-    effectTags: ["LIFESTEAL", "RUSH"]
+    effectTags: ["LIFESTEAL", "RUSH", "BLEED"]
   - name: "card_mother_fungus"
     manaCost: 9
     baseAttack: 8
     baseHealth: 20
     rarity: "MYTHIC"
-    effectTags: ["TAUNT", "BUFF"]
+    effectTags: ["TAUNT", "BUFF", "POISON"]
   - name: "card_dream_eater"
     manaCost: 8
     baseAttack: 12
@@ -703,7 +722,7 @@ cards:
     baseAttack: 1
     baseHealth: 3
     rarity: "COMMON"
-    effectTags: ["HEAL"]
+    effectTags: ["BUFF"]
   - name: "card_sunbeam_sprite"
     manaCost: 2
     baseAttack: 2
@@ -725,7 +744,6 @@ cards:
     baseAttack: 1
     baseHealth: 4
     rarity: "COMMON"
-    effectTags: ["HEAL"]
   - name: "card_gentle_wind_dancer"
     manaCost: 1
     baseAttack: 2
@@ -760,7 +778,7 @@ cards:
     baseAttack: 4
     baseHealth: 6
     rarity: "RARE"
-    effectTags: ["HEAL"]
+    effectTags: ["BUFF"]
   - name: "card_ancient_oak_druid"
     manaCost: 4
     baseAttack: 3
@@ -772,7 +790,6 @@ cards:
     baseAttack: 3
     baseHealth: 6
     rarity: "RARE"
-    effectTags: ["HEAL"]
   - name: "card_hopebringer_paladin"
     manaCost: 4
     baseAttack: 5
@@ -795,7 +812,6 @@ cards:
     baseAttack: 2
     baseHealth: 7
     rarity: "RARE"
-    effectTags: ["HEAL"]
   - name: "card_golden_harvest_druid"
     manaCost: 4
     baseAttack: 4
@@ -812,7 +828,6 @@ cards:
     baseAttack: 4
     baseHealth: 7
     rarity: "RARE"
-    effectTags: ["HEAL"]
 
   # EPIC
   - name: "card_archangel_of_mercy"
@@ -820,7 +835,6 @@ cards:
     baseAttack: 5
     baseHealth: 9
     rarity: "EPIC"
-    effectTags: ["HEAL"]
   - name: "card_starlight_guardian"
     manaCost: 6
     baseAttack: 6
@@ -832,7 +846,7 @@ cards:
     baseAttack: 4
     baseHealth: 10
     rarity: "EPIC"
-    effectTags: ["HEAL", "TAUNT"]
+    effectTags: ["TAUNT"]
   - name: "card_radiant_saint"
     manaCost: 5
     baseAttack: 7
@@ -844,13 +858,12 @@ cards:
     baseAttack: 6
     baseHealth: 8
     rarity: "EPIC"
-    effectTags: ["HEAL", "RUSH"]
+    effectTags: ["RUSH", "BURN"]
   - name: "card_tide_mother"
     manaCost: 6
     baseAttack: 5
     baseHealth: 9
     rarity: "EPIC"
-    effectTags: ["HEAL"]
   - name: "card_song_of_hope"
     manaCost: 5
     baseAttack: 5
@@ -875,13 +888,13 @@ cards:
     baseAttack: 8
     baseHealth: 11
     rarity: "LEGENDARY"
-    effectTags: ["HEAL", "BUFF"]
+    effectTags: ["BUFF"]
   - name: "card_world_healer"
     manaCost: 7
     baseAttack: 6
     baseHealth: 13
     rarity: "LEGENDARY"
-    effectTags: ["HEAL", "TAUNT"]
+    effectTags: ["TAUNT"]
   - name: "card_sunfather"
     manaCost: 6
     baseAttack: 9
@@ -899,13 +912,12 @@ cards:
     baseAttack: 8
     baseHealth: 9
     rarity: "LEGENDARY"
-    effectTags: ["HEAL"]
   - name: "card_tree_of_life_avatar"
     manaCost: 8
     baseAttack: 5
     baseHealth: 15
     rarity: "LEGENDARY"
-    effectTags: ["HEAL", "TAUNT"]
+    effectTags: ["TAUNT"]
   - name: "card_purelight_valkyrie"
     manaCost: 7
     baseAttack: 10
@@ -924,19 +936,18 @@ cards:
     baseAttack: 10
     baseHealth: 18
     rarity: "MYTHIC"
-    effectTags: ["HEAL", "BUFF"]
+    effectTags: ["BUFF"]
   - name: "card_goddess_of_compassion"
     manaCost: 10
     baseAttack: 9
     baseHealth: 20
     rarity: "MYTHIC"
-    effectTags: ["HEAL", "TAUNT"]
+    effectTags: ["TAUNT"]
   - name: "card_eternal_spring_spirit"
     manaCost: 9
     baseAttack: 8
     baseHealth: 19
     rarity: "MYTHIC"
-    effectTags: ["HEAL"]
   - name: "card_crown_of_hope"
     manaCost: 8
     baseAttack: 12
@@ -948,7 +959,7 @@ cards:
     baseAttack: 11
     baseHealth: 16
     rarity: "MYTHIC"
-    effectTags: ["HEAL", "RUSH"]
+    effectTags: ["RUSH"]
   - name: "card_lord_of_dawn"
     manaCost: 10
     baseAttack: 14

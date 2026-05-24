@@ -24,6 +24,7 @@ object UserProfile {
 
     // ПОРОШОК ДЛЯ КРАФТА (по редкостям)
     val dustCommon = MutableStateFlow(0)
+    val dustUncommon = MutableStateFlow(0)
     val dustRare = MutableStateFlow(0)
     val dustEpic = MutableStateFlow(0)
     val dustLegendary = MutableStateFlow(0)
@@ -50,6 +51,7 @@ object UserProfile {
                 maxUnlockedLevel.value = prefs.getInt("maxUnlockedLevel", 1)
                 
                 dustCommon.value = prefs.getInt("dustCommon", 0)
+                dustUncommon.value = prefs.getInt("dustUncommon", 0)
                 dustRare.value = prefs.getInt("dustRare", 0)
                 dustEpic.value = prefs.getInt("dustEpic", 0)
                 dustLegendary.value = prefs.getInt("dustLegendary", 0)
@@ -60,31 +62,8 @@ object UserProfile {
                 val claimedJson = prefs.getString("rewardsClaimed", "[]") ?: "[]"
                 rewardsClaimed.value = gson.fromJson(claimedJson, object : com.google.gson.reflect.TypeToken<Set<Int>>() {}.type) ?: emptySet()
 
-                // ЛОГИКА ДНЕВНОГО ЗАХОДА (Сброс в 6:00 утра)
+                // ЛОГИКА ДНЕВНОГО ЗАХОДА (Линейная прогрессия, без сброса)
                 val now = System.currentTimeMillis()
-                val lastLogin = lastLoginTimestamp.value
-                
-                if (lastLogin > 0) {
-                    val offset = 6 * 60 * 60 * 1000L // 6 часов утра
-                    val gameDayNow = (now - offset) / (24 * 60 * 60 * 1000L)
-                    val gameDayLast = (lastLogin - offset) / (24 * 60 * 60 * 1000L)
-                    
-                    if (gameDayNow > gameDayLast) {
-                        if (gameDayNow == gameDayLast + 1) {
-                            // Следующий день — продолжаем цепочку
-                            var nextDay = loginChainDays.value + 1
-                            if (nextDay > 30) {
-                                nextDay = 1
-                                rewardsClaimed.value = emptySet()
-                            }
-                            loginChainDays.value = nextDay
-                        } else {
-                            // Пропустили день — сброс
-                            loginChainDays.value = 1
-                            rewardsClaimed.value = emptySet()
-                        }
-                    }
-                }
                 lastLoginTimestamp.value = now
 
                 val collectionJson = prefs.getString("collection", "[]") ?: "[]"
@@ -130,6 +109,7 @@ object UserProfile {
                     gold.value = resources["gold"] ?: 50
                     crystals.value = resources["crystals"] ?: 10
                     dustCommon.value = resources["dust_common"] ?: 0
+                    dustUncommon.value = resources["dust_uncommon"] ?: 0
                     dustRare.value = resources["dust_rare"] ?: 0
                     dustEpic.value = resources["dust_epic"] ?: 0
                     dustLegendary.value = resources["dust_legendary"] ?: 0
@@ -167,6 +147,7 @@ object UserProfile {
                 putInt("maxUnlockedLevel", maxUnlockedLevel.value)
                 
                 putInt("dustCommon", dustCommon.value)
+                putInt("dustUncommon", dustUncommon.value)
                 putInt("dustRare", dustRare.value)
                 putInt("dustEpic", dustEpic.value)
                 putInt("dustLegendary", dustLegendary.value)
@@ -196,6 +177,7 @@ object UserProfile {
                 val rarity = cards.first().rarity
                 val dustAmount = when (rarity) {
                     Rarity.COMMON -> 5
+                    Rarity.UNCOMMON -> 10
                     Rarity.RARE -> 20
                     Rarity.EPIC -> 50
                     Rarity.LEGENDARY -> 100
@@ -203,6 +185,7 @@ object UserProfile {
                 }
                 when (rarity) {
                     Rarity.COMMON -> dustCommon.value += extras * dustAmount
+                    Rarity.UNCOMMON -> dustUncommon.value += extras * dustAmount
                     Rarity.RARE -> dustRare.value += extras * dustAmount
                     Rarity.EPIC -> dustEpic.value += extras * dustAmount
                     Rarity.LEGENDARY -> dustLegendary.value += extras * dustAmount
@@ -223,6 +206,7 @@ object UserProfile {
     fun craftCard(rarity: Rarity): Boolean {
         val cost = when (rarity) {
             Rarity.COMMON -> 40
+            Rarity.UNCOMMON -> 80
             Rarity.RARE -> 100
             Rarity.EPIC -> 400
             Rarity.LEGENDARY -> 1600
@@ -230,6 +214,7 @@ object UserProfile {
         }
         val currentDust = when (rarity) {
             Rarity.COMMON -> dustCommon
+            Rarity.UNCOMMON -> dustUncommon
             Rarity.RARE -> dustRare
             Rarity.EPIC -> dustEpic
             Rarity.LEGENDARY -> dustLegendary
@@ -253,6 +238,13 @@ object UserProfile {
             Rarity.COMMON -> {
                 if (dustCommon.value >= 100) {
                     dustCommon.value -= 100
+                    dustUncommon.value += 10
+                    save(); true
+                } else false
+            }
+            Rarity.UNCOMMON -> {
+                if (dustUncommon.value >= 100) {
+                    dustUncommon.value -= 100
                     dustRare.value += 10
                     save(); true
                 } else false

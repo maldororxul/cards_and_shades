@@ -88,3 +88,89 @@ class BuffEffect : CardEffect {
         }
     }
 }
+
+// 🩸 КРОВОТЕЧЕНИЕ: Наносит 1 урона в начале каждого хода в течение 3 ходов
+class BleedEffect : CardEffect {
+    override val name = "effect_bleed"
+    override val description = "effect_bleed_desc"
+    override fun onAfterAttack(state: GameState, attacker: CardModel, target: CardModel) {
+        if (!target.activeTags.contains(com.example.cardsandshades.model.EffectTag.IMMUNE_BLEED)) {
+            target.addBuff(com.example.cardsandshades.model.BuffModel(
+                id = java.util.UUID.randomUUID().toString(),
+                name = "effect_bleed",
+                attackBonus = 0,
+                healthBonus = 0,
+                duration = 3,
+                tag = com.example.cardsandshades.model.EffectTag.BLEED
+            ))
+        }
+    }
+}
+
+// 🤢 ЯД: Наносит 2 урона в начале каждого хода в течение 2 ходов
+class PoisonEffect : CardEffect {
+    override val name = "effect_poison"
+    override val description = "effect_poison_desc"
+    override fun onAfterAttack(state: GameState, attacker: CardModel, target: CardModel) {
+        if (!target.activeTags.contains(com.example.cardsandshades.model.EffectTag.IMMUNE_POISON)) {
+            target.addBuff(com.example.cardsandshades.model.BuffModel(
+                id = java.util.UUID.randomUUID().toString(),
+                name = "effect_poison",
+                attackBonus = 0,
+                healthBonus = 0,
+                duration = 2,
+                tag = com.example.cardsandshades.model.EffectTag.POISON
+            ))
+        }
+    }
+}
+
+// 🔥 ГОРЕНИЕ: Наносит 3 урона в начале каждого хода в течение 2 ходов
+class BurnEffect : CardEffect {
+    override val name = "effect_burn"
+    override val description = "effect_burn_desc"
+    override fun onAfterAttack(state: GameState, attacker: CardModel, target: CardModel) {
+        if (!target.activeTags.contains(com.example.cardsandshades.model.EffectTag.IMMUNE_BURN)) {
+            target.addBuff(com.example.cardsandshades.model.BuffModel(
+                id = java.util.UUID.randomUUID().toString(),
+                name = "effect_burn",
+                attackBonus = 0,
+                healthBonus = 0,
+                duration = 2,
+                tag = com.example.cardsandshades.model.EffectTag.BURN
+            ))
+        }
+    }
+}
+
+// ❄️ СЛАБОСТЬ (DEBUFF_ATTACK): Снижает атаку цели на 2 на 2 хода
+class DebuffAttackEffect : CardEffect {
+    override val name = "effect_debuff_attack"
+    override val description = "effect_debuff_attack_desc"
+    override fun onAfterAttack(state: GameState, attacker: CardModel, target: CardModel) {
+        val debuff = com.example.cardsandshades.model.BuffModel(
+            id = java.util.UUID.randomUUID().toString(),
+            name = "effect_debuff_attack",
+            attackBonus = -2,
+            healthBonus = 0,
+            duration = 2,
+            tag = com.example.cardsandshades.model.EffectTag.DEBUFF_ATTACK
+        )
+        target.addBuff(debuff)
+        target.currentAttack += debuff.attackBonus
+    }
+}
+
+// ИММУНИТЕТЫ (Пустые классы, логика в других эффектах)
+class ImmuneBleedEffect : CardEffect {
+    override val name = "effect_immune_bleed"
+    override val description = "effect_immune_bleed_desc"
+}
+class ImmunePoisonEffect : CardEffect {
+    override val name = "effect_immune_poison"
+    override val description = "effect_immune_poison_desc"
+}
+class ImmuneBurnEffect : CardEffect {
+    override val name = "effect_immune_burn"
+    override val description = "effect_immune_burn_desc"
+}

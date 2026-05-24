@@ -25,7 +25,9 @@ object CardCatalog {
                 baseAttack = cardMap["baseAttack"] as Int,
                 baseHealth = cardMap["baseHealth"] as Int,
                 rarity = Rarity.valueOf(cardMap["rarity"] as String),
-                effectTags = (cardMap["effectTags"] as? List<String>)?.map { EffectTag.valueOf(it) } ?: emptyList()
+                effectTags = (cardMap["effectTags"] as? List<String>)?.map { EffectTag.valueOf(it) } ?: emptyList(),
+                canDropFromBooster = cardMap["canDropFromBooster"] as? Boolean ?: true,
+                canCraftFromDust = cardMap["canCraftFromDust"] as? Boolean ?: true
             )
         }
     }
@@ -66,8 +68,8 @@ object CardCatalog {
     }
 
     fun generateRandomCardByRarityOnly(rarity: Rarity): CardModel? {
-        val filteredTemplates = templates.filter { it.rarity == rarity }
-        val template = if (filteredTemplates.isNotEmpty()) filteredTemplates.random() else templates.randomOrNull()
+        val filteredTemplates = templates.filter { it.rarity == rarity && it.canCraftFromDust }
+        val template = if (filteredTemplates.isNotEmpty()) filteredTemplates.random() else templates.filter { it.canCraftFromDust }.randomOrNull()
         return if (template != null) createCardInstance(template.name) else null
     }
 
@@ -81,10 +83,13 @@ object CardCatalog {
             val targetRarity = when {
                 roll <= 2 -> Rarity.LEGENDARY // 2%
                 roll <= 10 -> Rarity.EPIC     // 8%
-                roll <= 30 -> Rarity.RARE     // 20%
-                else -> Rarity.COMMON         // 70%
+                roll <= 25 -> Rarity.RARE     // 15%
+                roll <= 50 -> Rarity.UNCOMMON // 25%
+                else -> Rarity.COMMON         // 50%
             }
-            booster.add(generateRandomCardByRarityOnly(targetRarity) ?: createCardInstance("card_shadow_recruit")!!)
+            val filtered = templates.filter { it.rarity == targetRarity && it.canDropFromBooster }
+            val template = if (filtered.isNotEmpty()) filtered.random() else templates.filter { it.canDropFromBooster }.random()
+            booster.add(createCardInstance(template.name)!!)
         }
 
         // 5-я карта: гарантированно Rare+
@@ -94,7 +99,9 @@ object CardCatalog {
             roll <= 25 -> Rarity.EPIC      // 20%
             else -> Rarity.RARE            // 75%
         }
-        booster.add(generateRandomCardByRarityOnly(highRarity) ?: generateRandomCardByRarityOnly(Rarity.RARE)!!)
+        val filteredHigh = templates.filter { it.rarity == highRarity && it.canDropFromBooster }
+        val finalTemplate = if (filteredHigh.isNotEmpty()) filteredHigh.random() else templates.filter { it.canDropFromBooster && it.rarity == Rarity.RARE }.random()
+        booster.add(createCardInstance(finalTemplate.name)!!)
 
         return booster
     }
@@ -106,5 +113,7 @@ data class CardTemplate(
     val baseAttack: Int,
     val baseHealth: Int,
     val rarity: Rarity,
-    val effectTags: List<EffectTag> = emptyList()
+    val effectTags: List<EffectTag> = emptyList(),
+    val canDropFromBooster: Boolean = true,
+    val canCraftFromDust: Boolean = true
 )

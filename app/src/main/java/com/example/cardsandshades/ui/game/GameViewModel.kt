@@ -50,6 +50,15 @@ class GameViewModel : ViewModel() {
     var isAutoBattleActive by mutableStateOf(false)
         private set
 
+    var animationSpeed by mutableIntStateOf(1)
+        private set
+
+    fun cycleAnimationSpeed() {
+        animationSpeed = if (animationSpeed >= 4) 1 else animationSpeed + 1
+    }
+
+    private fun getDelay(ms: Long): Long = ms / animationSpeed
+
     fun toggleAutoBattle() {
         isAutoBattleActive = !isAutoBattleActive
         val state = _gameState.value
@@ -194,7 +203,7 @@ class GameViewModel : ViewModel() {
             _gameState.update { it?.copy(isAnimating = true) }
             try {
                 updateCardAnimation(attacker.id, isAttacking = true)
-                delay(200)
+                delay(getDelay(200))
 
                 SoundManager.playSoundByName(null, "attack")
 
@@ -211,7 +220,7 @@ class GameViewModel : ViewModel() {
                     }
                 }
                 updateCardAnimation(attacker.id, isAttacking = false)
-                delay(500)
+                delay(getDelay(500))
 
                 _gameState.update { currentState ->
                     currentState?.deepCopy()?.apply {
@@ -230,7 +239,7 @@ class GameViewModel : ViewModel() {
                         _gameState.value?.opponent?.board?.filterNotNull()?.any { it.isDying } == true
                 if (hasDeaths) {
                     SoundManager.playSoundByName(null, "card_death")
-                    delay(400)
+                    delay(getDelay(400))
                 }
 
                 _gameState.update { currentState ->
@@ -275,7 +284,7 @@ class GameViewModel : ViewModel() {
             _gameState.update { it?.copy(isAnimating = true) }
             try {
                 updateCardAnimation(attacker.id, isAttacking = true)
-                delay(200)
+                delay(getDelay(200))
 
                 SoundManager.playSoundByName(null, "attack")
 
@@ -292,7 +301,7 @@ class GameViewModel : ViewModel() {
                 }
 
                 updateCardAnimation(attacker.id, isAttacking = false)
-                delay(500)
+                delay(getDelay(500))
 
                 opponentHeroTakingDamage = false
                 _gameState.update { it?.copy(isAnimating = false) }
@@ -329,7 +338,7 @@ class GameViewModel : ViewModel() {
     }
 
     private fun executeGenericTurn(isOpponent: Boolean): Job = viewModelScope.launch {
-        delay(1000)
+        delay(getDelay(1000))
         if (!isActive) return@launch
 
         // ФАЗА 1: Розыгрыш карт
@@ -347,7 +356,7 @@ class GameViewModel : ViewModel() {
             }
         }
 
-        delay(500)
+        delay(getDelay(500))
         if (!isActive) return@launch
 
         // ФАЗА 2: Атака
@@ -383,11 +392,11 @@ class GameViewModel : ViewModel() {
                     continue
                 }
 
-                delay(1000)
+                delay(getDelay(1000))
                 if (!isActive) break
 
                 updateCardAnimation(activeAttacker.id, isAttacking = true)
-                delay(200)
+                delay(getDelay(200))
 
                 SoundManager.playSoundByName(null, "attack")
 
@@ -419,7 +428,7 @@ class GameViewModel : ViewModel() {
                 }
 
                 updateCardAnimation(activeAttacker.id, isAttacking = false)
-                delay(500)
+                delay(getDelay(500))
                 playerHeroTakingDamage = false
                 opponentHeroTakingDamage = false
 
@@ -444,16 +453,16 @@ class GameViewModel : ViewModel() {
                         _gameState.value?.opponent?.board?.filterNotNull()?.any { it.isDying } == true
                 if (hasDeaths) {
                     SoundManager.playSoundByName(null, "card_death")
-                    delay(400)
+                    delay(getDelay(400))
                 }
 
                 _gameState.update { currentState ->
                     currentState?.deepCopy()?.apply {
                         for (i in player.board.indices) {
-                            if (player.board[i]?.currentHealth ?: 1 <= 0) player.board[i] = null
+                            if ((player.board[i]?.currentHealth ?: 1) <= 0) player.board[i] = null
                         }
                         for (i in opponent.board.indices) {
-                            if (opponent.board[i]?.currentHealth ?: 1 <= 0) opponent.board[i] = null
+                            if ((opponent.board[i]?.currentHealth ?: 1) <= 0) opponent.board[i] = null
                         }
                         if (player.currentHp <= 0 || opponent.currentHp <= 0) {
                             isGameOver = true
@@ -461,12 +470,12 @@ class GameViewModel : ViewModel() {
                         }
                     }
                 }
-                delay(400)
+                delay(getDelay(400))
             }
         }
 
         if (!isActive) return@launch
-        delay(600)
+        delay(getDelay(600))
 
         // ФАЗА 3: Передача хода
         _gameState.update { currentState ->

@@ -20,6 +20,28 @@ object GameEngine {
 
         // ОБРАБОТКА БАФФОВ: Снижаем длительность и снимаем просроченные
         activePlayer.board.filterNotNull().forEach { card ->
+            // Применяем эффекты Кровотечения, Яда, Горения
+            card.buffs.forEach { buff ->
+                when (buff.tag) {
+                    com.example.cardsandshades.model.EffectTag.BLEED -> {
+                        card.currentHealth -= 1
+                        card.lastDamageTaken = 1
+                        card.isTakingDamage = true
+                    }
+                    com.example.cardsandshades.model.EffectTag.POISON -> {
+                        card.currentHealth -= 2
+                        card.lastDamageTaken = 2
+                        card.isTakingDamage = true
+                    }
+                    com.example.cardsandshades.model.EffectTag.BURN -> {
+                        card.currentHealth -= 3
+                        card.lastDamageTaken = 3
+                        card.isTakingDamage = true
+                    }
+                    else -> {}
+                }
+            }
+
             val expired = card.buffs.filter { it.duration <= 0 }
             expired.forEach { buff ->
                 card.currentAttack -= buff.attackBonus
@@ -32,6 +54,7 @@ object GameEngine {
             card.resetTurnState()
         }
 
+        checkWinCondition(state)
         drawCard(activePlayer, state)
     }
 

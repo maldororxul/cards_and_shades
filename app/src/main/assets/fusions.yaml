@@ -1,28 +1,53 @@
 fusions:
-  - id: "fusion_1"
-    output_key: "card_wild_hyena"
+  # COMMON -> UNCOMMON
+  - id: "fusion_common_to_uncommon_1"
+    output_key: "card_fire_elemental"
     inputs:
       - key: "card_shadow_recruit"
         count: 3
-  - id: "fusion_2"
-    output_key: "card_rabid_wolf"
+  - id: "fusion_common_to_uncommon_2"
+    output_key: "card_sparking_golem"
     inputs:
-      - key: "card_agile_imp"
-        count: 2
-  - id: "fusion_3"
+      - key: "card_wild_hyena"
+        count: 3
+  - id: "fusion_common_to_uncommon_3"
     output_key: "card_stone_beast"
     inputs:
-      - key: "card_stone_guardian"
-        count: 2
-  - id: "fusion_4"
-    output_key: "card_fire_giant"
+      - key: "card_gnome_shieldbearer"
+        count: 3
+
+  # UNCOMMON -> RARE
+  - id: "fusion_uncommon_to_rare_1"
+    output_key: "card_sand_stalker"
     inputs:
       - key: "card_fire_elemental"
         count: 2
-  - id: "fusion_5"
-    output_key: "card_shadow_king"
+  - id: "fusion_uncommon_to_rare_2"
+    output_key: "card_elven_warden"
     inputs:
-      - key: "card_shadow_reaper"
-        count: 1
+      - key: "card_stone_beast"
+        count: 2
+
+  # RARE -> EPIC
+  - id: "fusion_rare_to_epic_1"
+    output_key: "card_light_squire"
+    inputs:
+      - key: "card_elven_warden"
+        count: 2
+  - id: "fusion_rare_to_epic_2"
+    output_key: "card_vampire_aristocrat"
+    inputs:
+      - key: "card_sand_stalker"
+        count: 2
+
+  # EPIC -> LEGENDARY
+  - id: "fusion_epic_to_legendary_1"
+    output_key: "card_shadow_reaper"
+    inputs:
       - key: "card_vampire_aristocrat"
-        count: 1
+        count: 2
+  - id: "fusion_epic_to_legendary_2"
+    output_key: "card_ancient_ent"
+    inputs:
+      - key: "card_light_squire"
+        count: 2

@@ -47,6 +47,7 @@ object CampaignCatalog {
             gold = rewardMap["gold"] as? Int ?: 0,
             crystals = rewardMap["crystals"] as? Int ?: 0,
             dustCommon = rewardMap["dust_common"] as? Int ?: 0,
+            dustUncommon = rewardMap["dust_uncommon"] as? Int ?: 0,
             dustRare = rewardMap["dust_rare"] as? Int ?: 0,
             dustEpic = rewardMap["dust_epic"] as? Int ?: 0,
             dustLegendary = rewardMap["dust_legendary"] as? Int ?: 0,

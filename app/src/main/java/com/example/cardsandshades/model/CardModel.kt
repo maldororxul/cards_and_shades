@@ -4,17 +4,21 @@ import com.example.cardsandshades.effect.*
 
 // Перечисление всех ККИ-эффектов для безопасного сохранения в JSON
 enum class EffectTag {
-    RUSH, TAUNT, RANGED, SPLASH, LIFESTEAL, BUFF
+    RUSH, TAUNT, RANGED, SPLASH, LIFESTEAL, BUFF,
+    BLEED, POISON, BURN,
+    IMMUNE_BLEED, IMMUNE_POISON, IMMUNE_BURN,
+    DEBUFF_ATTACK
 }
 
-enum class Rarity { COMMON, RARE, EPIC, LEGENDARY, MYTHIC }
+enum class Rarity { COMMON, UNCOMMON, RARE, EPIC, LEGENDARY, MYTHIC }
 
 data class BuffModel(
     val id: String,
     val name: String,
     val attackBonus: Int,
     val healthBonus: Int,
-    var duration: Int // Ходов осталось
+    var duration: Int, // Ходов осталось
+    val tag: EffectTag? = null // Привязка к эффекту (яд, кровотечение и т.д.)
 )
 
 data class CardModel(
@@ -73,6 +77,13 @@ data class CardModel(
                 EffectTag.SPLASH -> SplashEffect()
                 EffectTag.LIFESTEAL -> LifestealEffect()
                 EffectTag.BUFF -> BuffEffect()
+                EffectTag.BLEED -> BleedEffect()
+                EffectTag.POISON -> PoisonEffect()
+                EffectTag.BURN -> BurnEffect()
+                EffectTag.IMMUNE_BLEED -> ImmuneBleedEffect()
+                EffectTag.IMMUNE_POISON -> ImmunePoisonEffect()
+                EffectTag.IMMUNE_BURN -> ImmuneBurnEffect()
+                EffectTag.DEBUFF_ATTACK -> DebuffAttackEffect()
             }
         }
 

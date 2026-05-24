@@ -15,6 +15,7 @@ import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -23,10 +24,12 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.res.stringResource
 import com.example.cardsandshades.R
 import com.example.cardsandshades.catalog.RewardsCatalog
+import com.example.cardsandshades.catalog.CardCatalog
 import com.example.cardsandshades.model.UserProfile
 import com.example.cardsandshades.model.AchievementManager
 import com.example.cardsandshades.ui.components.GameButton
 import com.example.cardsandshades.ui.components.GameText
+import com.example.cardsandshades.ui.components.GameBackground
 import com.example.cardsandshades.sound.SoundManager
 import com.example.cardsandshades.utils.getStringResourceByName
 
@@ -82,15 +85,36 @@ private fun DailyTab() {
     val claimedSet by UserProfile.rewardsClaimed.collectAsState()
     val context = androidx.compose.ui.platform.LocalContext.current
     
+    // Ищем текущий блок наград (порции по 7 дней)
+    val currentBlock = RewardsCatalog.blocks.find { block ->
+        block.rewards.any { it.day == chainDay }
+    } ?: RewardsCatalog.blocks.firstOrNull()
+
+    if (currentBlock == null) return
+
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
+        // КАРТИНКА БЛОКА
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(140.dp)
+                .clip(RoundedCornerShape(12.dp))
         ) {
-            GameText(stringResource(R.string.daily_rewards), fontSize = 22.sp, fontWeight = FontWeight.Bold)
+            GameBackground(screenId = "reward_block", overrideRes = currentBlock.imageRes) {
+                Box(
+                    modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.4f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    GameText(
+                        text = "WEEK ${currentBlock.id}",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Black,
+                        color = Color.White
+                    )
+                }
+            }
         }
-        
+
         Spacer(modifier = Modifier.height(16.dp))
         
         GameText(
@@ -103,12 +127,12 @@ private fun DailyTab() {
         Spacer(modifier = Modifier.height(24.dp))
         
         LazyVerticalGrid(
-            columns = GridCells.Adaptive(80.dp),
+            columns = GridCells.Fixed(4),
             modifier = Modifier.weight(1f),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(RewardsCatalog.rewards) { reward ->
+            items(currentBlock.rewards) { reward ->
                 val isClaimed = claimedSet.contains(reward.day)
                 val isCurrent = reward.day == chainDay
                 val canClaim = isCurrent && !isClaimed
@@ -123,28 +147,35 @@ private fun DailyTab() {
                 
                 Column(
                     modifier = Modifier
-                        .aspectRatio(1f)
+                        .aspectRatio(0.8f)
                         .background(bgColor, RoundedCornerShape(8.dp))
                         .border(1.dp, borderColor, RoundedCornerShape(8.dp))
                         .clickable(enabled = canClaim) {
                             claimReward(reward.day)
                         }
-                        .padding(8.dp),
+                        .padding(4.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    GameText(text = stringResource(R.string.day_x, reward.day), fontSize = 10.sp, color = Color.Gray)
+                    GameText(text = "DAY ${reward.day}", fontSize = 10.sp, color = Color.Gray)
                     Spacer(modifier = Modifier.height(4.dp))
-                    GameText(
-                        text = "${reward.amount}",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = if (isClaimed) Color.Gray else Color.White
-                    )
+                    
+                    if (reward.type == "card") {
+                        GameText(text = "🃏", fontSize = 24.sp)
+                    } else {
+                        GameText(
+                            text = "${reward.amount}",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = if (isClaimed) Color.Gray else Color.White
+                        )
+                    }
+                    
                     GameText(
                         text = getRewardIcon(reward.type, context),
-                        fontSize = 12.sp,
-                        color = Color.Yellow
+                        fontSize = 10.sp,
+                        color = Color.Yellow,
+                        textAlign = TextAlign.Center
                     )
                     
                     if (isClaimed) {
@@ -175,7 +206,6 @@ private fun AchievementsTab() {
     val context = androidx.compose.ui.platform.LocalContext.current
     var refreshTrigger by remember { mutableIntStateOf(0) }
     
-    // Принудительное обновление прогресса перед показом
     LaunchedEffect(refreshTrigger) {
         AchievementManager.updateProgress(com.example.cardsandshades.catalog.AchievementType.COLLECTION_SIZE, UserProfile.collection.size, true)
         AchievementManager.updateProgress(com.example.cardsandshades.catalog.AchievementType.EPIC_COLLECTION, UserProfile.collection.count { it.rarity == com.example.cardsandshades.model.Rarity.EPIC }, true)
@@ -184,7 +214,7 @@ private fun AchievementsTab() {
 
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         com.example.cardsandshades.catalog.AchievementCatalog.groups.forEach { group ->
-            key(group.id) {
+            key(group.id, refreshTrigger) {
                 AchievementGroupItem(group, context) {
                     refreshTrigger++
                 }
@@ -236,11 +266,11 @@ private fun AchievementGroupItem(
             GameButton(
                 text = if (isReady) stringResource(R.string.ach_claim) else stringResource(R.string.locked_icon),
                 onClick = {
-                    // Начисляем награду
                     val r = currentTier.reward
                     UserProfile.gold.value += r.gold
                     UserProfile.crystals.value += r.crystals
                     UserProfile.dustCommon.value += r.dustCommon
+                    UserProfile.dustUncommon.value += r.dustUncommon
                     UserProfile.dustRare.value += r.dustRare
                     UserProfile.dustEpic.value += r.dustEpic
                     UserProfile.dustLegendary.value += r.dustLegendary
@@ -266,6 +296,7 @@ private fun getRewardText(reward: com.example.cardsandshades.model.RewardSetMode
     if (reward.gold > 0) parts.add("🪙${reward.gold}")
     if (reward.crystals > 0) parts.add("💎${reward.crystals}")
     if (reward.dustCommon > 0) parts.add("⚪${reward.dustCommon}")
+    if (reward.dustUncommon > 0) parts.add("🟢${reward.dustUncommon}")
     if (reward.dustRare > 0) parts.add("🔵${reward.dustRare}")
     if (reward.dustEpic > 0) parts.add("🟣${reward.dustEpic}")
     if (reward.dustLegendary > 0) parts.add("🟡${reward.dustLegendary}")
@@ -277,27 +308,38 @@ private fun getRewardIcon(type: String, context: android.content.Context): Strin
         "gold" -> "🪙 " + context.getString(R.string.reward_gold)
         "crystals" -> "💎 " + context.getString(R.string.reward_crystals)
         "dust_common" -> "⚪ " + context.getString(R.string.reward_dust)
+        "dust_uncommon" -> "🟢 " + context.getString(R.string.reward_dust)
         "dust_rare" -> "🔵 " + context.getString(R.string.reward_dust)
         "dust_epic" -> "🟣 " + context.getString(R.string.reward_dust)
         "dust_legendary" -> "🟡 " + context.getString(R.string.reward_dust)
+        "card" -> "🃏 CARD"
         else -> "🎁 " + context.getString(R.string.reward_item)
     }
 }
 
 private fun claimReward(day: Int) {
-    val reward = RewardsCatalog.rewards.find { it.day == day } ?: return
+    val reward = RewardsCatalog.allRewards.find { it.day == day } ?: return
     if (UserProfile.rewardsClaimed.value.contains(day)) return
     
     when (reward.type) {
         "gold" -> UserProfile.gold.value += reward.amount
         "crystals" -> UserProfile.crystals.value += reward.amount
         "dust_common" -> UserProfile.dustCommon.value += reward.amount
+        "dust_uncommon" -> UserProfile.dustUncommon.value += reward.amount
         "dust_rare" -> UserProfile.dustRare.value += reward.amount
         "dust_epic" -> UserProfile.dustEpic.value += reward.amount
         "dust_legendary" -> UserProfile.dustLegendary.value += reward.amount
+        "card" -> {
+            reward.cardKey?.let { key ->
+                CardCatalog.createCardInstance(key)?.let { UserProfile.collection.add(it) }
+            }
+        }
     }
     
     val newClaimed = UserProfile.rewardsClaimed.value + day
     UserProfile.rewardsClaimed.value = newClaimed
+    // Линейная прогрессия: следующий день доступен СРАЗУ? Нет, только через 24 часа.
+    // Но по условию мы не сбрасываем.
+    UserProfile.loginChainDays.value = day + 1
     UserProfile.save()
 }

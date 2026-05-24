@@ -15,6 +15,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.style.TextAlign
 import com.example.cardsandshades.model.CardModel
 import com.example.cardsandshades.model.Turn
@@ -136,6 +137,17 @@ private fun GameScreenContent(
                         }
                     }
                 )
+
+                // КНОПКА СКОРОСТИ
+                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
+                    GameButton(
+                        text = "x${viewModel.animationSpeed}",
+                        onClick = { viewModel.cycleAnimationSpeed() },
+                        containerColor = Color.DarkGray.copy(alpha = 0.6f),
+                        modifier = Modifier.size(50.dp, 40.dp),
+                        fontSize = 12.sp
+                    )
+                }
 
                 val cardAttackMsg = stringResource(R.string.battle_card_attack)
                 EnemyBoardZone(

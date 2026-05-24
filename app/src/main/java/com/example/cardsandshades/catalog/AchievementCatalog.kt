@@ -35,6 +35,7 @@ object AchievementCatalog {
                                 gold = tierMap["reward_gold"] as? Int ?: 0,
                                 crystals = tierMap["reward_crystals"] as? Int ?: 0,
                                 dustCommon = tierMap["reward_dust_common"] as? Int ?: 0,
+                                dustUncommon = tierMap["reward_dust_uncommon"] as? Int ?: 0,
                                 dustRare = tierMap["reward_dust_rare"] as? Int ?: 0,
                                 dustEpic = tierMap["reward_dust_epic"] as? Int ?: 0,
                                 dustLegendary = tierMap["reward_dust_legendary"] as? Int ?: 0,

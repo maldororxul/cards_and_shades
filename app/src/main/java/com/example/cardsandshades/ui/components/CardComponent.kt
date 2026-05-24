@@ -10,7 +10,8 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -37,9 +38,31 @@ import com.example.cardsandshades.model.CardModel
 import com.example.cardsandshades.model.Rarity
 import com.example.cardsandshades.utils.getStringResourceByName
 
+@OptIn(ExperimentalFoundationApi::class)
 @SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 fun CardInspectionDialog(
+    cards: List<CardModel>,
+    initialIndex: Int = 0,
+    onDismiss: () -> Unit
+) {
+    val pagerState = rememberPagerState(initialPage = initialIndex, pageCount = { cards.size })
+
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier.fillMaxSize()
+        ) { page ->
+            CardInspectionContent(card = cards[page], onDismiss = onDismiss)
+        }
+    }
+}
+
+@Composable
+private fun CardInspectionContent(
     card: CardModel,
     onDismiss: () -> Unit
 ) {
@@ -47,142 +70,138 @@ fun CardInspectionDialog(
     var isFocusMode by remember { mutableStateOf(false) }
     var selectedEffectDesc by remember { mutableStateOf<String?>(null) }
 
-    val ownedCount = UserProfile.collection.count { it.name == card.name }
-    val isOwned = ownedCount > 0
-
     val rarityColor = when (card.rarity) {
-        Rarity.COMMON -> Color.Gray
-        Rarity.RARE -> Color(0xFF1E88E5)
-        Rarity.EPIC -> Color(0xFF8E24AA)
-        Rarity.LEGENDARY -> Color(0xFFFDD835)
-        Rarity.MYTHIC -> Color(0xFFFF3D00)
+        Rarity.COMMON -> Color.White
+        Rarity.UNCOMMON -> Color.Green
+        Rarity.RARE -> Color(0xFF2196F3)
+        Rarity.EPIC -> Color(0xFF9C27B0)
+        Rarity.LEGENDARY -> Color.Yellow
+        Rarity.MYTHIC -> Color.Red
     }
 
-    Dialog(
-        onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
+    Box(
+        modifier = Modifier.fillMaxSize()
+            .border(8.dp, rarityColor)
     ) {
-        Box(modifier = Modifier.fillMaxSize()) {
-            // ФОН: КАРТИНКА КАРТЫ НА ВЕСЬ ЭКРАН (С сохранением пропорций)
-            CardVisual(
-                card = card, 
+        // ФОН: КАРТИНКА КАРТЫ НА ВЕСЬ ЭКРАН (С сохранением пропорций)
+        CardVisual(
+            card = card, 
+            modifier = Modifier
+                .fillMaxSize(),
+            contentScale = androidx.compose.ui.layout.ContentScale.Crop
+        )
+        
+        if (!isFocusMode) {
+            // ХЕДЕР (ЗАТЕМНЕНИЕ ТОЛЬКО СВЕРХУ)
+            Box(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .then(if (!isOwned) Modifier.blur(20.dp) else Modifier),
-                contentScale = androidx.compose.ui.layout.ContentScale.Crop
-            )
-            
-            if (!isFocusMode) {
-                // ХЕДЕР (ЗАТЕМНЕНИЕ ТОЛЬКО СВЕРХУ)
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(180.dp)
-                        .background(Brush.verticalGradient(listOf(Color.Black.copy(alpha = 0.8f), Color.Transparent)))
-                        .padding(24.dp)
-                ) {
-                    Column(modifier = Modifier.align(Alignment.TopStart)) {
-                        GameText(getStringResourceByName(context, card.name), fontSize = 24.sp, fontWeight = FontWeight.Black)
-                        val rarityLabel = when(card.rarity) {
-                            Rarity.COMMON -> stringResource(R.string.rarity_common)
-                            Rarity.RARE -> stringResource(R.string.rarity_rare)
-                            Rarity.EPIC -> stringResource(R.string.rarity_epic)
-                            Rarity.LEGENDARY -> stringResource(R.string.rarity_legendary)
-                            Rarity.MYTHIC -> stringResource(R.string.rarity_mythic)
-                        }
-                        GameText(rarityLabel, color = rarityColor, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                    }
-
-                    Box(
-                        modifier = Modifier
-                            .size(60.dp)
-                            .background(Color(0xFF0288D1), CircleShape)
-                            .align(Alignment.TopEnd),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        GameText(card.manaCost.toString(), fontWeight = FontWeight.Black, fontSize = 28.sp)
-                    }
-                }
-
-                // ФУТЕР (ЗАТЕМНЕНИЕ ТОЛЬКО СНИЗУ)
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .align(Alignment.BottomCenter)
-                        .background(Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(alpha = 0.9f))))
-                        .padding(24.dp)
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        // ТЕГИ ЭФФЕКТОВ
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            card.activeEffects.forEach { effect ->
-                                Box(
-                                    modifier = Modifier
-                                        .padding(4.dp)
-                                        .clip(RoundedCornerShape(20.dp))
-                                        .background(Color.White.copy(alpha = 0.15f))
-                                        .border(1.dp, Color.White.copy(alpha = 0.3f), RoundedCornerShape(20.dp))
-                                        .clickable { 
-                                            selectedEffectDesc = getStringResourceByName(context, effect.description)
-                                        }
-                                        .padding(horizontal = 12.dp, vertical = 6.dp)
-                                ) {
-                                    GameText(getStringResourceByName(context, effect.name), fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.Cyan)
-                                }
-                            }
-                        }
-
-                        if (selectedEffectDesc != null) {
-                            Spacer(modifier = Modifier.height(12.dp))
-                            GameText(selectedEffectDesc!!, color = Color.White, fontSize = 14.sp, textAlign = TextAlign.Center)
-                            TextButton(onClick = { selectedEffectDesc = null }) {
-                                GameText(stringResource(R.string.close).lowercase(), color = Color.Gray, fontSize = 12.sp)
-                            }
-                        } else {
-                            Spacer(modifier = Modifier.height(16.dp))
-                            val normalDesc = stringResource(R.string.effect_normal_desc)
-                            GameText(normalDesc, color = Color.LightGray, fontSize = 16.sp, textAlign = TextAlign.Center)
-                        }
-
-                        Spacer(modifier = Modifier.height(24.dp))
-
-                        // АТАКА И ХП
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Box(modifier = Modifier.size(64.dp).background(Color(0xFFD32F2F), RoundedCornerShape(12.dp)).border(2.dp, Color.White.copy(alpha = 0.3f), RoundedCornerShape(12.dp)), contentAlignment = Alignment.Center) {
-                                    GameText(card.currentAttack.toString(), fontWeight = FontWeight.Black, fontSize = 32.sp)
-                                }
-                                GameText(stringResource(R.string.stat_attack), fontSize = 12.sp, color = Color.Gray)
-                            }
-
-                            GameButton(text = stringResource(R.string.back), onClick = onDismiss, containerColor = Color.DarkGray)
-
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Box(modifier = Modifier.size(64.dp).background(Color(0xFF388E3C), RoundedCornerShape(12.dp)).border(2.dp, Color.White.copy(alpha = 0.3f), RoundedCornerShape(12.dp)), contentAlignment = Alignment.Center) {
-                                    GameText(card.currentHealth.toString(), fontWeight = FontWeight.Black, fontSize = 32.sp)
-                                }
-                                GameText(stringResource(R.string.stat_health), fontSize = 12.sp, color = Color.Gray)
-                            }
-                        }
-                    }
-                }
-            }
-
-            // КНОПКА ГЛАЗА - Смещена к середине края, чтобы не мешать хедеру
-            IconButton(
-                onClick = { isFocusMode = !isFocusMode },
-                modifier = Modifier.align(Alignment.CenterEnd).padding(16.dp).background(Color.Black.copy(alpha = 0.5f), CircleShape)
+                    .fillMaxWidth()
+                    .height(180.dp)
+                    .background(Brush.verticalGradient(listOf(Color.Black.copy(alpha = 0.8f), Color.Transparent)))
+                    .padding(24.dp)
             ) {
-                GameText(if (isFocusMode) "👁️" else "👁️‍🗨️", fontSize = 24.sp)
+                Column(modifier = Modifier.align(Alignment.TopStart)) {
+                    GameText(getStringResourceByName(context, card.name), fontSize = 24.sp, fontWeight = FontWeight.Black)
+                    val rarityLabel = when(card.rarity) {
+                        Rarity.COMMON -> stringResource(R.string.rarity_common)
+                        Rarity.UNCOMMON -> "UNCOMMON"
+                        Rarity.RARE -> stringResource(R.string.rarity_rare)
+                        Rarity.EPIC -> stringResource(R.string.rarity_epic)
+                        Rarity.LEGENDARY -> stringResource(R.string.rarity_legendary)
+                        Rarity.MYTHIC -> stringResource(R.string.rarity_mythic)
+                    }
+                    GameText(rarityLabel, color = rarityColor, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                }
+
+                Box(
+                    modifier = Modifier
+                        .size(60.dp)
+                        .background(Color(0xFF0288D1), CircleShape)
+                        .align(Alignment.TopEnd),
+                    contentAlignment = Alignment.Center
+                ) {
+                    GameText(card.manaCost.toString(), fontWeight = FontWeight.Black, fontSize = 28.sp)
+                }
             }
+
+            // ФУТЕР (ЗАТЕМНЕНИЕ ТОЛЬКО СНИЗУ)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.BottomCenter)
+                    .background(Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(alpha = 0.9f))))
+                    .padding(24.dp)
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    // ТЕГИ ЭФФЕКТОВ
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        card.activeEffects.forEach { effect ->
+                            Box(
+                                modifier = Modifier
+                                    .padding(4.dp)
+                                    .clip(RoundedCornerShape(20.dp))
+                                    .background(Color.White.copy(alpha = 0.15f))
+                                    .border(1.dp, Color.White.copy(alpha = 0.3f), RoundedCornerShape(20.dp))
+                                    .clickable { 
+                                        selectedEffectDesc = getStringResourceByName(context, effect.description)
+                                    }
+                                    .padding(horizontal = 12.dp, vertical = 6.dp)
+                            ) {
+                                GameText(getStringResourceByName(context, effect.name), fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.Cyan)
+                            }
+                        }
+                    }
+
+                    if (selectedEffectDesc != null) {
+                        Spacer(modifier = Modifier.height(12.dp))
+                        GameText(selectedEffectDesc!!, color = Color.White, fontSize = 14.sp, textAlign = TextAlign.Center)
+                        TextButton(onClick = { selectedEffectDesc = null }) {
+                            GameText(stringResource(R.string.close).lowercase(), color = Color.Gray, fontSize = 12.sp)
+                        }
+                    } else {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        val normalDesc = stringResource(R.string.effect_normal_desc)
+                        GameText(normalDesc, color = Color.LightGray, fontSize = 16.sp, textAlign = TextAlign.Center)
+                    }
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    // АТАКА И ХП
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Box(modifier = Modifier.size(64.dp).background(Color(0xFFD32F2F), RoundedCornerShape(12.dp)).border(2.dp, Color.White.copy(alpha = 0.3f), RoundedCornerShape(12.dp)), contentAlignment = Alignment.Center) {
+                                GameText(card.currentAttack.toString(), fontWeight = FontWeight.Black, fontSize = 32.sp)
+                            }
+                            GameText(stringResource(R.string.stat_attack), fontSize = 12.sp, color = Color.Gray)
+                        }
+
+                        GameButton(text = stringResource(R.string.back), onClick = onDismiss, containerColor = Color.DarkGray)
+
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Box(modifier = Modifier.size(64.dp).background(Color(0xFF388E3C), RoundedCornerShape(12.dp)).border(2.dp, Color.White.copy(alpha = 0.3f), RoundedCornerShape(12.dp)), contentAlignment = Alignment.Center) {
+                                GameText(card.currentHealth.toString(), fontWeight = FontWeight.Black, fontSize = 32.sp)
+                            }
+                            GameText(stringResource(R.string.stat_health), fontSize = 12.sp, color = Color.Gray)
+                        }
+                    }
+                }
+            }
+        }
+
+        // КНОПКА ГЛАЗА
+        IconButton(
+            onClick = { isFocusMode = !isFocusMode },
+            modifier = Modifier.align(Alignment.CenterEnd).padding(16.dp).background(Color.Black.copy(alpha = 0.5f), CircleShape)
+        ) {
+            GameText(if (isFocusMode) "👁️" else "👁️‍🗨️", fontSize = 24.sp)
         }
     }
 }
@@ -215,26 +234,25 @@ fun CardComponent(
     val deathAlpha by animateFloatAsState(targetValue = if (card.isDying) 0f else 1f, animationSpec = tween(350))
     val deathScale by animateFloatAsState(targetValue = if (card.isDying) 0.5f else 1f, animationSpec = tween(350))
 
-    val borderColor = if (card.hasTaunt && !isPreview) {
-        Color(0xFFFF9800)
-    } else {
-        when (card.rarity) {
-            Rarity.COMMON -> Color.Gray
-            Rarity.RARE -> Color(0xFF1E88E5)
-            Rarity.EPIC -> Color(0xFF8E24AA)
-            Rarity.LEGENDARY -> Color(0xFFFDD835)
-            Rarity.MYTHIC -> Color(0xFFFF3D00)
-        }
+    val borderColor = when (card.rarity) {
+        Rarity.COMMON -> Color.White
+        Rarity.UNCOMMON -> Color.Green
+        Rarity.RARE -> Color(0xFF2196F3)
+        Rarity.EPIC -> Color(0xFF9C27B0)
+        Rarity.LEGENDARY -> Color.Yellow
+        Rarity.MYTHIC -> Color.Red
     }
     
     val borderThickness = when(card.rarity) {
-        Rarity.COMMON -> 2.dp
+        Rarity.COMMON -> 1.dp
+        Rarity.UNCOMMON -> 2.dp
         Rarity.RARE -> 3.dp
         Rarity.EPIC -> 4.dp
         Rarity.LEGENDARY -> 5.dp
         Rarity.MYTHIC -> 6.dp
     }
     val finalBorderThickness = if (card.hasTaunt && !isPreview) borderThickness + 2.dp else borderThickness
+    val finalBorderColor = if (card.hasTaunt && !isPreview) Color(0xFFFF9800) else borderColor
 
     val cardAlpha = if ((card.isSleeping || card.hasAttackedThisTurn) && !isPreview) 0.6f else 1f
 
@@ -250,7 +268,7 @@ fun CardComponent(
         Card(
             modifier = Modifier
                 .fillMaxSize()
-                .border(finalBorderThickness, borderColor, RoundedCornerShape(10.dp))
+                .border(finalBorderThickness, finalBorderColor, RoundedCornerShape(10.dp))
                 .padding(finalBorderThickness)
                 .border(1.dp, Color.Black.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
                 .combinedClickable(
@@ -273,7 +291,7 @@ fun CardComponent(
                 }
                 Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.2f)))
 
-                CardContent(card = card, borderColor = borderColor)
+                CardContent(card = card, borderColor = finalBorderColor)
 
                 if (card.isTakingDamage && card.lastDamageTaken > 0) {
                     var damageYOffset by remember { mutableStateOf(0.dp) }
@@ -293,7 +311,7 @@ fun CardComponent(
     }
 
     if (showInspectDialog) {
-        CardInspectionDialog(card = card, onDismiss = { showInspectDialog = false })
+        CardInspectionDialog(cards = listOf(card), onDismiss = { showInspectDialog = false })
     }
 }
 
@@ -313,6 +331,7 @@ private fun BoxScope.CardContent(card: CardModel, borderColor: Color) {
         
         val rarityLabel = when(card.rarity) {
             Rarity.COMMON -> stringResource(R.string.rarity_common)
+            Rarity.UNCOMMON -> "UNCOMMON"
             Rarity.RARE -> stringResource(R.string.rarity_rare)
             Rarity.EPIC -> stringResource(R.string.rarity_epic)
             Rarity.LEGENDARY -> stringResource(R.string.rarity_legendary)

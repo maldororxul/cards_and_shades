@@ -9,6 +9,7 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -111,6 +112,8 @@ private fun PacksTab(gold: Int, crystals: Int, context: android.content.Context)
     var message by remember { mutableStateOf(choosePackMsg) }
     
     var highlightedCard by remember { mutableStateOf<CardModel?>(null) }
+    var inspectedCardsList by remember { mutableStateOf<List<CardModel>>(emptyList()) }
+    var initialInspectedIndex by remember { mutableIntStateOf(0) }
 
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         GameText(text = message, color = Color.White, fontSize = 16.sp, modifier = Modifier.padding(bottom = 16.dp))
@@ -121,17 +124,23 @@ private fun PacksTab(gold: Int, crystals: Int, context: android.content.Context)
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    items(openedCards) { card ->
-                        var isVisible by remember { mutableStateOf(false) }
-                        LaunchedEffect(card.id) {
-                            isVisible = true
-                        }
+                    itemsIndexed(openedCards) { index, card ->
                         Box {
+                            val isVisible = remember { mutableStateOf(false) }
+                            LaunchedEffect(card.id) {
+                                isVisible.value = true
+                            }
                             androidx.compose.animation.AnimatedVisibility(
-                                visible = isVisible,
+                                visible = isVisible.value,
                                 enter = scaleIn(initialScale = 0.5f, animationSpec = tween(400)) + fadeIn()
                             ) {
-                                CardComponent(card = card)
+                                CardComponent(
+                                    card = card,
+                                    onClick = {
+                                        inspectedCardsList = openedCards
+                                        initialInspectedIndex = index
+                                    }
+                                )
                             }
                         }
                     }
@@ -211,11 +220,26 @@ private fun PacksTab(gold: Int, crystals: Int, context: android.content.Context)
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 GameText(text = rarityText, color = rarityColor, fontSize = 36.sp, fontWeight = FontWeight.Black)
                 Spacer(modifier = Modifier.height(24.dp))
-                CardComponent(card = highlightedCard!!, modifier = Modifier.size(240.dp, 360.dp))
+                CardComponent(
+                    card = highlightedCard!!, 
+                    modifier = Modifier.size(240.dp, 360.dp),
+                    onClick = {
+                        inspectedCardsList = openedCards
+                        initialInspectedIndex = openedCards.indexOfFirst { it.id == highlightedCard!!.id }
+                    }
+                )
                 Spacer(modifier = Modifier.height(32.dp))
                 GameText(stringResource(R.string.close), color = Color.Gray, fontSize = 14.sp)
             }
         }
+    }
+
+    if (inspectedCardsList.isNotEmpty()) {
+        CardInspectionDialog(
+            cards = inspectedCardsList,
+            initialIndex = initialInspectedIndex,
+            onDismiss = { inspectedCardsList = emptyList() }
+        )
     }
 }
 
@@ -287,7 +311,9 @@ private fun FusionAccordion(recipe: FusionRecipe, context: android.content.Conte
                                 card = cardInstance, 
                                 isPreview = true, 
                                 modifier = Modifier.size(60.dp, 90.dp),
-                                onClick = { inspectedCard = CardCatalog.createCardInstance(input.key) }
+                                onClick = { 
+                                    // Для рецептов свайп не нужен, просто смотрим одну карту
+                                }
                             )
                             GameText("${hasCount}/${input.count}", fontSize = 10.sp, color = if (hasCount >= input.count) Color.Green else Color.Red)
                         }
@@ -306,7 +332,9 @@ private fun FusionAccordion(recipe: FusionRecipe, context: android.content.Conte
                         card = outputInstance, 
                         isPreview = true, 
                         modifier = Modifier.size(100.dp, 150.dp),
-                        onClick = { inspectedCard = CardCatalog.createCardInstance(recipe.outputKey) }
+                        onClick = { 
+                            // Смотрим одну карту
+                        }
                     )
                 }
             }
@@ -335,9 +363,7 @@ private fun FusionAccordion(recipe: FusionRecipe, context: android.content.Conte
         }
     }
 
-    if (inspectedCard != null) {
-        CardInspectionDialog(card = inspectedCard!!, onDismiss = { inspectedCard = null })
-    }
+    // В FusionTab используем одиночный CardInspectionDialog (со списком из 1 карты)
 }
 
 @Composable

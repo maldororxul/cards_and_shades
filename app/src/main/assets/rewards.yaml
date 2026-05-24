@@ -1,91 +1,73 @@
-rewards:
-  - day: 1
-    type: "crystals"
-    amount: 10
-  - day: 2
-    type: "gold"
-    amount: 50
-  - day: 3
-    type: "dust_common"
-    amount: 40
-  - day: 4
-    type: "gold"
-    amount: 100
-  - day: 5
-    type: "crystals"
-    amount: 20
-  - day: 6
-    type: "dust_rare"
-    amount: 100
-  - day: 7
-    type: "gold"
-    amount: 200
-  - day: 8
-    type: "crystals"
-    amount: 25
-  - day: 9
-    type: "gold"
-    amount: 150
-  - day: 10
-    type: "dust_common"
-    amount: 80
-  - day: 11
-    type: "gold"
-    amount: 200
-  - day: 12
-    type: "crystals"
-    amount: 50
-  - day: 13
-    type: "dust_epic"
-    amount: 400
-  - day: 14
-    type: "gold"
-    amount: 300
-  - day: 15
-    type: "crystals"
-    amount: 100
-  - day: 16
-    type: "gold"
-    amount: 250
-  - day: 17
-    type: "dust_rare"
-    amount: 200
-  - day: 18
-    type: "gold"
-    amount: 300
-  - day: 19
-    type: "crystals"
-    amount: 150
-  - day: 20
-    type: "dust_common"
-    amount: 200
-  - day: 21
-    type: "gold"
-    amount: 500
-  - day: 22
-    type: "crystals"
-    amount: 200
-  - day: 23
-    type: "gold"
-    amount: 400
-  - day: 24
-    type: "dust_legendary"
-    amount: 1600
-  - day: 25
-    type: "gold"
-    amount: 600
-  - day: 26
-    type: "crystals"
-    amount: 300
-  - day: 27
-    type: "gold"
-    amount: 800
-  - day: 28
-    type: "dust_epic"
-    amount: 800
-  - day: 29
-    type: "gold"
-    amount: 1000
-  - day: 30
-    type: "crystals"
-    amount: 1000
+reward_blocks:
+  - id: 1
+    image_res: "bg_temple_light"
+    rewards:
+      - day: 1
+        type: "gold"
+        amount: 100
+      - day: 2
+        type: "crystals"
+        amount: 20
+      - day: 3
+        type: "dust_common"
+        amount: 50
+      - day: 4
+        type: "gold"
+        amount: 150
+      - day: 5
+        type: "crystals"
+        amount: 30
+      - day: 6
+        type: "dust_uncommon"
+        amount: 40
+      - day: 7
+        type: "card"
+        card_key: "card_elven_warden"
+  - id: 2
+    image_res: "bg_battle_arena"
+    rewards:
+      - day: 8
+        type: "gold"
+        amount: 200
+      - day: 9
+        type: "crystals"
+        amount: 50
+      - day: 10
+        type: "dust_rare"
+        amount: 100
+      - day: 11
+        type: "gold"
+        amount: 300
+      - day: 12
+        type: "crystals"
+        amount: 80
+      - day: 13
+        type: "dust_epic"
+        amount: 400
+      - day: 14
+        type: "card"
+        card_key: "card_light_squire"
+  - id: 3
+    image_res: "bg_blacksmith_fire"
+    rewards:
+      - day: 15
+        type: "gold"
+        amount: 500
+      - day: 16
+        type: "crystals"
+        amount: 100
+      - day: 17
+        type: "dust_legendary"
+        amount: 1600
+      - day: 18
+        type: "gold"
+        amount: 800
+      - day: 19
+        type: "crystals"
+        amount: 200
+      - day: 20
+        type: "dust_mythic"
+        amount: 500
+      - day: 21
+        type: "card"
+        card_key: "card_shadow_reaper"
