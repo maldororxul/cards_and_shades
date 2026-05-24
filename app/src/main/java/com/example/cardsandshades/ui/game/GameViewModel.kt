@@ -87,20 +87,8 @@ class GameViewModel : ViewModel() {
         }
 
         val shuffledSource = sourceDeck.shuffled().map { 
-            it.deepCopy().apply { 
-                // Manual id update after deepCopy
-            }.let { copy ->
-                // Since CardModel is a data class and we need a new ID
-                // we can't easily change val id in deepCopy without reflection or custom copy.
-                // But my refactored CardModel should handle .copy() safely now too.
-                // Let's use deepCopy and then a safe manual copy if needed.
-                val safe = copy.deepCopy()
-                // Let's use a more robust way to create a fresh instance with new ID
-                CardCatalog.createCardInstance(safe.name)?.apply {
-                    // Transfer current states if any (though reset() is called anyway)
-                    reset()
-                } ?: safe
-            }
+            val safe = it.deepCopy()
+            CardCatalog.createCardInstance(safe.name)?.apply { reset() } ?: safe
         }
 
         val maxPlayerCards = level.opponentDeckPreset.size
@@ -135,7 +123,8 @@ class GameViewModel : ViewModel() {
             currentTurn = Turn.PLAYER,
             turnNumber = 1,
             isGameOver = false,
-            winnerName = null
+            winnerName = null,
+            logHistory = mutableListOf(LogEntry("Battle Start!", LogType.SYSTEM, 1))
         )
 
         repeat(4) {
@@ -149,6 +138,14 @@ class GameViewModel : ViewModel() {
         
         if (isAutoBattleActive) {
             autoTurnJob = executeGenericTurn(isOpponent = false)
+        }
+    }
+
+    fun addLog(message: String, type: LogType) {
+        _gameState.update { currentState ->
+            currentState?.deepCopy()?.apply {
+                logHistory.add(LogEntry(message, type, turnNumber))
+            }
         }
     }
 
@@ -200,6 +197,7 @@ class GameViewModel : ViewModel() {
                     if (cardInHand != null && player.currentMana >= cardInHand.manaCost && player.board[slotIndex] == null) {
                         GameEngine.playCard(this, cardInHand, slotIndex)
                         SoundManager.playSoundByName(null, "card_place")
+                        logHistory.add(LogEntry("Card played: ${cardInHand.name}", LogType.PLAYER, turnNumber))
                         isPlayed = true
                     }
                 }
@@ -232,6 +230,11 @@ class GameViewModel : ViewModel() {
                                 tCard.isAttacking = true
                             }
                             GameEngine.calculateCombat(this, aCard, tCard)
+                            
+                            logHistory.add(LogEntry("${aCard.name} attacks ${tCard.name}", LogType.PLAYER, turnNumber))
+                            if (aCard.groups.contains(GroupTag.MELEE)) {
+                                logHistory.add(LogEntry("${tCard.name} retaliates against ${aCard.name}", LogType.OPPONENT, turnNumber))
+                            }
                         }
                     }
                 }
@@ -326,6 +329,7 @@ class GameViewModel : ViewModel() {
                         val aCard = player.board.filterNotNull().find { it.id == attacker.id }
                         if (aCard != null) {
                             GameEngine.attackHero(this, aCard)
+                            logHistory.add(LogEntry("${aCard.name} attacks Hero for ${aCard.currentAttack}", LogType.PLAYER, turnNumber))
                         }
                     }
                 }
@@ -353,6 +357,7 @@ class GameViewModel : ViewModel() {
             currentState?.deepCopy()?.apply {
                 if (currentTurn == Turn.PLAYER) {
                     GameEngine.endTurn(this)
+                    logHistory.add(LogEntry("Round $turnNumber End", LogType.SYSTEM, turnNumber))
                 }
             } ?: currentState
         }
@@ -381,6 +386,7 @@ class GameViewModel : ViewModel() {
                     val emptySlot = actor.board.indexOfFirst { it == null }
                     if (emptySlot != -1) {
                         GameEngine.playCard(this, card, emptySlot)
+                        logHistory.add(LogEntry("Card played: ${card.name}", if (isOpponent) LogType.OPPONENT else LogType.PLAYER, turnNumber))
                     }
                 }
             }
@@ -445,6 +451,11 @@ class GameViewModel : ViewModel() {
                                         nextTarget.isAttacking = true
                                     }
                                     GameEngine.calculateCombat(this, nextAttacker, nextTarget)
+                                    
+                                    logHistory.add(LogEntry("${nextAttacker.name} attacks ${nextTarget.name}", if (isOpponent) LogType.OPPONENT else LogType.PLAYER, turnNumber))
+                                    if (nextAttacker.groups.contains(GroupTag.MELEE)) {
+                                        logHistory.add(LogEntry("${nextTarget.name} retaliates against ${nextAttacker.name}", if (isOpponent) LogType.PLAYER else LogType.OPPONENT, turnNumber))
+                                    }
                                 }
                             } else {
                                 if (isOpponent) {
@@ -455,6 +466,7 @@ class GameViewModel : ViewModel() {
                                     opponentHeroTakingDamage = true
                                 }
                                 GameEngine.attackHero(this, nextAttacker)
+                                logHistory.add(LogEntry("${nextAttacker.name} attacks Hero for ${nextAttacker.currentAttack}", if (isOpponent) LogType.OPPONENT else LogType.PLAYER, turnNumber))
                             }
                         }
                     }
@@ -522,6 +534,9 @@ class GameViewModel : ViewModel() {
         _gameState.update { currentState ->
             currentState?.deepCopy()?.apply {
                 GameEngine.endTurn(this)
+                if (currentTurn == Turn.PLAYER) {
+                    logHistory.add(LogEntry("Round $turnNumber Start", LogType.SYSTEM, turnNumber))
+                }
             }
         }
         

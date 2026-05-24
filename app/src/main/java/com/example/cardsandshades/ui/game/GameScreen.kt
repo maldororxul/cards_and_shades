@@ -191,7 +191,10 @@ private fun GameScreenContent(
                     }
                 )
 
-                BattleLogZone(battleLog = battleLog)
+                BattleLogZone(
+                    battleLog = battleLog,
+                    history = state.logHistory
+                )
 
                 val cardPlayedMsg = stringResource(R.string.battle_card_played)
                 val playFailMsg = stringResource(R.string.battle_play_fail)
