@@ -31,16 +31,14 @@ fun RenderAttackArrows(
     Canvas(modifier = Modifier.fillMaxSize()) {
         // 1. Рисуем стрелку прицеливания игрока
         if (isPlayerDrawing) {
-            val finalArrowEnd = if (playerTargetOffset != null && playerTargetOffset != Offset.Zero && playerTargetOffset != playerStart) {
-                playerTargetOffset
-            } else if (isEnemyBoardEmpty && enemyHeroOffset != Offset.Zero) {
-                enemyHeroOffset
-            } else {
-                // Если нет цели и вражеское поле не пустое, рисуем небольшую стрелку вверх для подсказки
-                Offset(playerStart.x, playerStart.y - 100f)
-            }
+            val isActuallyDragging = playerTargetOffset != null && playerTargetOffset != Offset.Zero && playerTargetOffset != playerStart
             
-            drawAttackArrow(start = playerStart, end = finalArrowEnd, color = Color.Red.copy(alpha = 0.8f))
+            if (isActuallyDragging) {
+                drawAttackArrow(start = playerStart, end = playerTargetOffset!!, color = Color.Red.copy(alpha = 0.8f))
+            } else if (isEnemyBoardEmpty && enemyHeroOffset != Offset.Zero) {
+                // Если вражеское поле пустое, можно сразу показывать стрелку в героя
+                drawAttackArrow(start = playerStart, end = enemyHeroOffset, color = Color.Red.copy(alpha = 0.8f))
+            }
         }
 
         // 2. Рисуем стрелку прицеливания ИИ в его ход

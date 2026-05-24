@@ -264,7 +264,7 @@ private fun GameScreenContent(
             }
 
             RenderAttackArrows(
-                isPlayerDrawing = (isDrawingArrow && selectedCardForAttack != null),
+                isPlayerDrawing = (isDrawingArrow && selectedCardForAttack != null && !state.isAnimating),
                 playerStart = startArrowOffset,
                 playerTargetOffset = fingerOffset,
                 enemyHeroOffset = enemyHeroOffset,

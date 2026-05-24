@@ -81,6 +81,11 @@ object GameEngine {
         if (player.deck.isNotEmpty()) {
             val card = player.deck.removeAt(0)
             player.hand.add(card)
+            
+            // Логируем добор
+            val isOpponent = state.opponent == player
+            val logType = if (isOpponent) LogType.OPPONENT else LogType.PLAYER
+            state.logHistory.add(LogEntry("battle_card_drawn|${card.name}", logType, state.turnNumber))
         }
     }
 

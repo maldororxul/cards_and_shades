@@ -33,7 +33,11 @@
     <string name="battle_attack_hero">Атака героя на %d урона!</string>
     <string name="battle_attack_hero_fail">Нельзя атаковать героя! Мешает Провокация.</string>
     <string name="battle_card_attack">%1$s атакует %2$s</string>
+    <string name="battle_card_retaliate">%1$s дает сдачи %2$s</string>
     <string name="battle_card_played">Разыграна карта: %s</string>
+    <string name="battle_card_drawn">Взята карта: %s</string>
+    <string name="battle_round_start">Начало раунда %d</string>
+    <string name="battle_round_end">Конец раунда %d</string>
     <string name="battle_play_fail">Нельзя разыграть (нет маны или места)</string>
     <string name="battle_loading">Загрузка битвы...</string>
     <string name="battle_finished">Битва Завершена!</string>

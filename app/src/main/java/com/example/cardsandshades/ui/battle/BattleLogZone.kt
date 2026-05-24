@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -67,6 +68,14 @@ fun DetailedBattleLogDialog(
     onDismiss: () -> Unit
 ) {
     val context = LocalContext.current
+    val listState = rememberLazyListState()
+
+    // Скролл вниз при открытии
+    LaunchedEffect(history.size) {
+        if (history.isNotEmpty()) {
+            listState.scrollToItem(history.size - 1)
+        }
+    }
     
     GameDialog(
         onDismiss = onDismiss,
@@ -74,6 +83,7 @@ fun DetailedBattleLogDialog(
         content = {
             Box(modifier = Modifier.heightIn(max = 400.dp)) {
                 LazyColumn(
+                    state = listState,
                     modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                     contentPadding = PaddingValues(bottom = 16.dp)
@@ -111,6 +121,22 @@ fun DetailedBattleLogDialog(
 }
 
 private fun formatLogMessage(context: android.content.Context, message: String): String {
+    if (message.contains("|")) {
+        val parts = message.split("|")
+        val templateName = parts[0]
+        val args = parts.drop(1).map { arg ->
+            // Если аргумент похож на card_*, локализуем его
+            if (arg.startsWith("card_")) getStringResourceByName(context, arg) else arg
+        }
+        
+        val template = getStringResourceByName(context, templateName)
+        return try {
+            template.format(*args.toTypedArray())
+        } catch (e: Exception) {
+            template + " " + args.joinToString(" ")
+        }
+    }
+
     // Регулярное выражение для поиска имен карт (начинаются с card_)
     val cardRegex = Regex("card_[a-zA-Z0-9_]+")
     var result = message

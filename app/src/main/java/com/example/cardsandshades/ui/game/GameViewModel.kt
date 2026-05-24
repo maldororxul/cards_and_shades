@@ -124,7 +124,7 @@ class GameViewModel : ViewModel() {
             turnNumber = 1,
             isGameOver = false,
             winnerName = null,
-            logHistory = mutableListOf(LogEntry("Battle Start!", LogType.SYSTEM, 1))
+            logHistory = mutableListOf(LogEntry("battle_start_msg", LogType.SYSTEM, 1))
         )
 
         repeat(4) {
@@ -138,14 +138,6 @@ class GameViewModel : ViewModel() {
         
         if (isAutoBattleActive) {
             autoTurnJob = executeGenericTurn(isOpponent = false)
-        }
-    }
-
-    fun addLog(message: String, type: LogType) {
-        _gameState.update { currentState ->
-            currentState?.deepCopy()?.apply {
-                logHistory.add(LogEntry(message, type, turnNumber))
-            }
         }
     }
 
@@ -197,7 +189,7 @@ class GameViewModel : ViewModel() {
                     if (cardInHand != null && player.currentMana >= cardInHand.manaCost && player.board[slotIndex] == null) {
                         GameEngine.playCard(this, cardInHand, slotIndex)
                         SoundManager.playSoundByName(null, "card_place")
-                        logHistory.add(LogEntry("Card played: ${cardInHand.name}", LogType.PLAYER, turnNumber))
+                        logHistory.add(LogEntry("battle_card_played|${cardInHand.name}", LogType.PLAYER, turnNumber))
                         isPlayed = true
                     }
                 }
@@ -231,9 +223,9 @@ class GameViewModel : ViewModel() {
                             }
                             GameEngine.calculateCombat(this, aCard, tCard)
                             
-                            logHistory.add(LogEntry("${aCard.name} attacks ${tCard.name}", LogType.PLAYER, turnNumber))
+                            logHistory.add(LogEntry("battle_card_attack|${aCard.name}|${tCard.name}", LogType.PLAYER, turnNumber))
                             if (aCard.groups.contains(GroupTag.MELEE)) {
-                                logHistory.add(LogEntry("${tCard.name} retaliates against ${aCard.name}", LogType.OPPONENT, turnNumber))
+                                logHistory.add(LogEntry("battle_card_retaliate|${tCard.name}|${aCard.name}", LogType.OPPONENT, turnNumber))
                             }
                         }
                     }
@@ -329,7 +321,7 @@ class GameViewModel : ViewModel() {
                         val aCard = player.board.filterNotNull().find { it.id == attacker.id }
                         if (aCard != null) {
                             GameEngine.attackHero(this, aCard)
-                            logHistory.add(LogEntry("${aCard.name} attacks Hero for ${aCard.currentAttack}", LogType.PLAYER, turnNumber))
+                            logHistory.add(LogEntry("battle_attack_hero|${aCard.currentAttack}", LogType.PLAYER, turnNumber))
                         }
                     }
                 }
@@ -356,8 +348,8 @@ class GameViewModel : ViewModel() {
         _gameState.update { currentState ->
             currentState?.deepCopy()?.apply {
                 if (currentTurn == Turn.PLAYER) {
+                    logHistory.add(LogEntry("battle_round_end|${turnNumber}", LogType.SYSTEM, turnNumber))
                     GameEngine.endTurn(this)
-                    logHistory.add(LogEntry("Round $turnNumber End", LogType.SYSTEM, turnNumber))
                 }
             } ?: currentState
         }
@@ -386,7 +378,7 @@ class GameViewModel : ViewModel() {
                     val emptySlot = actor.board.indexOfFirst { it == null }
                     if (emptySlot != -1) {
                         GameEngine.playCard(this, card, emptySlot)
-                        logHistory.add(LogEntry("Card played: ${card.name}", if (isOpponent) LogType.OPPONENT else LogType.PLAYER, turnNumber))
+                        logHistory.add(LogEntry("battle_card_played|${card.name}", if (isOpponent) LogType.OPPONENT else LogType.PLAYER, turnNumber))
                     }
                 }
             }
@@ -452,9 +444,9 @@ class GameViewModel : ViewModel() {
                                     }
                                     GameEngine.calculateCombat(this, nextAttacker, nextTarget)
                                     
-                                    logHistory.add(LogEntry("${nextAttacker.name} attacks ${nextTarget.name}", if (isOpponent) LogType.OPPONENT else LogType.PLAYER, turnNumber))
+                                    logHistory.add(LogEntry("battle_card_attack|${nextAttacker.name}|${nextTarget.name}", if (isOpponent) LogType.OPPONENT else LogType.PLAYER, turnNumber))
                                     if (nextAttacker.groups.contains(GroupTag.MELEE)) {
-                                        logHistory.add(LogEntry("${nextTarget.name} retaliates against ${nextAttacker.name}", if (isOpponent) LogType.PLAYER else LogType.OPPONENT, turnNumber))
+                                        logHistory.add(LogEntry("battle_card_retaliate|${nextTarget.name}|${nextAttacker.name}", if (isOpponent) LogType.PLAYER else LogType.OPPONENT, turnNumber))
                                     }
                                 }
                             } else {
@@ -466,7 +458,7 @@ class GameViewModel : ViewModel() {
                                     opponentHeroTakingDamage = true
                                 }
                                 GameEngine.attackHero(this, nextAttacker)
-                                logHistory.add(LogEntry("${nextAttacker.name} attacks Hero for ${nextAttacker.currentAttack}", if (isOpponent) LogType.OPPONENT else LogType.PLAYER, turnNumber))
+                                logHistory.add(LogEntry("battle_attack_hero|${nextAttacker.currentAttack}", if (isOpponent) LogType.OPPONENT else LogType.PLAYER, turnNumber))
                             }
                         }
                     }
@@ -535,7 +527,7 @@ class GameViewModel : ViewModel() {
             currentState?.deepCopy()?.apply {
                 GameEngine.endTurn(this)
                 if (currentTurn == Turn.PLAYER) {
-                    logHistory.add(LogEntry("Round $turnNumber Start", LogType.SYSTEM, turnNumber))
+                    logHistory.add(LogEntry("battle_round_start|${turnNumber}", LogType.SYSTEM, turnNumber))
                 }
             }
         }
