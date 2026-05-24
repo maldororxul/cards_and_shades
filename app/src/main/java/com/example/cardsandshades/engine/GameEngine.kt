@@ -185,7 +185,9 @@ object GameEngine {
         target.activeEffects.forEach { damageToTarget = it.modifyIncomingDamage(target, damageToTarget) }
 
         // 2. РАСЧЕТ ОТВЕТНОГО УРОНА (Только если атакующий - MELEE)
-        var counterDamageToAttacker = if (attacker.groups.contains(GroupTag.MELEE)) target.currentAttack else 0
+        // Проверяем группы атакующего на наличие MELEE
+        val isMelee = attacker.groups.contains(GroupTag.MELEE)
+        var counterDamageToAttacker = if (isMelee) target.currentAttack else 0
         attacker.activeEffects.forEach { counterDamageToAttacker = it.modifyCounterDamage(attacker, target, counterDamageToAttacker) }
 
         // 3. НАНЕСЕНИЕ УРОНА

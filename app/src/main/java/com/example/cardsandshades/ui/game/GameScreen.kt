@@ -15,6 +15,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -83,6 +85,9 @@ private fun GameScreenContent(
     var playerHeroOffset by remember { mutableStateOf(Offset.Zero) }
     var enemyHeroOffset by remember { mutableStateOf(Offset.Zero) }
 
+    // ТРЕКИНГ ПАЛЬЦА ДЛЯ СТРЕЛКИ
+    var fingerOffset by remember { mutableStateOf(Offset.Zero) }
+
     val battleStartMsg = stringResource(R.string.battle_start_msg)
     var battleLog by remember { mutableStateOf(battleStartMsg) }
     
@@ -117,7 +122,21 @@ private fun GameScreenContent(
     val selectedHint = stringResource(R.string.battle_selected_hint)
 
     com.example.cardsandshades.ui.components.DragAndDropContainer(modifier = modifier) {
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(
+            modifier = Modifier.fillMaxSize()
+                .pointerInput(isDrawingArrow) {
+                    if (isDrawingArrow) {
+                        detectDragGestures(
+                            onDragStart = { offset -> fingerOffset = offset },
+                            onDrag = { change, _ ->
+                                fingerOffset = change.position
+                            },
+                            onDragEnd = { },
+                            onDragCancel = { }
+                        )
+                    }
+                }
+        ) {
             Column(
                 modifier = Modifier.fillMaxSize().padding(12.dp),
                 verticalArrangement = Arrangement.SpaceBetween
@@ -137,6 +156,7 @@ private fun GameScreenContent(
                                 battleLog = attackHeroMsg.format(attacker.currentAttack)
                                 selectedCardForAttack = null
                                 isDrawingArrow = false
+                                fingerOffset = Offset.Zero
                             } else {
                                 battleLog = attackHeroFailMsg
                             }
@@ -155,6 +175,7 @@ private fun GameScreenContent(
                             battleLog = cardAttackMsg.format(getStringResourceByName(context, attacker.name), getStringResourceByName(context, enemyCard.name))
                             selectedCardForAttack = null
                             isDrawingArrow = false
+                            fingerOffset = Offset.Zero
                         } else {
                             // Клик по карте врага без выделенного атакующего - инспекция
                             val allBoardCards = (state.opponent.board.filterNotNull() + state.player.board.filterNotNull())
@@ -186,12 +207,14 @@ private fun GameScreenContent(
                             if (selectedCardForAttack?.id == card.id) {
                                 selectedCardForAttack = null
                                 isDrawingArrow = false
+                                fingerOffset = Offset.Zero
                             } else {
                                 val canAttack = com.example.cardsandshades.engine.GameEngine.canAttackHero(state, card)
                                 if (canAttack) {
                                     selectedCardForAttack = card
                                     startArrowOffset = offset
                                     isDrawingArrow = true
+                                    fingerOffset = offset // Начальная позиция
                                     val cardName = getStringResourceByName(context, card.name)
                                     battleLog = selectedHint.format(cardName)
                                 } else {
@@ -235,10 +258,21 @@ private fun GameScreenContent(
                 )
             }
 
+            // КНОПКА СКОРОСТИ - Как оверлей в углу
+            Box(modifier = Modifier.fillMaxSize().padding(16.dp), contentAlignment = Alignment.TopEnd) {
+                GameButton(
+                    text = "x${viewModel.animationSpeed}",
+                    onClick = { viewModel.cycleAnimationSpeed() },
+                    containerColor = Color.DarkGray.copy(alpha = 0.8f),
+                    modifier = Modifier.size(55.dp).clip(CircleShape),
+                    fontSize = 14.sp
+                )
+            }
+
             RenderAttackArrows(
                 isPlayerDrawing = (isDrawingArrow && selectedCardForAttack != null),
                 playerStart = startArrowOffset,
-                playerTargetOffset = null,
+                playerTargetOffset = fingerOffset,
                 enemyHeroOffset = enemyHeroOffset,
                 isEnemyBoardEmpty = state.opponent.board.all { it == null },
                 aiAttackerId = viewModel.opponentAttackerId,
