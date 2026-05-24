@@ -8,7 +8,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -125,23 +124,9 @@ private fun PacksTab(gold: Int, crystals: Int, context: android.content.Context)
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     itemsIndexed(openedCards) { index, card ->
-                        Box {
-                            val isVisible = remember { mutableStateOf(false) }
-                            LaunchedEffect(card.id) {
-                                isVisible.value = true
-                            }
-                            androidx.compose.animation.AnimatedVisibility(
-                                visible = isVisible.value,
-                                enter = scaleIn(initialScale = 0.5f, animationSpec = tween(400)) + fadeIn()
-                            ) {
-                                CardComponent(
-                                    card = card,
-                                    onClick = {
-                                        inspectedCardsList = openedCards
-                                        initialInspectedIndex = index
-                                    }
-                                )
-                            }
+                        CardRevealItem(card) {
+                            inspectedCardsList = openedCards
+                            initialInspectedIndex = index
                         }
                     }
                 }
@@ -203,9 +188,9 @@ private fun PacksTab(gold: Int, crystals: Int, context: android.content.Context)
 
     if (highlightedCard != null) {
         val rarityColor = when(highlightedCard!!.rarity) {
-            Rarity.MYTHIC -> Color(0xFFFF3D00)
-            Rarity.LEGENDARY -> Color(0xFFFDD835)
-            Rarity.EPIC -> Color(0xFF8E24AA)
+            Rarity.MYTHIC -> Color.Red
+            Rarity.LEGENDARY -> Color.Yellow
+            Rarity.EPIC -> Color(0xFF9C27B0)
             else -> Color.White
         }
         
@@ -240,6 +225,20 @@ private fun PacksTab(gold: Int, crystals: Int, context: android.content.Context)
             initialIndex = initialInspectedIndex,
             onDismiss = { inspectedCardsList = emptyList() }
         )
+    }
+}
+
+@Composable
+private fun CardRevealItem(card: CardModel, onClick: () -> Unit) {
+    var isVisible by remember { mutableStateOf(false) }
+    LaunchedEffect(card.id) {
+        isVisible = true
+    }
+    androidx.compose.animation.AnimatedVisibility(
+        visible = isVisible,
+        enter = scaleIn(initialScale = 0.5f, animationSpec = tween(400)) + fadeIn()
+    ) {
+        CardComponent(card = card, onClick = onClick)
     }
 }
 
@@ -312,7 +311,7 @@ private fun FusionAccordion(recipe: FusionRecipe, context: android.content.Conte
                                 isPreview = true, 
                                 modifier = Modifier.size(60.dp, 90.dp),
                                 onClick = { 
-                                    // Для рецептов свайп не нужен, просто смотрим одну карту
+                                    inspectedCard = CardCatalog.createCardInstance(input.key)
                                 }
                             )
                             GameText("${hasCount}/${input.count}", fontSize = 10.sp, color = if (hasCount >= input.count) Color.Green else Color.Red)
@@ -333,7 +332,7 @@ private fun FusionAccordion(recipe: FusionRecipe, context: android.content.Conte
                         isPreview = true, 
                         modifier = Modifier.size(100.dp, 150.dp),
                         onClick = { 
-                            // Смотрим одну карту
+                            inspectedCard = CardCatalog.createCardInstance(recipe.outputKey)
                         }
                     )
                 }
@@ -363,7 +362,9 @@ private fun FusionAccordion(recipe: FusionRecipe, context: android.content.Conte
         }
     }
 
-    // В FusionTab используем одиночный CardInspectionDialog (со списком из 1 карты)
+    if (inspectedCard != null) {
+        CardInspectionDialog(cards = listOf(inspectedCard!!), onDismiss = { inspectedCard = null })
+    }
 }
 
 @Composable
@@ -397,11 +398,12 @@ private fun BoosterItem(booster: BoosterModel, canAfford: Boolean, onBuy: () -> 
         
         // ШАНСЫ ВЫПАДЕНИЯ
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-            ChanceInfo("C", Color.Gray, booster.chances.common)
-            ChanceInfo("R", Color(0xFF1E88E5), booster.chances.rare)
-            ChanceInfo("E", Color(0xFF8E24AA), booster.chances.epic)
-            ChanceInfo("L", Color(0xFFFDD835), booster.chances.legendary)
-            ChanceInfo("M", Color(0xFFFF3D00), 1) // Mythic chance
+            ChanceInfo("C", Color.White, booster.chances.common)
+            ChanceInfo("U", Color.Green, 25)
+            ChanceInfo("R", Color(0xFF2196F3), booster.chances.rare)
+            ChanceInfo("E", Color(0xFF9C27B0), booster.chances.epic)
+            ChanceInfo("L", Color.Yellow, booster.chances.legendary)
+            ChanceInfo("M", Color.Red, 1) // Mythic chance
         }
     }
 }
@@ -439,6 +441,7 @@ private fun generatePack(booster: BoosterModel): List<CardModel> {
             roll <= booster.chances.legendary * 10 -> Rarity.LEGENDARY
             roll <= (booster.chances.legendary + booster.chances.epic) * 10 -> Rarity.EPIC
             roll <= (booster.chances.legendary + booster.chances.epic + booster.chances.rare) * 10 -> Rarity.RARE
+            roll <= (booster.chances.legendary + booster.chances.epic + booster.chances.rare + 25) * 10 -> Rarity.UNCOMMON
             else -> Rarity.COMMON
         }
         val card = CardCatalog.generateRandomCardByRarityOnly(rarity) ?: CardCatalog.generateRandomCardByRarityOnly(Rarity.COMMON)!!

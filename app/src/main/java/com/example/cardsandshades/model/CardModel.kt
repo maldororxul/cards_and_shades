@@ -7,7 +7,14 @@ enum class EffectTag {
     RUSH, TAUNT, RANGED, SPLASH, LIFESTEAL, BUFF,
     BLEED, POISON, BURN,
     IMMUNE_BLEED, IMMUNE_POISON, IMMUNE_BURN,
-    DEBUFF_ATTACK
+    DEBUFF_ATTACK,
+    FREEZE, STUN, CRIT, RETRIBUTION, HEAL, MASS_HEAL,
+    AUTO_ATTACK_PLAYED, NEIGHBOR_BUFF_ATTACK, NEIGHBOR_BUFF_HEALTH,
+    IMMUNE_FREEZE, IMMUNE_STUN, IMMUNE_CRIT
+}
+
+enum class GroupTag {
+    UNDEAD, DRAGON, ELEMENTAL, BEAST, ABSTRACTION, HUMAN, MECHANICAL
 }
 
 enum class Rarity { COMMON, UNCOMMON, RARE, EPIC, LEGENDARY, MYTHIC }
@@ -31,6 +38,9 @@ data class CardModel(
     var currentAttack: Int = baseAttack,
     var currentHealth: Int = baseHealth,
 
+    // ГРУППЫ КАРТЫ
+    private val groupTags: List<GroupTag>? = emptyList(),
+
     // Gson может записать сюда null при десериализации старого кэша, если поле отсутствовало
     private val effectTags: List<EffectTag>? = emptyList(),
     private val activeBuffs: List<BuffModel>? = emptyList(),
@@ -40,12 +50,21 @@ data class CardModel(
     var isAttacking: Boolean = false,
     var isTakingDamage: Boolean = false,
     var lastDamageTaken: Int = 0,
-    var isDying: Boolean = false
+    var isDying: Boolean = false,
+
+    // НОВЫЕ СОСТОЯНИЯ
+    var isFrozen: Boolean = false,
+    var isStunned: Boolean = false,
+    var critMultiplier: Float = 2.0f
 ) {
     val isDead: Boolean get() = currentHealth <= 0
 
     // ИСПРАВЛЕНИЕ: Безопасный публичный доступ к тегам
     val activeTags: List<EffectTag> get() = effectTags ?: emptyList()
+    val groups: List<GroupTag> get() = groupTags ?: emptyList()
+
+    // ИСПРАВЛЕНИЕ: Проверка нежити
+    val isUndead: Boolean get() = groups.contains(GroupTag.UNDEAD)
 
     // ИСПРАВЛЕНИЕ: Безопасный доступ к баффам (теперь они приватные и копируются при изменении)
     private var currentBuffs: List<BuffModel> = activeBuffs ?: emptyList()
@@ -84,6 +103,18 @@ data class CardModel(
                 EffectTag.IMMUNE_POISON -> ImmunePoisonEffect()
                 EffectTag.IMMUNE_BURN -> ImmuneBurnEffect()
                 EffectTag.DEBUFF_ATTACK -> DebuffAttackEffect()
+                EffectTag.FREEZE -> FreezeEffect()
+                EffectTag.STUN -> StunEffect()
+                EffectTag.CRIT -> CritEffect()
+                EffectTag.RETRIBUTION -> RetributionEffect()
+                EffectTag.HEAL -> HealEffect()
+                EffectTag.MASS_HEAL -> MassHealEffect()
+                EffectTag.AUTO_ATTACK_PLAYED -> AutoAttackPlayedEffect()
+                EffectTag.NEIGHBOR_BUFF_ATTACK -> NeighborBuffAttackEffect()
+                EffectTag.NEIGHBOR_BUFF_HEALTH -> NeighborBuffHealthEffect()
+                EffectTag.IMMUNE_FREEZE -> ImmuneFreezeEffect()
+                EffectTag.IMMUNE_STUN -> ImmuneStunEffect()
+                EffectTag.IMMUNE_CRIT -> ImmuneCritEffect()
             }
         }
 
@@ -107,5 +138,7 @@ data class CardModel(
         isDying = false
         lastDamageTaken = 0
         isSleeping = !activeTags.contains(EffectTag.RUSH)
+        isFrozen = false
+        isStunned = false
     }
 }

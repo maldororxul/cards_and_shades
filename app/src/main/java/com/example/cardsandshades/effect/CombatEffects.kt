@@ -174,3 +174,98 @@ class ImmuneBurnEffect : CardEffect {
     override val name = "effect_immune_burn"
     override val description = "effect_immune_burn_desc"
 }
+
+// ❄️ ЗАМОРОЗКА: Шанс 30% заморозить цель на 1 ход (не может атаковать)
+class FreezeEffect : CardEffect {
+    override val name = "effect_freeze"
+    override val description = "effect_freeze_desc"
+    override fun onAfterAttack(state: GameState, attacker: CardModel, target: CardModel) {
+        if ((1..100).random() <= 30 && !target.activeTags.contains(com.example.cardsandshades.model.EffectTag.IMMUNE_FREEZE)) {
+            target.isFrozen = true
+        }
+    }
+}
+
+// 💫 ОГЛУШЕНИЕ: Шанс 20% оглушить цель на 1 ход
+class StunEffect : CardEffect {
+    override val name = "effect_stun"
+    override val description = "effect_stun_desc"
+    override fun onAfterAttack(state: GameState, attacker: CardModel, target: CardModel) {
+        if ((1..100).random() <= 20 && !target.activeTags.contains(com.example.cardsandshades.model.EffectTag.IMMUNE_STUN)) {
+            target.isStunned = true
+        }
+    }
+}
+
+// 💥 КРИТ: Шанс 25% нанести двойной урон (или по мультипликатору)
+class CritEffect : CardEffect {
+    override val name = "effect_crit"
+    override val description = "effect_crit_desc"
+    override fun modifyOutgoingDamage(attacker: CardModel, target: CardModel, originalDamage: Int): Int {
+        if ((1..100).random() <= 25 && !target.activeTags.contains(com.example.cardsandshades.model.EffectTag.IMMUNE_CRIT)) {
+            return (originalDamage * attacker.critMultiplier).toInt()
+        }
+        return originalDamage
+    }
+}
+
+// ⚔️ ВОЗМЕЗДИЕ: Если атакуют соседа, эта карта наносит ответный урон атакующему
+class RetributionEffect : CardEffect {
+    override val name = "effect_retribution"
+    override val description = "effect_retribution_desc"
+}
+
+// 💚 ИСЦЕЛЕНИЕ: Лечит 2 ед. здоровья в начале хода
+class HealEffect : CardEffect {
+    override val name = "effect_heal"
+    override val description = "effect_heal_desc"
+    override fun onStartTurn(state: GameState, owner: PlayerModel, card: CardModel) {
+        if (!card.isUndead) {
+            card.currentHealth = (card.currentHealth + 2).coerceAtMost(card.baseHealth)
+        }
+    }
+}
+
+// 🌟 МАССОВОЕ ИСЦЕЛЕНИЕ: Лечит всех союзников на 1 при выходе
+class MassHealEffect : CardEffect {
+    override val name = "effect_mass_heal"
+    override val description = "effect_mass_heal_desc"
+    override fun onSummon(state: GameState, owner: PlayerModel, card: CardModel) {
+        owner.board.filterNotNull().forEach { ally ->
+            if (!ally.isUndead) {
+                ally.currentHealth = (ally.currentHealth + 1).coerceAtMost(ally.baseHealth)
+            }
+        }
+    }
+}
+
+// 🏹 АВТО-АТАКА: Атакует карту, которую враг ставит напротив или рядом
+class AutoAttackPlayedEffect : CardEffect {
+    override val name = "effect_auto_attack"
+    override val description = "effect_auto_attack_desc"
+}
+
+// ➕ БОНУС СОСЕДЯМ (АТАКА)
+class NeighborBuffAttackEffect : CardEffect {
+    override val name = "effect_neighbor_atk"
+    override val description = "effect_neighbor_atk_desc"
+}
+
+// ➕ БОНУС СОСЕДЯМ (ЗДОРОВЬЕ)
+class NeighborBuffHealthEffect : CardEffect {
+    override val name = "effect_neighbor_hp"
+    override val description = "effect_neighbor_hp_desc"
+}
+
+class ImmuneFreezeEffect : CardEffect {
+    override val name = "effect_immune_freeze"
+    override val description = "effect_immune_freeze_desc"
+}
+class ImmuneStunEffect : CardEffect {
+    override val name = "effect_immune_stun"
+    override val description = "effect_immune_stun_desc"
+}
+class ImmuneCritEffect : CardEffect {
+    override val name = "effect_immune_crit"
+    override val description = "effect_immune_crit_desc"
+}

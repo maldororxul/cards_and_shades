@@ -26,6 +26,7 @@ object CardCatalog {
                 baseHealth = cardMap["baseHealth"] as Int,
                 rarity = Rarity.valueOf(cardMap["rarity"] as String),
                 effectTags = (cardMap["effectTags"] as? List<String>)?.map { EffectTag.valueOf(it) } ?: emptyList(),
+                groupTags = (cardMap["groupTags"] as? List<String>)?.map { com.example.cardsandshades.model.GroupTag.valueOf(it) } ?: emptyList(),
                 canDropFromBooster = cardMap["canDropFromBooster"] as? Boolean ?: true,
                 canCraftFromDust = cardMap["canCraftFromDust"] as? Boolean ?: true
             )
@@ -35,13 +36,15 @@ object CardCatalog {
     fun createCardInstance(templateName: String): CardModel? {
         val template = templates.find { it.name == templateName } ?: return null
         return CardModel(
-            id = UUID.randomUUID().toString(),
+            id = java.util.UUID.randomUUID().toString(),
             name = template.name,
             manaCost = template.manaCost,
             baseAttack = template.baseAttack,
             baseHealth = template.baseHealth,
             rarity = template.rarity,
-            effectTags = template.effectTags
+            effectTags = template.effectTags,
+            groupTags = template.groupTags,
+            critMultiplier = if (template.effectTags.contains(EffectTag.CRIT)) 2.0f else 1.0f
         )
     }
 
@@ -114,6 +117,7 @@ data class CardTemplate(
     val baseHealth: Int,
     val rarity: Rarity,
     val effectTags: List<EffectTag> = emptyList(),
+    val groupTags: List<com.example.cardsandshades.model.GroupTag> = emptyList(),
     val canDropFromBooster: Boolean = true,
     val canCraftFromDust: Boolean = true
 )

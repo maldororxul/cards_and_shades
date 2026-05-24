@@ -10,8 +10,14 @@ interface CardEffect {
     // Срабатывает в момент призыва карты на стол
     fun onSummon(state: GameState, owner: com.example.cardsandshades.model.PlayerModel, card: CardModel) {}
 
+    // Срабатывает в начале хода владельца
+    fun onStartTurn(state: GameState, owner: com.example.cardsandshades.model.PlayerModel, card: CardModel) {}
+
     // Модифицирует входящий урон по этой карте (например, щиты)
     fun modifyIncomingDamage(card: CardModel, amount: Int): Int = amount
+
+    // Модифицирует исходящий урон от этой карты (например, криты)
+    fun modifyOutgoingDamage(attacker: CardModel, target: CardModel, amount: Int): Int = amount
 
     // Модифицирует ответный урон, который наносит цель (для Стрелков)
     fun modifyCounterDamage(attacker: CardModel, target: CardModel, originalCounterDamage: Int): Int = originalCounterDamage

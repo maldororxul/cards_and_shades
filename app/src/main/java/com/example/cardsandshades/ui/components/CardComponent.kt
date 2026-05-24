@@ -111,6 +111,21 @@ private fun CardInspectionContent(
                         Rarity.MYTHIC -> stringResource(R.string.rarity_mythic)
                     }
                     GameText(rarityLabel, color = rarityColor, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    
+                    // ГРУППЫ
+                    Row(modifier = Modifier.padding(top = 4.dp)) {
+                        card.groups.forEach { group ->
+                            Box(
+                                modifier = Modifier
+                                    .padding(end = 6.dp)
+                                    .clip(RoundedCornerShape(4.dp))
+                                    .background(Color.White.copy(alpha = 0.1f))
+                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                            ) {
+                                GameText(group.name, fontSize = 10.sp, color = Color.LightGray)
+                            }
+                        }
+                    }
                 }
 
                 Box(
@@ -289,6 +304,17 @@ fun CardComponent(
                 Box(modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(8.dp))) {
                     CardVisual(card = card)
                 }
+                
+                // ЭФФЕКТ ЗАМОРОЗКИ
+                if (card.isFrozen) {
+                    Box(modifier = Modifier.fillMaxSize().background(Color(0xFF03A9F4).copy(alpha = 0.4f)))
+                }
+                
+                // ЭФФЕКТ ОГЛУШЕНИЯ
+                if (card.isStunned) {
+                    Box(modifier = Modifier.fillMaxSize().background(Color(0xFFFFEB3B).copy(alpha = 0.3f)))
+                }
+
                 Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.2f)))
 
                 CardContent(card = card, borderColor = finalBorderColor)
@@ -346,6 +372,16 @@ private fun BoxScope.CardContent(card: CardModel, borderColor: Color) {
                 fontSize = 9.sp,
                 fontWeight = FontWeight.Light,
                 modifier = Modifier.padding(top = 4.dp)
+            )
+        }
+
+        if (card.groups.isNotEmpty()) {
+            GameText(
+                text = card.groups.first().name,
+                color = Color.Cyan,
+                fontSize = 8.sp,
+                fontWeight = FontWeight.Black,
+                modifier = Modifier.padding(top = 2.dp)
             )
         }
     }
