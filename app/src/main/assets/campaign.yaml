@@ -48,7 +48,7 @@ chapters:
       - id: 7
         name: "level_7"
         opponentName: "opponent_shadow_lord"
-        opponentMaxHp: 35
+        opponentMaxHp: 30
         opponentStartMana: 2
         difficultyDescription: "level_7_desc"
         opponentDeckPreset: ["card_shadow_king", "card_shadow_reaper", "card_vampire_aristocrat"]

@@ -3,12 +3,12 @@ cards:
   - name: "card_shadow_recruit"
     manaCost: 1
     baseAttack: 1
-    baseHealth: 1
+    baseHealth: 2
     rarity: "COMMON"
   - name: "card_wild_hyena"
     manaCost: 1
     baseAttack: 2
-    baseHealth: 1
+    baseHealth: 2
     rarity: "COMMON"
   - name: "card_rotting_zombie"
     manaCost: 1

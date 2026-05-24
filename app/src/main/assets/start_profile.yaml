@@ -1,0 +1,30 @@
+starting_resources:
+  gold: 50
+  crystals: 10
+  dust_common: 0
+  dust_rare: 0
+  dust_epic: 0
+  dust_legendary: 0
+  dust_mythic: 0
+
+starter_deck:
+  - "card_shadow_recruit"
+  - "card_shadow_recruit"
+  - "card_shadow_recruit"
+  - "card_shadow_recruit"
+  - "card_wild_hyena"
+  - "card_wild_hyena"
+  - "card_town_guard"
+  - "card_town_guard"
+  - "card_gnome_shieldbearer"
+  - "card_gnome_shieldbearer"
+  - "card_mage_apprentice"
+  - "card_mage_apprentice"
+  - "card_stone_beast"
+  - "card_stone_beast"
+  - "card_cave_yeti"
+  - "card_cave_yeti"
+  - "card_hungry_crocolisk"
+  - "card_hungry_crocolisk"
+  - "card_siege_giant"
+  - "card_siege_giant"

@@ -3,15 +3,18 @@ package com.example.cardsandshades.model
 import android.content.Context
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import com.example.cardsandshades.catalog.CardCatalog
 import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import org.yaml.snakeyaml.Yaml
+import java.util.UUID
 
 object UserProfile {
-    val gold = MutableStateFlow(500)
-    val crystals = MutableStateFlow(0)
+    val gold = MutableStateFlow(50)
+    val crystals = MutableStateFlow(10)
     
     // Используем SnapshotStateList для гарантированной реактивности в Compose
     val collection: SnapshotStateList<CardModel> = mutableStateListOf()
@@ -42,7 +45,7 @@ object UserProfile {
             val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
             if (prefs.contains("gold")) {
-                gold.value = prefs.getInt("gold", 500)
+                gold.value = prefs.getInt("gold", 50)
                 crystals.value = prefs.getInt("crystals", 0)
                 maxUnlockedLevel.value = prefs.getInt("maxUnlockedLevel", 1)
                 
@@ -108,36 +111,39 @@ object UserProfile {
                     }
                 }
             } else {
-                val startCollection = mutableListOf<CardModel>()
-                repeat(100) {
-                    com.example.cardsandshades.catalog.CardCatalog.generateTestDeck().firstOrNull()?.let {
-                        startCollection.add(it)
-                    }
-                }
-                
-                com.example.cardsandshades.catalog.CardCatalog.createCardInstance("card_vampire_aristocrat")?.let { startCollection.add(it) }
-                com.example.cardsandshades.catalog.CardCatalog.createCardInstance("card_vampire_aristocrat")?.let { startCollection.add(it) }
-                com.example.cardsandshades.catalog.CardCatalog.createCardInstance("card_spirit_mentor")?.let { startCollection.add(it) }
-                com.example.cardsandshades.catalog.CardCatalog.createCardInstance("card_shadow_reaper")?.let { startCollection.add(it) }
-
-                val validStartDeck = mutableListOf<CardModel>()
-                for (card in startCollection) {
-                    if (validStartDeck.size < 20) {
-                        val countInDeck = validStartDeck.count { it.name == card.name }
-                        if (countInDeck < 2) {
-                            validStartDeck.add(card.copy(id = java.util.UUID.randomUUID().toString()))
-                        }
-                    } else break
-                }
-
-                launch(Dispatchers.Main) {
-                    collection.clear()
-                    collection.addAll(startCollection)
-
-                    selectedDeck.clear()
-                    selectedDeck.addAll(validStartDeck)
+                // ПЕРВЫЙ ЗАПУСК: Загрузка из start_profile.yaml
+                try {
+                    val yaml = Yaml()
+                    val inputStream = context.assets.open("start_profile.yaml")
+                    val data: Map<String, Any> = yaml.load(inputStream)
                     
-                    save()
+                    @Suppress("UNCHECKED_CAST")
+                    val resources = data["starting_resources"] as Map<String, Int>
+                    gold.value = resources["gold"] ?: 50
+                    crystals.value = resources["crystals"] ?: 10
+                    dustCommon.value = resources["dust_common"] ?: 0
+                    dustRare.value = resources["dust_rare"] ?: 0
+                    dustEpic.value = resources["dust_epic"] ?: 0
+                    dustLegendary.value = resources["dust_legendary"] ?: 0
+                    dustMythic.value = resources["dust_mythic"] ?: 0
+
+                    @Suppress("UNCHECKED_CAST")
+                    val starterDeckKeys = data["starter_deck"] as List<String>
+                    val startCollection = starterDeckKeys.mapNotNull { key ->
+                        CardCatalog.createCardInstance(key)
+                    }
+
+                    launch(Dispatchers.Main) {
+                        collection.clear()
+                        collection.addAll(startCollection)
+
+                        selectedDeck.clear()
+                        selectedDeck.addAll(startCollection.map { it.copy(id = UUID.randomUUID().toString()) })
+                        
+                        save(context)
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
                 }
             }
         }
