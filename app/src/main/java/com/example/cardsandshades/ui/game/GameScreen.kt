@@ -19,7 +19,6 @@ import androidx.compose.ui.text.style.TextAlign
 import com.example.cardsandshades.model.CardModel
 import com.example.cardsandshades.model.Turn
 import com.example.cardsandshades.model.UserProfile
-import com.example.cardsandshades.ui.components.DropTarget
 import com.example.cardsandshades.ui.components.CardInspectionDialog
 import com.example.cardsandshades.ui.components.GameText
 import com.example.cardsandshades.ui.components.GameButton
@@ -126,7 +125,7 @@ private fun GameScreenContent(
                     onEnemyHeroPositioned = { enemyHeroOffset = it },
                     onEnemyHeroClick = {
                         selectedCardForAttack?.let { attacker ->
-                            if (state.opponent.board.isEmpty()) {
+                            if (state.opponent.board.all { it == null }) {
                                 viewModel.attackEnemyHero(attacker)
                                 battleLog = attackHeroMsg.format(attacker.currentAttack)
                                 selectedCardForAttack = null
@@ -140,7 +139,7 @@ private fun GameScreenContent(
 
                 val cardAttackMsg = stringResource(R.string.battle_card_attack)
                 EnemyBoardZone(
-                    boardCards = state.opponent.board,
+                    boardSlots = state.opponent.board,
                     onCardPositioned = { id, offset -> enemyCardsOffsets[id] = offset },
                     onCardClick = { enemyCard ->
                         if (selectedCardForAttack != null) {
@@ -157,41 +156,37 @@ private fun GameScreenContent(
 
                 val cardPlayedMsg = stringResource(R.string.battle_card_played)
                 val playFailMsg = stringResource(R.string.battle_play_fail)
-                DropTarget(
-                    modifier = Modifier.fillMaxWidth().height(150.dp),
-                    onCardDropped = { droppedCard ->
-                        val success = viewModel.playCard(droppedCard)
-                        battleLog = if (success) cardPlayedMsg.format(getStringResourceByName(context, droppedCard.name))
-                        else playFailMsg
-                    }
-                ) { isHovered ->
-                    PlayerBoardZone(
-                        boardCards = state.player.board,
-                        selectedCard = selectedCardForAttack,
-                        isHovered = isHovered,
-                        onCardPositioned = { id, offset ->
-                            playerCardsOffsets[id] = offset
-                            if (selectedCardForAttack?.id == id) startArrowOffset = offset
-                        },
-                        onCardClick = { card, offset ->
-                            if (state.currentTurn == Turn.PLAYER && !state.isAnimating) {
-                                if (selectedCardForAttack?.id == card.id) {
-                                    selectedCardForAttack = null
-                                    isDrawingArrow = false
-                                } else {
-                                    val canAttack = com.example.cardsandshades.engine.GameEngine.canAttackHero(state, card)
-                                    if (canAttack) {
-                                        selectedCardForAttack = card
-                                        startArrowOffset = offset
-                                        isDrawingArrow = true
-                                        val cardName = getStringResourceByName(context, card.name)
-                                        battleLog = selectedHint.format(cardName)
-                                    }
+                
+                PlayerBoardZone(
+                    boardSlots = state.player.board,
+                    selectedCard = selectedCardForAttack,
+                    onCardPositioned = { id, offset ->
+                        playerCardsOffsets[id] = offset
+                        if (selectedCardForAttack?.id == id) startArrowOffset = offset
+                    },
+                    onCardClick = { card, offset ->
+                        if (state.currentTurn == Turn.PLAYER && !state.isAnimating) {
+                            if (selectedCardForAttack?.id == card.id) {
+                                selectedCardForAttack = null
+                                isDrawingArrow = false
+                            } else {
+                                val canAttack = com.example.cardsandshades.engine.GameEngine.canAttackHero(state, card)
+                                if (canAttack) {
+                                    selectedCardForAttack = card
+                                    startArrowOffset = offset
+                                    isDrawingArrow = true
+                                    val cardName = getStringResourceByName(context, card.name)
+                                    battleLog = selectedHint.format(cardName)
                                 }
                             }
                         }
-                    )
-                }
+                    },
+                    onCardDroppedInSlot = { droppedCard, slotIndex ->
+                        val success = viewModel.playCard(droppedCard, slotIndex)
+                        battleLog = if (success) cardPlayedMsg.format(getStringResourceByName(context, droppedCard.name))
+                        else playFailMsg
+                    }
+                )
 
                 PlayerControlsZone(
                     player = state.player,
@@ -206,9 +201,9 @@ private fun GameScreenContent(
             RenderAttackArrows(
                 isPlayerDrawing = (isDrawingArrow && selectedCardForAttack != null),
                 playerStart = startArrowOffset,
-                playerTargetOffset = state.opponent.board.firstOrNull()?.id?.let { enemyCardsOffsets[it] },
+                playerTargetOffset = state.opponent.board.filterNotNull().firstOrNull()?.id?.let { enemyCardsOffsets[it] },
                 enemyHeroOffset = enemyHeroOffset,
-                isEnemyBoardEmpty = state.opponent.board.isEmpty(),
+                isEnemyBoardEmpty = state.opponent.board.all { it == null },
                 aiAttackerId = viewModel.opponentAttackerId,
                 aiTargetId = viewModel.opponentTargetId,
                 isAiTargetingHero = viewModel.isOpponentTargetingHero,

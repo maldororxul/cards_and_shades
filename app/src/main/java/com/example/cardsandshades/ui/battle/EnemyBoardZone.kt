@@ -3,8 +3,6 @@ package com.example.cardsandshades.ui.battle
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -15,41 +13,65 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.res.stringResource
-import com.example.cardsandshades.R
 import com.example.cardsandshades.model.CardModel
 import com.example.cardsandshades.ui.components.CardComponent
 import com.example.cardsandshades.ui.components.GameText
 
 @Composable
 fun EnemyBoardZone(
-    boardCards: List<CardModel>,
+    boardSlots: Array<CardModel?>,
     onCardPositioned: (String, Offset) -> Unit,
     onCardClick: (CardModel) -> Unit
 ) {
-    Box(
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(200.dp) // Increased height to match player board logic
-            .border(2.dp, Color(0xFF3A2323).copy(alpha = 0.3f), RoundedCornerShape(12.dp))
-            .background(Color.Black.copy(alpha = 0.1f)),
-        contentAlignment = Alignment.Center
+            .height(180.dp)
+            .padding(horizontal = 8.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        if (boardCards.isEmpty()) {
-            GameText(stringResource(R.string.enemy_board_empty), color = Color.DarkGray, fontSize = 12.sp)
-        } else {
-            LazyRow(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
-                items(boardCards, key = { "opp_${it.id}" }) { enemyCard ->
-                    CardComponent(
-                        card = enemyCard,
+        boardSlots.forEachIndexed { index, card ->
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+                    .padding(4.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                if (card == null) {
+                    // ПУСТОЙ СЛОТ ОППОНЕНТА
+                    Box(
                         modifier = Modifier
-                            .size(105.dp, 150.dp) // FIXED: Standard size, no stretching
-                            .padding(4.dp)
+                            .fillMaxSize()
+                            .border(
+                                width = 2.dp,
+                                color = Color.White.copy(alpha = 0.05f),
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                            .background(
+                                color = Color.Black.copy(alpha = 0.1f),
+                                shape = RoundedCornerShape(8.dp)
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        GameText(
+                            text = (index + 1).toString(),
+                            color = Color.DarkGray.copy(alpha = 0.5f),
+                            fontSize = 14.sp
+                        )
+                    }
+                } else {
+                    // КАРТА ОППОНЕНТА
+                    CardComponent(
+                        card = card,
+                        modifier = Modifier
+                            .fillMaxSize()
                             .onGloballyPositioned { coords ->
                                 val pos = coords.positionInWindow()
-                                onCardPositioned(enemyCard.id, Offset(pos.x + coords.size.width / 2, pos.y + coords.size.height / 2))
+                                onCardPositioned(card.id, Offset(pos.x + coords.size.width / 2, pos.y + coords.size.height / 2))
                             },
-                        onClick = { onCardClick(enemyCard) }
+                        onClick = { onCardClick(card) }
                     )
                 }
             }

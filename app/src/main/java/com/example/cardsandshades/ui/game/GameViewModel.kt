@@ -71,24 +71,20 @@ class GameViewModel : ViewModel() {
         SoundManager.playMusicByName(null, musicName)
 
         // PLAYER DECK LOGIC
-        // 1. Try to use selected deck, or fallback to full collection
         val sourceDeck = if (UserProfile.selectedDeck.isNotEmpty()) {
             UserProfile.selectedDeck.toList()
         } else {
             UserProfile.collection.toList()
         }
 
-        // 2. Shuffle and copy to ensure fresh instances
         val shuffledSource = sourceDeck.shuffled().map { 
             it.copy(id = java.util.UUID.randomUUID().toString()).apply { reset() } 
         }
 
-        // 3. Limit player deck size to match opponent's preset size (for progressive difficulty)
         val maxPlayerCards = level.opponentDeckPreset.size
         val playerDeck = shuffledSource.take(maxPlayerCards).toMutableList()
 
         // OPPONENT DECK LOGIC
-        // Use the preset directly
         val opponentDeck = level.opponentDeckPreset.map { cardName ->
             (CardCatalog.createCardInstance(cardName) ?: CardCatalog.createCardInstance("card_shadow_recruit")!!).apply { reset() }
         }.toMutableList()
@@ -99,7 +95,7 @@ class GameViewModel : ViewModel() {
             name = "player_name",
             deck = playerDeck,
             hand = mutableListOf(),
-            board = mutableListOf()
+            board = arrayOfNulls(5)
         )
 
         val opponent = PlayerModel(
@@ -108,7 +104,7 @@ class GameViewModel : ViewModel() {
             currentHp = level.opponentMaxHp,
             deck = opponentDeck,
             hand = mutableListOf(),
-            board = mutableListOf()
+            board = arrayOfNulls(5)
         )
 
         val initialState = GameState(
@@ -173,14 +169,14 @@ class GameViewModel : ViewModel() {
         currentLevel?.let { startNewGame(it) }
     }
 
-    fun playCard(card: CardModel): Boolean {
+    fun playCard(card: CardModel, slotIndex: Int): Boolean {
         var isPlayed = false
         _gameState.update { currentState ->
             currentState?.deepCopy()?.apply {
                 if (currentTurn == Turn.PLAYER) {
                     val cardInHand = player.hand.find { it.id == card.id }
-                    if (cardInHand != null && player.currentMana >= cardInHand.manaCost && player.board.size < 5) {
-                        GameEngine.playCard(this, cardInHand)
+                    if (cardInHand != null && player.currentMana >= cardInHand.manaCost && player.board[slotIndex] == null) {
+                        GameEngine.playCard(this, cardInHand, slotIndex)
                         SoundManager.playSoundByName(null, "card_place")
                         isPlayed = true
                     }
@@ -204,8 +200,8 @@ class GameViewModel : ViewModel() {
 
                 _gameState.update { currentState ->
                     currentState?.deepCopy()?.apply {
-                        val aCard = player.board.find { it.id == attacker.id }
-                        val tCard = opponent.board.find { it.id == target.id }
+                        val aCard = player.board.filterNotNull().find { it.id == attacker.id }
+                        val tCard = opponent.board.filterNotNull().find { it.id == target.id }
 
                         if (aCard != null && tCard != null) {
                             tCard.isTakingDamage = true
@@ -219,19 +215,19 @@ class GameViewModel : ViewModel() {
 
                 _gameState.update { currentState ->
                     currentState?.deepCopy()?.apply {
-                        player.board.forEach { card ->
+                        player.board.filterNotNull().forEach { card ->
                             card.isTakingDamage = false
                             if (card.currentHealth <= 0) card.isDying = true
                         }
-                        opponent.board.forEach { card ->
+                        opponent.board.filterNotNull().forEach { card ->
                             card.isTakingDamage = false
                             if (card.currentHealth <= 0) card.isDying = true
                         }
                     }
                 }
 
-                val hasDeaths = _gameState.value?.player?.board?.any { it.isDying } == true ||
-                        _gameState.value?.opponent?.board?.any { it.isDying } == true
+                val hasDeaths = _gameState.value?.player?.board?.filterNotNull()?.any { it.isDying } == true ||
+                        _gameState.value?.opponent?.board?.filterNotNull()?.any { it.isDying } == true
                 if (hasDeaths) {
                     SoundManager.playSoundByName(null, "card_death")
                     delay(400)
@@ -239,8 +235,12 @@ class GameViewModel : ViewModel() {
 
                 _gameState.update { currentState ->
                     currentState?.deepCopy()?.apply {
-                        player.board.removeAll { it.currentHealth <= 0 }
-                        opponent.board.removeAll { it.currentHealth <= 0 }
+                        for (i in player.board.indices) {
+                            if (player.board[i]?.currentHealth ?: 1 <= 0) player.board[i] = null
+                        }
+                        for (i in opponent.board.indices) {
+                            if (opponent.board[i]?.currentHealth ?: 1 <= 0) opponent.board[i] = null
+                        }
                         isAnimating = false
 
                         if (player.currentHp <= 0 || opponent.currentHp <= 0) {
@@ -258,8 +258,8 @@ class GameViewModel : ViewModel() {
     private fun updateCardAnimation(cardId: String, isAttacking: Boolean = false) {
         _gameState.update { currentState ->
             currentState?.let { s ->
-                val pBoard = s.player.board.map { if (it.id == cardId) it.copy(isAttacking = isAttacking) else it }.toMutableList()
-                val oBoard = s.opponent.board.map { if (it.id == cardId) it.copy(isAttacking = isAttacking) else it }.toMutableList()
+                val pBoard = s.player.board.map { if (it?.id == cardId) it.copy(isAttacking = isAttacking) else it }.toTypedArray()
+                val oBoard = s.opponent.board.map { if (it?.id == cardId) it.copy(isAttacking = isAttacking) else it }.toTypedArray()
                 s.copy(player = s.player.copy(board = pBoard), opponent = s.opponent.copy(board = oBoard))
             }
         }
@@ -284,7 +284,7 @@ class GameViewModel : ViewModel() {
 
                 _gameState.update { currentState ->
                     currentState?.deepCopy()?.apply {
-                        val aCard = player.board.find { it.id == attacker.id }
+                        val aCard = player.board.filterNotNull().find { it.id == attacker.id }
                         if (aCard != null) {
                             GameEngine.attackHero(this, aCard)
                         }
@@ -332,13 +332,17 @@ class GameViewModel : ViewModel() {
         delay(1000)
         if (!isActive) return@launch
 
-        // ФАЗА 1: Розыгрыш карт (Сначала самые дорогие для оптимизации маны)
+        // ФАЗА 1: Розыгрыш карт
         _gameState.update { currentState ->
             currentState?.deepCopy()?.apply {
                 val actor = if (isOpponent) opponent else player
                 val cardsInHand = actor.hand.sortedByDescending { it.manaCost }
                 for (card in cardsInHand) {
-                    GameEngine.playCard(this, card)
+                    // Ищем первый пустой слот
+                    val emptySlot = actor.board.indexOfFirst { it == null }
+                    if (emptySlot != -1) {
+                        GameEngine.playCard(this, card, emptySlot)
+                    }
                 }
             }
         }
@@ -350,18 +354,18 @@ class GameViewModel : ViewModel() {
         val state = _gameState.value
         if (state != null && !state.isGameOver) {
             val actor = if (isOpponent) state.opponent else state.player
-            val attackerCards = actor.board.toList()
+            val attackerCards = actor.board.filterNotNull().toList()
 
             for (attacker in attackerCards) {
                 if (!isActive) break
                 val currentGameState = _gameState.value ?: break
                 val currentActor = if (isOpponent) currentGameState.opponent else currentGameState.player
-                val activeAttacker = currentActor.board.find { it.id == attacker.id } ?: continue
+                val activeAttacker = currentActor.board.filterNotNull().find { it.id == attacker.id } ?: continue
 
                 if (activeAttacker.isSleeping || activeAttacker.hasAttackedThisTurn) continue
 
                 val defender = if (isOpponent) currentGameState.player else currentGameState.opponent
-                val defenderBoard = defender.board
+                val defenderBoard = defender.board.filterNotNull()
                 val validEnemyCards = defenderBoard.filter { enemyCard ->
                     GameEngine.canAttackTarget(currentGameState, activeAttacker, enemyCard)
                 }
@@ -391,10 +395,10 @@ class GameViewModel : ViewModel() {
                     currentState?.deepCopy()?.apply {
                         val cActor = if (isOpponent) opponent else player
                         val cDefender = if (isOpponent) player else opponent
-                        val nextAttacker = cActor.board.find { it.id == activeAttacker.id }
+                        val nextAttacker = cActor.board.filterNotNull().find { it.id == activeAttacker.id }
                         if (nextAttacker != null) {
                             if (!isOpponentTargetingHero) {
-                                val nextTarget = cDefender.board.find { it.id == opponentTargetId }
+                                val nextTarget = cDefender.board.filterNotNull().find { it.id == opponentTargetId }
                                 if (nextTarget != null) {
                                     nextTarget.isTakingDamage = true
                                     nextAttacker.isTakingDamage = true
@@ -421,11 +425,11 @@ class GameViewModel : ViewModel() {
 
                 _gameState.update { currentState ->
                     currentState?.deepCopy()?.apply {
-                        player.board.forEach { card ->
+                        player.board.filterNotNull().forEach { card ->
                             card.isTakingDamage = false
                             if (card.currentHealth <= 0) card.isDying = true
                         }
-                        opponent.board.forEach { card ->
+                        opponent.board.filterNotNull().forEach { card ->
                             card.isTakingDamage = false
                             if (card.currentHealth <= 0) card.isDying = true
                         }
@@ -436,8 +440,8 @@ class GameViewModel : ViewModel() {
                 opponentTargetId = null
                 isOpponentTargetingHero = false
 
-                val hasDeaths = _gameState.value?.player?.board?.any { it.isDying } == true ||
-                        _gameState.value?.opponent?.board?.any { it.isDying } == true
+                val hasDeaths = _gameState.value?.player?.board?.filterNotNull()?.any { it.isDying } == true ||
+                        _gameState.value?.opponent?.board?.filterNotNull()?.any { it.isDying } == true
                 if (hasDeaths) {
                     SoundManager.playSoundByName(null, "card_death")
                     delay(400)
@@ -445,8 +449,12 @@ class GameViewModel : ViewModel() {
 
                 _gameState.update { currentState ->
                     currentState?.deepCopy()?.apply {
-                        player.board.removeAll { it.currentHealth <= 0 }
-                        opponent.board.removeAll { it.currentHealth <= 0 }
+                        for (i in player.board.indices) {
+                            if (player.board[i]?.currentHealth ?: 1 <= 0) player.board[i] = null
+                        }
+                        for (i in opponent.board.indices) {
+                            if (opponent.board[i]?.currentHealth ?: 1 <= 0) opponent.board[i] = null
+                        }
                         if (player.currentHp <= 0 || opponent.currentHp <= 0) {
                             isGameOver = true
                             winnerName = if (opponent.currentHp <= 0) player.name else opponent.name
@@ -467,14 +475,11 @@ class GameViewModel : ViewModel() {
             }
         }
         
-        // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Триггерим ход следующего игрока
         val finalState = _gameState.value
         if (finalState != null && !finalState.isGameOver) {
             if (finalState.currentTurn == Turn.OPPONENT) {
-                // Если сейчас ход оппонента — запускаем его ИИ
                 autoTurnJob = executeGenericTurn(isOpponent = true)
             } else if (finalState.currentTurn == Turn.PLAYER && isAutoBattleActive) {
-                // Если сейчас ход игрока и включен автобой — запускаем автобой игрока
                 autoTurnJob = executeGenericTurn(isOpponent = false)
             }
         }

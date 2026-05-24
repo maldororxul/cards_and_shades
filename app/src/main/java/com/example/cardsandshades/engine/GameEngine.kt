@@ -19,7 +19,7 @@ object GameEngine {
         activePlayer.currentMana = activePlayer.maxMana
 
         // ОБРАБОТКА БАФФОВ: Снижаем длительность и снимаем просроченные
-        activePlayer.board.forEach { card ->
+        activePlayer.board.filterNotNull().forEach { card ->
             val expired = card.buffs.filter { it.duration <= 0 }
             expired.forEach { buff ->
                 card.currentAttack -= buff.attackBonus
@@ -47,11 +47,12 @@ object GameEngine {
         }
     }
 
-    // 3. Разыгрывание карты из руки на стол
-    fun playCard(state: GameState, card: CardModel): Boolean {
+    // 3. Разыгрывание карты из руки на стол в конкретный слот
+    fun playCard(state: GameState, card: CardModel, slotIndex: Int): Boolean {
         val activePlayer = if (state.currentTurn == Turn.PLAYER) state.player else state.opponent
-        if (activePlayer.currentMana >= card.manaCost && activePlayer.board.size < MAX_BOARD_SIZE) {
-            // ИСПРАВЛЕНИЕ: Удаляем карту строго по ID, чтобы не было дублей или фантомных карт
+        if (slotIndex !in 0 until MAX_BOARD_SIZE) return false
+        
+        if (activePlayer.currentMana >= card.manaCost && activePlayer.board[slotIndex] == null) {
             val wasRemoved = activePlayer.hand.removeIf { it.id == card.id }
             
             if (wasRemoved) {
@@ -60,7 +61,7 @@ object GameEngine {
                 // ТРИГГЕР: Активируем эффекты при призыве
                 card.activeEffects.forEach { it.onSummon(state, activePlayer, card) }
 
-                activePlayer.board.add(card)
+                activePlayer.board[slotIndex] = card
                 checkAutoWinCondition(state)
                 return true
             }
@@ -79,7 +80,7 @@ object GameEngine {
         val enemyPlayer = if (state.currentTurn == Turn.PLAYER) state.opponent else state.player
 
         // ОГРАНИЧЕНИЕ 3: Правило Провокации (Танка)
-        val hasTauntOnBoard = enemyPlayer.board.any { it.hasTaunt }
+        val hasTauntOnBoard = enemyPlayer.board.any { it?.hasTaunt == true }
         if (hasTauntOnBoard && (target == null || !target.hasTaunt)) {
             return false
         }
@@ -102,6 +103,8 @@ object GameEngine {
 
         // Применяем модификаторы эффектов
         target.activeEffects.forEach { damageToTarget = it.modifyIncomingDamage(target, damageToTarget) }
+        
+        // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Эффекты АТАКУЮЩЕГО должны модифицировать ответный урон (например, Ranged)
         attacker.activeEffects.forEach { counterDamageToAttacker = it.modifyCounterDamage(attacker, target, counterDamageToAttacker) }
 
         // Нанесение урона существам
@@ -162,18 +165,24 @@ object GameEngine {
     fun checkAutoWinCondition(state: GameState) {
         if (state.isGameOver) return
 
-        // Если у игрока нет карт в руке и на столе, а у врага есть летал на столе
-        if (state.player.hand.isEmpty() && state.player.board.isEmpty() && state.player.deck.isEmpty()) {
-            val opponentLethal = state.opponent.board.sumOf { it.currentAttack }
+        val playerHasNoOptions = state.player.hand.isEmpty() && 
+                state.player.board.all { it == null } && 
+                state.player.deck.isEmpty()
+        
+        if (playerHasNoOptions) {
+            val opponentLethal = state.opponent.board.filterNotNull().sumOf { it.currentAttack }
             if (opponentLethal >= state.player.currentHp) {
                 state.isGameOver = true
                 state.winnerName = state.opponent.name
             }
         }
 
-        // Если у врага нет карт в руке и на столе, а у игрока летал
-        if (state.opponent.hand.isEmpty() && state.opponent.board.isEmpty() && state.opponent.deck.isEmpty()) {
-            val playerLethal = state.player.board.sumOf { it.currentAttack }
+        val opponentHasNoOptions = state.opponent.hand.isEmpty() && 
+                state.opponent.board.all { it == null } && 
+                state.opponent.deck.isEmpty()
+                
+        if (opponentHasNoOptions) {
+            val playerLethal = state.player.board.filterNotNull().sumOf { it.currentAttack }
             if (playerLethal >= state.opponent.currentHp) {
                 state.isGameOver = true
                 state.winnerName = state.player.name
