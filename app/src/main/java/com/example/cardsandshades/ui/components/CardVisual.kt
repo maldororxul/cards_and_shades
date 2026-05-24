@@ -32,13 +32,22 @@ fun CardVisual(
         if (resName.isNotEmpty()) {
             val cleanResName = resName.lowercase().trim()
             
-            // 1. Пробуем найти RAW ресурс (видео)
-            val rawResId = context.resources.getIdentifier(cleanResName, "raw", context.packageName)
-            
-            // 2. Пробуем найти DRAWABLE ресурс (картинка)
+            // 1. Сначала ищем DRAWABLE (основной вариант)
             val drawableResId = context.resources.getIdentifier(cleanResName, "drawable", context.packageName)
             
+            // 2. Затем RAW (видео-фон, если есть)
+            val rawResId = context.resources.getIdentifier(cleanResName, "raw", context.packageName)
+            
             when {
+                drawableResId != 0 -> {
+                    // СТАТИЧЕСКАЯ КАРТИНКА ИЗ DRAWABLE
+                    Image(
+                        painter = painterResource(id = drawableResId),
+                        contentDescription = card.name,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = contentScale
+                    )
+                }
                 rawResId != 0 -> {
                     // ПЛЕЕР ДЛЯ MP4 ЖИВЫХ ФОНОВ
                     AndroidView(
@@ -56,15 +65,6 @@ fun CardVisual(
                         modifier = Modifier.fillMaxSize()
                     )
                 }
-                drawableResId != 0 -> {
-                    // СТАТИЧЕСКАЯ КАРТИНКА ИЗ DRAWABLE
-                    Image(
-                        painter = painterResource(id = drawableResId),
-                        contentDescription = card.name,
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = contentScale
-                    )
-                }
                 else -> {
                     PlaceholderVisual(card.name)
                 }
@@ -79,13 +79,14 @@ fun CardVisual(
 private fun PlaceholderVisual(name: String) {
     Box(
         modifier = Modifier.fillMaxSize()
-            .background(Color(0xFF1A1A1A)),
+            .background(Color(0xFF2C2C2C)), // Более светлый серый
         contentAlignment = Alignment.Center
     ) {
         androidx.compose.material3.Text(
-            text = name.take(1),
-            color = Color.DarkGray,
-            style = androidx.compose.material3.MaterialTheme.typography.headlineLarge
+            text = "NO IMG\n${name.takeLast(10)}", // Показываем конец имени для отладки
+            color = Color.Yellow, // Яркий цвет
+            style = androidx.compose.material3.MaterialTheme.typography.labelSmall,
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center
         )
     }
 }

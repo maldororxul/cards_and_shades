@@ -173,9 +173,10 @@ private fun DailyTab() {
 @Composable
 private fun AchievementsTab() {
     val context = androidx.compose.ui.platform.LocalContext.current
+    var refreshTrigger by remember { mutableIntStateOf(0) }
     
     // Принудительное обновление прогресса перед показом
-    LaunchedEffect(Unit) {
+    LaunchedEffect(refreshTrigger) {
         AchievementManager.updateProgress(com.example.cardsandshades.catalog.AchievementType.COLLECTION_SIZE, UserProfile.collection.size, true)
         AchievementManager.updateProgress(com.example.cardsandshades.catalog.AchievementType.EPIC_COLLECTION, UserProfile.collection.count { it.rarity == com.example.cardsandshades.model.Rarity.EPIC }, true)
         AchievementManager.updateProgress(com.example.cardsandshades.catalog.AchievementType.CAMPAIGN_LEVEL, UserProfile.maxUnlockedLevel.value - 1, true)
@@ -183,7 +184,11 @@ private fun AchievementsTab() {
 
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         com.example.cardsandshades.catalog.AchievementCatalog.groups.forEach { group ->
-            AchievementGroupItem(group, context)
+            key(group.id) {
+                AchievementGroupItem(group, context) {
+                    refreshTrigger++
+                }
+            }
             Spacer(modifier = Modifier.height(12.dp))
         }
         Spacer(modifier = Modifier.height(70.dp))
@@ -191,7 +196,11 @@ private fun AchievementsTab() {
 }
 
 @Composable
-private fun AchievementGroupItem(group: com.example.cardsandshades.catalog.AchievementGroup, context: android.content.Context) {
+private fun AchievementGroupItem(
+    group: com.example.cardsandshades.catalog.AchievementGroup, 
+    context: android.content.Context,
+    onClaimed: () -> Unit
+) {
     val state = AchievementManager.getState(group.id)
     val currentTier = group.tiers.getOrNull(state.currentTierIndex)
     
@@ -240,6 +249,7 @@ private fun AchievementGroupItem(group: com.example.cardsandshades.catalog.Achie
                     state.currentTierIndex++
                     UserProfile.save()
                     SoundManager.playSoundByName(context, "victory")
+                    onClaimed()
                 },
                 enabled = isReady,
                 modifier = Modifier.fillMaxWidth(),

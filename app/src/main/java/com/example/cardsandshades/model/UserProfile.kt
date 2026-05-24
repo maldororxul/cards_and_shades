@@ -105,7 +105,15 @@ object UserProfile {
 
                     selectedDeck.clear()
                     selectedDeck.addAll(loadedDeck)
-                    val hasIllegalDuplicates = loadedDeck.groupBy { it.name }.any { it.value.size > 2 }
+                    val hasIllegalDuplicates = loadedDeck.groupBy { it.name }.any { entry ->
+                        val first = entry.value.first()
+                        val limit = when(first.rarity) {
+                            Rarity.COMMON -> 3
+                            Rarity.RARE, Rarity.EPIC -> 2
+                            Rarity.LEGENDARY, Rarity.MYTHIC -> 1
+                        }
+                        entry.value.size > limit
+                    }
                     if (hasIllegalDuplicates || loadedDeck.size > 20) {
                         selectedDeck.clear()
                     }
