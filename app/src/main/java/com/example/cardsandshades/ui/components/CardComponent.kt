@@ -1,9 +1,8 @@
 package com.example.cardsandshades.ui.components
 
 import android.annotation.SuppressLint
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -23,8 +22,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -37,6 +40,7 @@ import com.example.cardsandshades.R
 import com.example.cardsandshades.model.CardModel
 import com.example.cardsandshades.model.Rarity
 import com.example.cardsandshades.utils.getStringResourceByName
+import kotlin.math.sin
 
 @OptIn(ExperimentalFoundationApi::class)
 @SuppressLint("LocalContextGetResourceValueCall")
@@ -79,29 +83,42 @@ private fun CardInspectionContent(
         Rarity.MYTHIC -> Color.Red
     }
 
-    Box(
-        modifier = Modifier.fillMaxSize()
-            .border(8.dp, rarityColor)
-    ) {
-        // ФОН: КАРТИНКА КАРТЫ НА ВЕСЬ ЭКРАН (С сохранением пропорций)
+    // АНИМАЦИЯ ПУЛЬСАЦИИ
+    val infiniteTransition = rememberInfiniteTransition(label = "pulse")
+    val pulseScale by infiniteTransition.animateFloat(
+        initialValue = 1.0f,
+        targetValue = 1.03f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(4000, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "scale"
+    )
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        // ФОН С ПУЛЬСАЦИЕЙ
         CardVisual(
             card = card, 
             modifier = Modifier
-                .fillMaxSize(),
+                .fillMaxSize()
+                .scale(pulseScale),
             contentScale = androidx.compose.ui.layout.ContentScale.Crop
         )
         
+        // ТРЕЩИНОВАТАЯ РАМКА (Canvas)
+        CrackedStoneFrame(color = rarityColor)
+        
         if (!isFocusMode) {
-            // ХЕДЕР (ЗАТЕМНЕНИЕ ТОЛЬКО СВЕРХУ)
+            // ХЕДЕР
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(180.dp)
-                    .background(Brush.verticalGradient(listOf(Color.Black.copy(alpha = 0.8f), Color.Transparent)))
-                    .padding(24.dp)
+                    .height(200.dp)
+                    .background(Brush.verticalGradient(listOf(Color.Black.copy(alpha = 0.85f), Color.Transparent)))
+                    .padding(32.dp)
             ) {
                 Column(modifier = Modifier.align(Alignment.TopStart)) {
-                    GameText(getStringResourceByName(context, card.name), fontSize = 24.sp, fontWeight = FontWeight.Black)
+                    GameText(getStringResourceByName(context, card.name), fontSize = 26.sp, fontWeight = FontWeight.Black)
                     val rarityLabel = when(card.rarity) {
                         Rarity.COMMON -> stringResource(R.string.rarity_common)
                         Rarity.UNCOMMON -> stringResource(R.string.rarity_uncommon)
@@ -113,16 +130,16 @@ private fun CardInspectionContent(
                     GameText(rarityLabel, color = rarityColor, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                     
                     // ГРУППЫ
-                    Row(modifier = Modifier.padding(top = 4.dp)) {
+                    Row(modifier = Modifier.padding(top = 6.dp)) {
                         card.groups.forEach { group ->
                             Box(
                                 modifier = Modifier
                                     .padding(end = 6.dp)
                                     .clip(RoundedCornerShape(4.dp))
-                                    .background(Color.White.copy(alpha = 0.1f))
-                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                                    .background(Color.White.copy(alpha = 0.15f))
+                                    .padding(horizontal = 8.dp, vertical = 2.dp)
                             ) {
-                                GameText(group.name, fontSize = 10.sp, color = Color.LightGray)
+                                GameText(group.name, fontSize = 11.sp, color = Color.Cyan)
                             }
                         }
                     }
@@ -130,27 +147,27 @@ private fun CardInspectionContent(
 
                 Box(
                     modifier = Modifier
-                        .size(60.dp)
+                        .size(64.dp)
                         .background(Color(0xFF0288D1), CircleShape)
                         .align(Alignment.TopEnd),
                     contentAlignment = Alignment.Center
                 ) {
-                    GameText(card.manaCost.toString(), fontWeight = FontWeight.Black, fontSize = 28.sp)
+                    GameText(card.manaCost.toString(), fontWeight = FontWeight.Black, fontSize = 30.sp)
                 }
             }
 
-            // ФУТЕР (ЗАТЕМНЕНИЕ ТОЛЬКО СНИЗУ)
+            // ФУТЕР
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .align(Alignment.BottomCenter)
-                    .background(Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(alpha = 0.9f))))
-                    .padding(24.dp)
+                    .background(Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(alpha = 0.95f))))
+                    .padding(32.dp)
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     // ТЕГИ ЭФФЕКТОВ
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
                         horizontalArrangement = Arrangement.Center,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -164,21 +181,19 @@ private fun CardInspectionContent(
                                     .clickable { 
                                         selectedEffectDesc = getStringResourceByName(context, effect.description)
                                     }
-                                    .padding(horizontal = 12.dp, vertical = 6.dp)
+                                    .padding(horizontal = 14.dp, vertical = 8.dp)
                             ) {
-                                GameText(getStringResourceByName(context, effect.name), fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.Cyan)
+                                GameText(getStringResourceByName(context, effect.name), fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.Yellow)
                             }
                         }
                     }
 
                     if (selectedEffectDesc != null) {
-                        Spacer(modifier = Modifier.height(12.dp))
-                        GameText(selectedEffectDesc!!, color = Color.White, fontSize = 14.sp, textAlign = TextAlign.Center)
+                        GameText(selectedEffectDesc!!, color = Color.White, fontSize = 15.sp, textAlign = TextAlign.Center)
                         TextButton(onClick = { selectedEffectDesc = null }) {
                             GameText(stringResource(R.string.close).lowercase(), color = Color.Gray, fontSize = 12.sp)
                         }
                     } else {
-                        Spacer(modifier = Modifier.height(16.dp))
                         val normalDesc = stringResource(R.string.effect_normal_desc)
                         GameText(normalDesc, color = Color.LightGray, fontSize = 16.sp, textAlign = TextAlign.Center)
                     }
@@ -192,8 +207,8 @@ private fun CardInspectionContent(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Box(modifier = Modifier.size(64.dp).background(Color(0xFFD32F2F), RoundedCornerShape(12.dp)).border(2.dp, Color.White.copy(alpha = 0.3f), RoundedCornerShape(12.dp)), contentAlignment = Alignment.Center) {
-                                GameText(card.currentAttack.toString(), fontWeight = FontWeight.Black, fontSize = 32.sp)
+                            Box(modifier = Modifier.size(70.dp).background(Color(0xFFD32F2F), RoundedCornerShape(12.dp)).border(2.dp, Color.White.copy(alpha = 0.3f), RoundedCornerShape(12.dp)), contentAlignment = Alignment.Center) {
+                                GameText(card.currentAttack.toString(), fontWeight = FontWeight.Black, fontSize = 34.sp)
                             }
                             GameText(stringResource(R.string.stat_attack), fontSize = 12.sp, color = Color.Gray)
                         }
@@ -201,8 +216,8 @@ private fun CardInspectionContent(
                         GameButton(text = stringResource(R.string.back), onClick = onDismiss, containerColor = Color.DarkGray)
 
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Box(modifier = Modifier.size(64.dp).background(Color(0xFF388E3C), RoundedCornerShape(12.dp)).border(2.dp, Color.White.copy(alpha = 0.3f), RoundedCornerShape(12.dp)), contentAlignment = Alignment.Center) {
-                                GameText(card.currentHealth.toString(), fontWeight = FontWeight.Black, fontSize = 32.sp)
+                            Box(modifier = Modifier.size(70.dp).background(Color(0xFF388E3C), RoundedCornerShape(12.dp)).border(2.dp, Color.White.copy(alpha = 0.3f), RoundedCornerShape(12.dp)), contentAlignment = Alignment.Center) {
+                                GameText(card.currentHealth.toString(), fontWeight = FontWeight.Black, fontSize = 34.sp)
                             }
                             GameText(stringResource(R.string.stat_health), fontSize = 12.sp, color = Color.Gray)
                         }
@@ -214,10 +229,49 @@ private fun CardInspectionContent(
         // КНОПКА ГЛАЗА
         IconButton(
             onClick = { isFocusMode = !isFocusMode },
-            modifier = Modifier.align(Alignment.CenterEnd).padding(16.dp).background(Color.Black.copy(alpha = 0.5f), CircleShape)
+            modifier = Modifier.align(Alignment.CenterEnd).padding(16.dp).background(Color.Black.copy(alpha = 0.6f), CircleShape)
         ) {
-            GameText(if (isFocusMode) "👁️" else "👁️‍🗨️", fontSize = 24.sp)
+            GameText(if (isFocusMode) "👁️" else "👁️‍🗨️", fontSize = 28.sp)
         }
+    }
+}
+
+@Composable
+private fun CrackedStoneFrame(color: Color) {
+    Canvas(modifier = Modifier.fillMaxSize()) {
+        val w = size.width
+        val h = size.height
+        val thickness = 10.dp.toPx()
+        
+        // Основной контур с зазубринами
+        val path = Path().apply {
+            moveTo(0f, 0f)
+            lineTo(w * 0.3f, 5f)
+            lineTo(w * 0.35f, 0f)
+            lineTo(w * 0.7f, 8f)
+            lineTo(w, 0f)
+            lineTo(w - 5f, h * 0.4f)
+            lineTo(w, h * 0.45f)
+            lineTo(w - 10f, h)
+            lineTo(w * 0.6f, h - 5f)
+            lineTo(w * 0.55f, h)
+            lineTo(0f, h - 8f)
+            lineTo(8f, h * 0.5f)
+            close()
+        }
+        
+        drawPath(
+            path = path,
+            color = color.copy(alpha = 0.7f),
+            style = Stroke(width = thickness, cap = StrokeCap.Round)
+        )
+        
+        // ТРЕЩИНЫ
+        val crackColor = color.copy(alpha = 0.4f)
+        drawLine(crackColor, Offset(0f, h * 0.2f), Offset(w * 0.1f, h * 0.25f), strokeWidth = 2f)
+        drawLine(crackColor, Offset(w, h * 0.7f), Offset(w * 0.85f, h * 0.65f), strokeWidth = 3f)
+        drawLine(crackColor, Offset(w * 0.4f, 0f), Offset(w * 0.45f, h * 0.08f), strokeWidth = 2f)
+        drawLine(crackColor, Offset(w * 0.5f, h), Offset(w * 0.48f, h * 0.9f), strokeWidth = 4f)
     }
 }
 

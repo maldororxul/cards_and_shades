@@ -112,9 +112,15 @@ fun SettingsScreen(
                     OutlinedTextField(
                         value = codeInput,
                         onValueChange = { codeInput = it },
-                        label = { Text("Code") },
+                        label = { Text("Code", color = Color.Gray) },
                         modifier = Modifier.fillMaxWidth(),
-                        singleLine = true
+                        singleLine = true,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White,
+                            focusedBorderColor = Color(0xFF673AB7),
+                            unfocusedBorderColor = Color.Gray
+                        )
                     )
                 }
             },
