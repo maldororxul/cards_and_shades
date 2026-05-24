@@ -8,7 +8,8 @@ data class PlayerModel(
     var currentMana: Int = 1,
     val deck: MutableList<CardModel> = mutableListOf(),
     val hand: MutableList<CardModel> = mutableListOf(),
-    val board: Array<CardModel?> = arrayOfNulls(5) // Максимум 5 карт на столе (фиксированные слоты)
+    val board: Array<CardModel?> = arrayOfNulls(5), // Максимум 5 карт на столе (фиксированные слоты)
+    var buffs: List<BuffModel> = emptyList() // Баффы/дебаффы героя (например, кровотечение)
 ) {
     val isDead: Boolean get() = currentHp <= 0
 

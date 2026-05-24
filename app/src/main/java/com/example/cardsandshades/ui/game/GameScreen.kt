@@ -8,9 +8,11 @@ import com.example.cardsandshades.ui.battle.PlayerBoardZone
 import com.example.cardsandshades.ui.battle.PlayerControlsZone
 import com.example.cardsandshades.ui.battle.RenderAttackArrows
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -230,17 +232,6 @@ private fun GameScreenContent(
                         initialInspectedIndex = state.player.hand.indexOfFirst { it.id == card.id }.coerceAtLeast(0)
                     },
                     viewModel = viewModel
-                )
-            }
-
-            // КНОПКА СКОРОСТИ - Как оверлей в углу
-            Box(modifier = Modifier.fillMaxSize().padding(16.dp), contentAlignment = Alignment.TopEnd) {
-                GameButton(
-                    text = "x${viewModel.animationSpeed}",
-                    onClick = { viewModel.cycleAnimationSpeed() },
-                    containerColor = Color.DarkGray.copy(alpha = 0.8f),
-                    modifier = Modifier.size(55.dp, 45.dp),
-                    fontSize = 14.sp
                 )
             }
 

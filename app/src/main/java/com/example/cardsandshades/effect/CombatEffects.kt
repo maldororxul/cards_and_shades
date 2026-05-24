@@ -105,6 +105,17 @@ class BleedEffect : CardEffect {
             ))
         }
     }
+
+    fun applyToHero(hero: com.example.cardsandshades.model.PlayerModel) {
+        hero.buffs = hero.buffs + com.example.cardsandshades.model.BuffModel(
+            id = java.util.UUID.randomUUID().toString(),
+            name = "effect_bleed",
+            attackBonus = 0,
+            healthBonus = 0,
+            duration = 3,
+            tag = com.example.cardsandshades.model.EffectTag.BLEED
+        )
+    }
 }
 
 // 🤢 ЯД: Наносит 2 урона в начале каждого хода в течение 2 ходов
@@ -123,6 +134,17 @@ class PoisonEffect : CardEffect {
             ))
         }
     }
+    
+    fun applyToHero(hero: com.example.cardsandshades.model.PlayerModel) {
+        hero.buffs = hero.buffs + com.example.cardsandshades.model.BuffModel(
+            id = java.util.UUID.randomUUID().toString(),
+            name = "effect_poison",
+            attackBonus = 0,
+            healthBonus = 0,
+            duration = 2,
+            tag = com.example.cardsandshades.model.EffectTag.POISON
+        )
+    }
 }
 
 // 🔥 ГОРЕНИЕ: Наносит 3 урона в начале каждого хода в течение 2 ходов
@@ -140,6 +162,17 @@ class BurnEffect : CardEffect {
                 tag = com.example.cardsandshades.model.EffectTag.BURN
             ))
         }
+    }
+
+    fun applyToHero(hero: com.example.cardsandshades.model.PlayerModel) {
+        hero.buffs = hero.buffs + com.example.cardsandshades.model.BuffModel(
+            id = java.util.UUID.randomUUID().toString(),
+            name = "effect_burn",
+            attackBonus = 0,
+            healthBonus = 0,
+            duration = 2,
+            tag = com.example.cardsandshades.model.EffectTag.BURN
+        )
     }
 }
 

@@ -1,0 +1,11 @@
+promocodes:
+  - code: "gold"
+    reward:
+      gold: 1000
+      crystals: 500
+  - code: "admin"
+    reward:
+      cardName: "ALL_CARDS" # Special handling in code
+  - code: "reset"
+    reward:
+      reset_profile: true # Special handling in code

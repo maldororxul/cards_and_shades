@@ -58,6 +58,11 @@ fun OpponentHeaderZone(
                 color = Color.Gray,
                 fontSize = 10.sp
             )
+            GameText(
+                text = "Hand: ${opponent.hand.size}",
+                color = Color.Gray,
+                fontSize = 10.sp
+            )
             
             Spacer(modifier = Modifier.height(4.dp))
             

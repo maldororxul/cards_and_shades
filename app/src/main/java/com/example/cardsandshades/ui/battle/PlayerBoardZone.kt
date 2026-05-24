@@ -37,8 +37,8 @@ fun PlayerBoardZone(
         modifier = Modifier
             .fillMaxWidth()
             .height(180.dp)
-            .padding(horizontal = 8.dp),
-        horizontalArrangement = Arrangement.SpaceEvenly,
+            .padding(horizontal = 2.dp),
+        horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
         boardSlots.forEachIndexed { index, card ->
@@ -46,7 +46,7 @@ fun PlayerBoardZone(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxHeight()
-                    .padding(4.dp),
+                    .padding(2.dp),
                 contentAlignment = Alignment.Center
             ) {
                 if (card == null) {

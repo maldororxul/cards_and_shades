@@ -16,6 +16,19 @@ object GameEngine {
         if (activePlayer.maxMana < MAX_MANA_CAP) activePlayer.maxMana += 1
         activePlayer.currentMana = activePlayer.maxMana
 
+        // ОБРАБОТКА ХЕРОЯ (Периодический урон и баффы)
+        activePlayer.buffs.forEach { buff ->
+            when (buff.tag) {
+                EffectTag.BLEED -> activePlayer.currentHp -= 1
+                EffectTag.POISON -> activePlayer.currentHp -= 2
+                EffectTag.BURN -> activePlayer.currentHp -= 3
+                else -> {}
+            }
+        }
+        val heroExpired = activePlayer.buffs.filter { it.duration <= 0 }
+        activePlayer.buffs = activePlayer.buffs.filter { !heroExpired.contains(it) }
+        activePlayer.buffs.forEach { it.duration -= 1 }
+
         // ОБРАБОТКА КАРТ НА СТОЛЕ
         activePlayer.board.filterNotNull().forEach { card ->
             // Срабатывание эффектов начала хода
@@ -68,9 +81,6 @@ object GameEngine {
         if (player.deck.isNotEmpty()) {
             val card = player.deck.removeAt(0)
             player.hand.add(card)
-        } else {
-            player.currentHp -= 2
-            checkWinCondition(state)
         }
     }
 
@@ -174,8 +184,8 @@ object GameEngine {
         attacker.activeEffects.forEach { damageToTarget = it.modifyOutgoingDamage(attacker, target, damageToTarget) }
         target.activeEffects.forEach { damageToTarget = it.modifyIncomingDamage(target, damageToTarget) }
 
-        // 2. РАСЧЕТ ОТВЕТНОГО УРОНА
-        var counterDamageToAttacker = target.currentAttack
+        // 2. РАСЧЕТ ОТВЕТНОГО УРОНА (Только если атакующий - MELEE)
+        var counterDamageToAttacker = if (attacker.groups.contains(GroupTag.MELEE)) target.currentAttack else 0
         attacker.activeEffects.forEach { counterDamageToAttacker = it.modifyCounterDamage(attacker, target, counterDamageToAttacker) }
 
         // 3. НАНЕСЕНИЕ УРОНА
@@ -225,6 +235,15 @@ object GameEngine {
         
         enemy.currentHp -= damage
         attacker.activeEffects.forEach { it.onDamageDealt(state, attacker, damage) }
+
+        // ПРИМЕНЕНИЕ ДЕБАФФОВ НА ГЕРОЯ (Bleed, Poison, Burn)
+        attacker.activeEffects.forEach { effect ->
+            when (effect) {
+                is com.example.cardsandshades.effect.BleedEffect -> effect.applyToHero(enemy)
+                is com.example.cardsandshades.effect.PoisonEffect -> effect.applyToHero(enemy)
+                is com.example.cardsandshades.effect.BurnEffect -> effect.applyToHero(enemy)
+            }
+        }
 
         checkWinCondition(state)
         checkAutoWinCondition(state)

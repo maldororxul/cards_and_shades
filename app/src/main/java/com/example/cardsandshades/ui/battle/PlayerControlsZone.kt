@@ -60,19 +60,38 @@ fun PlayerControlsZone(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.Bottom
         ) {
-            // КНОПКА АВТОБОЯ
-            Box(
-                modifier = Modifier
-                    .size(60.dp)
-                    .clip(CircleShape)
-                    .background(if (viewModel.isAutoBattleActive) Color(0xFF673AB7) else Color.Black.copy(alpha = 0.4f))
-                    .border(2.dp, if (viewModel.isAutoBattleActive) Color.Cyan else Color.Gray, CircleShape)
-                    .clickable { viewModel.toggleAutoBattle() },
-                contentAlignment = Alignment.Center
+            // ЛЕВАЯ КОЛОНКА КНОПОК
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    GameText("AUTO", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = if (viewModel.isAutoBattleActive) Color.White else Color.Gray)
-                    GameText(if (viewModel.isAutoBattleActive) "ON" else "OFF", fontSize = 12.sp, color = if (viewModel.isAutoBattleActive) Color.Green else Color.Gray)
+                // КНОПКА СКОРОСТИ
+                Box(
+                    modifier = Modifier
+                        .size(50.dp)
+                        .clip(CircleShape)
+                        .background(Color.DarkGray.copy(alpha = 0.6f))
+                        .border(1.dp, Color.LightGray.copy(alpha = 0.3f), CircleShape)
+                        .clickable { viewModel.cycleAnimationSpeed() },
+                    contentAlignment = Alignment.Center
+                ) {
+                    GameText("x${viewModel.animationSpeed}", fontSize = 14.sp, fontWeight = FontWeight.Black)
+                }
+
+                // КНОПКА АВТОБОЯ
+                Box(
+                    modifier = Modifier
+                        .size(60.dp)
+                        .clip(CircleShape)
+                        .background(if (viewModel.isAutoBattleActive) Color(0xFF673AB7) else Color.Black.copy(alpha = 0.4f))
+                        .border(2.dp, if (viewModel.isAutoBattleActive) Color.Cyan else Color.Gray, CircleShape)
+                        .clickable { viewModel.toggleAutoBattle() },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        GameText("AUTO", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = if (viewModel.isAutoBattleActive) Color.White else Color.Gray)
+                        GameText(if (viewModel.isAutoBattleActive) "ON" else "OFF", fontSize = 12.sp, color = if (viewModel.isAutoBattleActive) Color.Green else Color.Gray)
+                    }
                 }
             }
 

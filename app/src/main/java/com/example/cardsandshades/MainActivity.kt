@@ -36,6 +36,8 @@ import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.delay
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import com.example.cardsandshades.ui.components.GameDialog
+import com.example.cardsandshades.ui.components.GameButton
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
@@ -85,6 +87,24 @@ class MainActivity : AppCompatActivity() {
                     
                     val currentScreen = screens[pagerState.currentPage]
 
+                    var showDeckWarning by remember { mutableStateOf(false) }
+
+                    if (showDeckWarning) {
+                        GameDialog(
+                            onDismiss = { showDeckWarning = false },
+                            title = stringResource(R.string.collection),
+                            content = {
+                                GameText("Please add at least 5 cards to your deck to participate in the campaign.", textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                            },
+                            confirmButton = { onAction ->
+                                GameButton(text = "Go to Collection", onClick = {
+                                    onAction()
+                                    scope.launch { pagerState.animateScrollToPage(screens.indexOf("collection")) }
+                                })
+                            }
+                        )
+                    }
+
                     Box(modifier = Modifier.fillMaxSize()) {
                         // ЭФФЕКТ ЗАТЕМНЕНИЯ ПРИ СМЕНЕ ЭКРАНА (для кнопок навигации)
                         // При свайпах анимация и так есть в Pager
@@ -108,7 +128,11 @@ class MainActivity : AppCompatActivity() {
                                         "campaign" -> {
                                             CampaignScreen(
                                                 onLevelSelect = { selectedLevel ->
-                                                    gameViewModel.startNewGame(selectedLevel)
+                                                    if (UserProfile.selectedDeck.size >= 5) {
+                                                        gameViewModel.startNewGame(selectedLevel)
+                                                    } else {
+                                                        showDeckWarning = true
+                                                    }
                                                 }
                                             )
                                         }
@@ -125,9 +149,12 @@ class MainActivity : AppCompatActivity() {
                                             com.example.cardsandshades.ui.rewards.RewardsScreen()
                                         }
                                         "settings" -> {
-                                            SettingsScreen(onBack = { 
-                                                scope.launch { pagerState.animateScrollToPage(0) }
-                                            })
+                                            SettingsScreen(
+                                                onBack = { 
+                                                    scope.launch { pagerState.animateScrollToPage(screens.indexOf("campaign")) }
+                                                },
+                                                viewModel = gameViewModel
+                                            )
                                         }
                                     }
                                 }
