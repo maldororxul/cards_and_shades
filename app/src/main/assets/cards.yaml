@@ -436,3 +436,522 @@ cards:
     baseHealth: 25
     rarity: "MYTHIC"
     effectTags: ["TAUNT", "SPLASH"]
+
+  # COMMON
+  - name: "card_tidal_siren"
+    manaCost: 2
+    baseAttack: 2
+    baseHealth: 3
+    rarity: "COMMON"
+    effectTags: ["RANGED"]
+  - name: "card_reef_crawler"
+    manaCost: 2
+    baseAttack: 3
+    baseHealth: 2
+    rarity: "COMMON"
+    effectTags: ["RUSH"]
+  - name: "card_glow_kelp"
+    manaCost: 2
+    baseAttack: 1
+    baseHealth: 4
+    rarity: "COMMON"
+    effectTags: ["TAUNT"]
+  - name: "card_wind_sprite"
+    manaCost: 1
+    baseAttack: 2
+    baseHealth: 2
+    rarity: "COMMON"
+  - name: "card_thunder_wisp"
+    manaCost: 2
+    baseAttack: 3
+    baseHealth: 2
+    rarity: "COMMON"
+  - name: "card_venom_spitter"
+    manaCost: 3
+    baseAttack: 3
+    baseHealth: 3
+    rarity: "COMMON"
+  - name: "card_blood_leech"
+    manaCost: 2
+    baseAttack: 2
+    baseHealth: 2
+    rarity: "COMMON"
+    effectTags: ["LIFESTEAL"]
+  - name: "card_moss_troll"
+    manaCost: 3
+    baseAttack: 2
+    baseHealth: 5
+    rarity: "COMMON"
+    effectTags: ["TAUNT"]
+  - name: "card_spore_shaman"
+    manaCost: 3
+    baseAttack: 3
+    baseHealth: 3
+    rarity: "COMMON"
+  - name: "card_clockwork_spider"
+    manaCost: 2
+    baseAttack: 2
+    baseHealth: 3
+    rarity: "COMMON"
+
+  # RARE
+  - name: "card_abyssal_merrow"
+    manaCost: 4
+    baseAttack: 4
+    baseHealth: 6
+    rarity: "RARE"
+    effectTags: ["RANGED"]
+  - name: "card_tempest_harpy"
+    manaCost: 4
+    baseAttack: 5
+    baseHealth: 5
+    rarity: "RARE"
+    effectTags: ["RUSH"]
+  - name: "card_coral_leviathan"
+    manaCost: 5
+    baseAttack: 4
+    baseHealth: 8
+    rarity: "RARE"
+    effectTags: ["TAUNT"]
+  - name: "card_stormcaller"
+    manaCost: 4
+    baseAttack: 4
+    baseHealth: 5
+    rarity: "RARE"
+    effectTags: ["SPLASH"]
+  - name: "card_poison_dryad"
+    manaCost: 3
+    baseAttack: 4
+    baseHealth: 5
+    rarity: "RARE"
+  - name: "card_sanguine_baron"
+    manaCost: 5
+    baseAttack: 6
+    baseHealth: 6
+    rarity: "RARE"
+    effectTags: ["LIFESTEAL"]
+  - name: "card_ancient_mushroom"
+    manaCost: 4
+    baseAttack: 3
+    baseHealth: 7
+    rarity: "RARE"
+    effectTags: ["TAUNT"]
+  - name: "card_ether_wraith"
+    manaCost: 3
+    baseAttack: 5
+    baseHealth: 4
+    rarity: "RARE"
+    effectTags: ["RUSH"]
+  - name: "card_rune_golem"
+    manaCost: 5
+    baseAttack: 3
+    baseHealth: 9
+    rarity: "RARE"
+    effectTags: ["TAUNT"]
+  - name: "card_fungal_behemoth"
+    manaCost: 6
+    baseAttack: 5
+    baseHealth: 8
+    rarity: "RARE"
+
+  # EPIC
+  - name: "card_kraken_tidecaller"
+    manaCost: 6
+    baseAttack: 6
+    baseHealth: 9
+    rarity: "EPIC"
+    effectTags: ["SPLASH"]
+  - name: "card_hurricane_elemental"
+    manaCost: 5
+    baseAttack: 7
+    baseHealth: 6
+    rarity: "EPIC"
+    effectTags: ["RUSH", "SPLASH"]
+  - name: "card_blood_covenant"
+    manaCost: 5
+    baseAttack: 6
+    baseHealth: 7
+    rarity: "EPIC"
+    effectTags: ["LIFESTEAL"]
+  - name: "card_mindflayer"
+    manaCost: 6
+    baseAttack: 5
+    baseHealth: 8
+    rarity: "EPIC"
+    effectTags: ["RANGED"]
+  - name: "card_thorn_colossus"
+    manaCost: 6
+    baseAttack: 4
+    baseHealth: 11
+    rarity: "EPIC"
+    effectTags: ["TAUNT"]
+  - name: "card_spectral_assassin"
+    manaCost: 4
+    baseAttack: 8
+    baseHealth: 5
+    rarity: "EPIC"
+    effectTags: ["RUSH"]
+  - name: "card_toxic_hydra"
+    manaCost: 5
+    baseAttack: 6
+    baseHealth: 7
+    rarity: "EPIC"
+    effectTags: ["SPLASH"]
+  - name: "card_living_storm"
+    manaCost: 7
+    baseAttack: 7
+    baseHealth: 8
+    rarity: "EPIC"
+    effectTags: ["SPLASH"]
+  - name: "card_heartstealer"
+    manaCost: 5
+    baseAttack: 7
+    baseHealth: 6
+    rarity: "EPIC"
+    effectTags: ["LIFESTEAL", "RUSH"]
+
+  # LEGENDARY
+  - name: "card_deep_sea_emperor"
+    manaCost: 7
+    baseAttack: 9
+    baseHealth: 11
+    rarity: "LEGENDARY"
+    effectTags: ["TAUNT", "SPLASH"]
+  - name: "card_eternal_tempest"
+    manaCost: 6
+    baseAttack: 8
+    baseHealth: 9
+    rarity: "LEGENDARY"
+    effectTags: ["SPLASH", "RUSH"]
+  - name: "card_blood_goddess"
+    manaCost: 6
+    baseAttack: 10
+    baseHealth: 8
+    rarity: "LEGENDARY"
+    effectTags: ["LIFESTEAL"]
+  - name: "card_void_whisperer"
+    manaCost: 5
+    baseAttack: 7
+    baseHealth: 8
+    rarity: "LEGENDARY"
+    effectTags: ["BUFF"]
+  - name: "card_world_tree_avatar"
+    manaCost: 8
+    baseAttack: 6
+    baseHealth: 14
+    rarity: "LEGENDARY"
+    effectTags: ["TAUNT", "BUFF"]
+  - name: "card_plague_lord"
+    manaCost: 7
+    baseAttack: 9
+    baseHealth: 10
+    rarity: "LEGENDARY"
+    effectTags: ["SPLASH"]
+  - name: "card_phoenix_of_ashes"
+    manaCost: 7
+    baseAttack: 10
+    baseHealth: 9
+    rarity: "LEGENDARY"
+    effectTags: ["RUSH", "LIFESTEAL"]
+  - name: "card_chrono_construct"
+    manaCost: 6
+    baseAttack: 8
+    baseHealth: 10
+    rarity: "LEGENDARY"
+
+  # MYTHIC (немного меньше, чтобы не перегружать)
+  - name: "card_leviathan_awakened"
+    manaCost: 9
+    baseAttack: 13
+    baseHealth: 16
+    rarity: "MYTHIC"
+    effectTags: ["TAUNT", "SPLASH"]
+  - name: "card_infinite_stormlord"
+    manaCost: 10
+    baseAttack: 14
+    baseHealth: 14
+    rarity: "MYTHIC"
+    effectTags: ["SPLASH", "RANGED"]
+  - name: "card_blood_eternal"
+    manaCost: 8
+    baseAttack: 15
+    baseHealth: 12
+    rarity: "MYTHIC"
+    effectTags: ["LIFESTEAL", "RUSH"]
+  - name: "card_mother_fungus"
+    manaCost: 9
+    baseAttack: 8
+    baseHealth: 20
+    rarity: "MYTHIC"
+    effectTags: ["TAUNT", "BUFF"]
+  - name: "card_dream_eater"
+    manaCost: 8
+    baseAttack: 12
+    baseHealth: 13
+    rarity: "MYTHIC"
+    effectTags: ["RANGED"]
+  - name: "card_celestial_kraken"
+    manaCost: 10
+    baseAttack: 16
+    baseHealth: 18
+    rarity: "MYTHIC"
+    effectTags: ["SPLASH", "TAUNT"]
+
+  # COMMON
+  - name: "card_meadow_fairy"
+    manaCost: 1
+    baseAttack: 1
+    baseHealth: 3
+    rarity: "COMMON"
+    effectTags: ["HEAL"]
+  - name: "card_sunbeam_sprite"
+    manaCost: 2
+    baseAttack: 2
+    baseHealth: 2
+    rarity: "COMMON"
+  - name: "card_river_warden"
+    manaCost: 2
+    baseAttack: 2
+    baseHealth: 3
+    rarity: "COMMON"
+    effectTags: ["TAUNT"]
+  - name: "card_kindling_spirit"
+    manaCost: 2
+    baseAttack: 3
+    baseHealth: 2
+    rarity: "COMMON"
+  - name: "card_healing_blossom"
+    manaCost: 2
+    baseAttack: 1
+    baseHealth: 4
+    rarity: "COMMON"
+    effectTags: ["HEAL"]
+  - name: "card_gentle_wind_dancer"
+    manaCost: 1
+    baseAttack: 2
+    baseHealth: 2
+    rarity: "COMMON"
+  - name: "card_forest_keeper"
+    manaCost: 3
+    baseAttack: 2
+    baseHealth: 4
+    rarity: "COMMON"
+    effectTags: ["TAUNT"]
+  - name: "card_shining_page"
+    manaCost: 2
+    baseAttack: 2
+    baseHealth: 3
+    rarity: "COMMON"
+  - name: "card_dawn_singer"
+    manaCost: 2
+    baseAttack: 3
+    baseHealth: 2
+    rarity: "COMMON"
+  - name: "card_loyal_hound"
+    manaCost: 2
+    baseAttack: 3
+    baseHealth: 3
+    rarity: "COMMON"
+    effectTags: ["RUSH"]
+
+  # RARE
+  - name: "card_silverwing_angel"
+    manaCost: 4
+    baseAttack: 4
+    baseHealth: 6
+    rarity: "RARE"
+    effectTags: ["HEAL"]
+  - name: "card_ancient_oak_druid"
+    manaCost: 4
+    baseAttack: 3
+    baseHealth: 7
+    rarity: "RARE"
+    effectTags: ["TAUNT"]
+  - name: "card_crystal_healer"
+    manaCost: 3
+    baseAttack: 3
+    baseHealth: 6
+    rarity: "RARE"
+    effectTags: ["HEAL"]
+  - name: "card_hopebringer_paladin"
+    manaCost: 4
+    baseAttack: 5
+    baseHealth: 5
+    rarity: "RARE"
+    effectTags: ["TAUNT"]
+  - name: "card_moonlit_mermaid"
+    manaCost: 4
+    baseAttack: 4
+    baseHealth: 5
+    rarity: "RARE"
+  - name: "card_wise_celestial_owl"
+    manaCost: 3
+    baseAttack: 3
+    baseHealth: 5
+    rarity: "RARE"
+    effectTags: ["BUFF"]
+  - name: "card_serenity_spirit"
+    manaCost: 4
+    baseAttack: 2
+    baseHealth: 7
+    rarity: "RARE"
+    effectTags: ["HEAL"]
+  - name: "card_golden_harvest_druid"
+    manaCost: 4
+    baseAttack: 4
+    baseHealth: 6
+    rarity: "RARE"
+  - name: "card_lightsworn_squire"
+    manaCost: 3
+    baseAttack: 4
+    baseHealth: 5
+    rarity: "RARE"
+    effectTags: ["RUSH"]
+  - name: "card_benevolent_unicorn"
+    manaCost: 5
+    baseAttack: 4
+    baseHealth: 7
+    rarity: "RARE"
+    effectTags: ["HEAL"]
+
+  # EPIC
+  - name: "card_archangel_of_mercy"
+    manaCost: 5
+    baseAttack: 5
+    baseHealth: 9
+    rarity: "EPIC"
+    effectTags: ["HEAL"]
+  - name: "card_starlight_guardian"
+    manaCost: 6
+    baseAttack: 6
+    baseHealth: 8
+    rarity: "EPIC"
+    effectTags: ["TAUNT"]
+  - name: "card_heart_of_the_forest"
+    manaCost: 5
+    baseAttack: 4
+    baseHealth: 10
+    rarity: "EPIC"
+    effectTags: ["HEAL", "TAUNT"]
+  - name: "card_radiant_saint"
+    manaCost: 5
+    baseAttack: 7
+    baseHealth: 7
+    rarity: "EPIC"
+    effectTags: ["BUFF"]
+  - name: "card_luminous_phoenix"
+    manaCost: 6
+    baseAttack: 6
+    baseHealth: 8
+    rarity: "EPIC"
+    effectTags: ["HEAL", "RUSH"]
+  - name: "card_tide_mother"
+    manaCost: 6
+    baseAttack: 5
+    baseHealth: 9
+    rarity: "EPIC"
+    effectTags: ["HEAL"]
+  - name: "card_song_of_hope"
+    manaCost: 5
+    baseAttack: 5
+    baseHealth: 8
+    rarity: "EPIC"
+    effectTags: ["BUFF"]
+  - name: "card_ember_of_kindness"
+    manaCost: 5
+    baseAttack: 6
+    baseHealth: 7
+    rarity: "EPIC"
+  - name: "card_celestial_lion"
+    manaCost: 6
+    baseAttack: 7
+    baseHealth: 8
+    rarity: "EPIC"
+    effectTags: ["TAUNT"]
+
+  # LEGENDARY
+  - name: "card_high_seraph"
+    manaCost: 7
+    baseAttack: 8
+    baseHealth: 11
+    rarity: "LEGENDARY"
+    effectTags: ["HEAL", "BUFF"]
+  - name: "card_world_healer"
+    manaCost: 7
+    baseAttack: 6
+    baseHealth: 13
+    rarity: "LEGENDARY"
+    effectTags: ["HEAL", "TAUNT"]
+  - name: "card_sunfather"
+    manaCost: 6
+    baseAttack: 9
+    baseHealth: 10
+    rarity: "LEGENDARY"
+    effectTags: ["BUFF"]
+  - name: "card_eternal_guardian"
+    manaCost: 8
+    baseAttack: 7
+    baseHealth: 14
+    rarity: "LEGENDARY"
+    effectTags: ["TAUNT"]
+  - name: "card_lady_of_the_morning"
+    manaCost: 6
+    baseAttack: 8
+    baseHealth: 9
+    rarity: "LEGENDARY"
+    effectTags: ["HEAL"]
+  - name: "card_tree_of_life_avatar"
+    manaCost: 8
+    baseAttack: 5
+    baseHealth: 15
+    rarity: "LEGENDARY"
+    effectTags: ["HEAL", "TAUNT"]
+  - name: "card_purelight_valkyrie"
+    manaCost: 7
+    baseAttack: 10
+    baseHealth: 9
+    rarity: "LEGENDARY"
+    effectTags: ["RUSH"]
+  - name: "card_harmony_dragon"
+    manaCost: 7
+    baseAttack: 8
+    baseHealth: 12
+    rarity: "LEGENDARY"
+
+  # MYTHIC
+  - name: "card_emanation_of_light"
+    manaCost: 9
+    baseAttack: 10
+    baseHealth: 18
+    rarity: "MYTHIC"
+    effectTags: ["HEAL", "BUFF"]
+  - name: "card_goddess_of_compassion"
+    manaCost: 10
+    baseAttack: 9
+    baseHealth: 20
+    rarity: "MYTHIC"
+    effectTags: ["HEAL", "TAUNT"]
+  - name: "card_eternal_spring_spirit"
+    manaCost: 9
+    baseAttack: 8
+    baseHealth: 19
+    rarity: "MYTHIC"
+    effectTags: ["HEAL"]
+  - name: "card_crown_of_hope"
+    manaCost: 8
+    baseAttack: 12
+    baseHealth: 15
+    rarity: "MYTHIC"
+    effectTags: ["BUFF"]
+  - name: "card_astral_unicorn_queen"
+    manaCost: 9
+    baseAttack: 11
+    baseHealth: 16
+    rarity: "MYTHIC"
+    effectTags: ["HEAL", "RUSH"]
+  - name: "card_lord_of_dawn"
+    manaCost: 10
+    baseAttack: 14
+    baseHealth: 17
+    rarity: "MYTHIC"
+    effectTags: ["BUFF"]

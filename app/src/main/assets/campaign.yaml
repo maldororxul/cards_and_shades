@@ -9,7 +9,7 @@ chapters:
         opponentMaxHp: 15
         opponentStartMana: 1
         difficultyDescription: "level_1_desc"
-        opponentDeckPreset: ["card_shadow_recruit", "card_shadow_recruit", "card_agile_imp"]
+        opponentDeckPreset: ["card_shadow_recruit", "card_shadow_recruit", "card_agile_imp", "card_rotting_zombie"]
         backgroundRes: "bg_battle_arena"
         musicRes: "battle_music_default"
         firstTimeReward:
@@ -23,7 +23,7 @@ chapters:
         opponentMaxHp: 20
         opponentStartMana: 1
         difficultyDescription: "level_2_desc"
-        opponentDeckPreset: ["card_shadow_recruit", "card_stone_guardian"]
+        opponentDeckPreset: ["card_shadow_recruit", "card_shadow_recruit", "card_agile_imp", "card_town_guard", "card_wild_hyena"]
         backgroundRes: "bg_battle_arena"
         musicRes: "battle_music_default"
         firstTimeReward:
@@ -37,7 +37,7 @@ chapters:
         opponentMaxHp: 22
         opponentStartMana: 1
         difficultyDescription: "level_3_desc"
-        opponentDeckPreset: ["card_arcane_adept", "card_elven_archer"]
+        opponentDeckPreset: ["card_arcane_adept", "card_elven_archer", "card_mage_apprentice", "card_stone_beast", "card_forest_ambusher", "card_light_servant"]
         backgroundRes: "bg_battle_arena"
         musicRes: "battle_music_default"
         firstTimeReward:
@@ -51,7 +51,7 @@ chapters:
         opponentMaxHp: 30
         opponentStartMana: 2
         difficultyDescription: "level_7_desc"
-        opponentDeckPreset: ["card_shadow_king", "card_shadow_reaper", "card_vampire_aristocrat"]
+        opponentDeckPreset: ["card_shadow_king", "card_shadow_reaper", "card_vampire_aristocrat", "card_shadow_recruit", "card_shadow_recruit", "card_agile_imp", "card_town_guard", "card_rotting_zombie", "card_void_tracker", "card_corrupted_wolf"]
         backgroundRes: "bg_battle_arena"
         musicRes: "battle_music_default"
         firstTimeReward:
@@ -72,7 +72,7 @@ chapters:
         opponentMaxHp: 40
         opponentStartMana: 2
         difficultyDescription: "level_8_desc"
-        opponentDeckPreset: ["card_storm_herald", "card_cursed_paladin"]
+        opponentDeckPreset: ["card_storm_herald", "card_cursed_paladin", "card_kings_guardsman", "card_kings_guardsman", "card_arcane_adept", "card_arcane_adept", "card_elven_archer", "card_elven_archer", "card_town_guard", "card_town_guard", "card_stone_beast", "card_stone_beast"]
         backgroundRes: "bg_battle_arena"
         musicRes: "battle_music_default"
         firstTimeReward:
@@ -90,7 +90,7 @@ chapters:
         opponentMaxHp: 70
         opponentStartMana: 3
         difficultyDescription: "level_15_desc"
-        opponentDeckPreset: ["card_void_dragon", "card_void_archmage"]
+        opponentDeckPreset: ["card_void_dragon", "card_void_dragon", "card_void_archmage", "card_void_archmage", "card_void_sorcerer", "card_void_sorcerer", "card_void_tracker", "card_void_tracker", "card_void_acolyte", "card_void_acolyte", "card_shadow_reaper", "card_shadow_reaper", "card_dark_knight", "card_dark_knight", "card_arch_lich", "card_arch_lich", "card_cursed_paladin", "card_cursed_paladin", "card_vampire_aristocrat", "card_vampire_aristocrat"]
         backgroundRes: "bg_battle_arena"
         musicRes: "battle_music_default"
         firstTimeReward:

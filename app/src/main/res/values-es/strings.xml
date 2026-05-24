@@ -112,7 +112,7 @@
     <!-- Collection Screen -->
     <string name="deck_count">Mazo: %d/20 cartas</string>
     <string name="deck_saved">✅ ¡Mazo guardado!</string>
-    <string name="deck_error">❌ ¡Necesitas 20 cartas!</string>
+    <string name="deck_error">❌ ¡El mazo no может быть vacío!</string>
     <string name="collection_empty">¡Tu colección está vacía! 📦</string>
     <string name="in_stock">En stock: %d</string>
     <string name="dust_extras">Desencantar (%d)</string>

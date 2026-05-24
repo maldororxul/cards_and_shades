@@ -111,9 +111,9 @@
     <string name="forge_craft_btn">FORGE (%d)</string>
 
     <!-- Collection Screen -->
-    <string name="deck_count">Build deck: %d/20 cards</string>
+    <string name="deck_count">Deck: %d/20 cards</string>
     <string name="deck_saved">✅ Deck saved!</string>
-    <string name="deck_error">❌ Need 20 cards!</string>
+    <string name="deck_error">❌ Deck cannot be empty!</string>
     <string name="collection_empty">Your collection is empty! 📦</string>
     <string name="in_stock">In stock: %d</string>
     <string name="dust_extras">Disenchant (%d)</string>

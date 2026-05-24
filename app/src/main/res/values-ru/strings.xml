@@ -110,9 +110,9 @@
     <string name="forge_craft_btn">КОВАТЬ (%d)</string>
 
     <!-- Collection Screen -->
-    <string name="deck_count">Соберите колоду: %d/20 карт</string>
+    <string name="deck_count">Колода: %d/20 карт</string>
     <string name="deck_saved">✅ Колода сохранена!</string>
-    <string name="deck_error">❌ Нужно 20 карт!</string>
+    <string name="deck_error">❌ Колода не может быть пустой!</string>
     <string name="collection_empty">Ваша коллекция пуста! 📦</string>
     <string name="in_stock">В наличии: %d</string>
     <string name="dust_extras">Распылить (%d)</string>

@@ -70,23 +70,26 @@ class GameViewModel : ViewModel() {
         val musicName = level.musicRes ?: "battle_music_default"
         SoundManager.playMusicByName(null, musicName)
 
-        val playerDeck = if (UserProfile.selectedDeck.size == 20) {
-            UserProfile.selectedDeck.map {
-                it.copy(id = java.util.UUID.randomUUID().toString()).apply { reset() }
-            }.toMutableList()
+        // PLAYER DECK LOGIC
+        // 1. Try to use selected deck, or fallback to full collection
+        val sourceDeck = if (UserProfile.selectedDeck.isNotEmpty()) {
+            UserProfile.selectedDeck.toList()
         } else {
-            CardCatalog.generateTestDeck()
+            UserProfile.collection.toList()
         }
-        
-        playerDeck.shuffle()
 
-        val opponentDeckNames = mutableListOf<String>()
-        if (level.opponentDeckPreset.isNotEmpty()) {
-            while (opponentDeckNames.size < 20) {
-                opponentDeckNames.addAll(level.opponentDeckPreset)
-            }
+        // 2. Shuffle and copy to ensure fresh instances
+        val shuffledSource = sourceDeck.shuffled().map { 
+            it.copy(id = java.util.UUID.randomUUID().toString()).apply { reset() } 
         }
-        val opponentDeck = opponentDeckNames.take(20).map { cardName ->
+
+        // 3. Limit player deck size to match opponent's preset size (for progressive difficulty)
+        val maxPlayerCards = level.opponentDeckPreset.size
+        val playerDeck = shuffledSource.take(maxPlayerCards).toMutableList()
+
+        // OPPONENT DECK LOGIC
+        // Use the preset directly
+        val opponentDeck = level.opponentDeckPreset.map { cardName ->
             (CardCatalog.createCardInstance(cardName) ?: CardCatalog.createCardInstance("card_shadow_recruit")!!).apply { reset() }
         }.toMutableList()
 
