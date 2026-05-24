@@ -63,13 +63,13 @@ fun CardInspectionDialog(
         properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
-            // ФОН: КАРТИНКА КАРТЫ НА ВЕСЬ ЭКРАН (С искажением для полного заполнения)
+            // ФОН: КАРТИНКА КАРТЫ НА ВЕСЬ ЭКРАН (С сохранением пропорций)
             CardVisual(
                 card = card, 
                 modifier = Modifier
                     .fillMaxSize()
                     .then(if (!isOwned) Modifier.blur(20.dp) else Modifier),
-                contentScale = androidx.compose.ui.layout.ContentScale.FillBounds
+                contentScale = androidx.compose.ui.layout.ContentScale.Crop
             )
             
             if (!isFocusMode) {
