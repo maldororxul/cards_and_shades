@@ -43,7 +43,7 @@ fun RewardsScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(horizontal = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         TabRow(
@@ -87,9 +87,8 @@ private fun DailyTab() {
     val context = androidx.compose.ui.platform.LocalContext.current
     
     val now = System.currentTimeMillis()
-    val isCooldownActive = now - lastClaim < 24 * 60 * 60 * 1000 // 24 hours
+    val isCooldownActive = now - lastClaim < 24 * 60 * 60 * 1000 
     
-    // Ищем текущий блок наград (порции по 7 дней)
     val currentBlock = RewardsCatalog.blocks.find { block ->
         block.rewards.any { it.day == chainDay }
     } ?: RewardsCatalog.blocks.firstOrNull()
@@ -97,7 +96,6 @@ private fun DailyTab() {
     if (currentBlock == null) return
 
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        // КАРТИНКА БЛОКА
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -134,7 +132,8 @@ private fun DailyTab() {
             columns = GridCells.Fixed(4),
             modifier = Modifier.weight(1f),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            contentPadding = PaddingValues(bottom = 100.dp) // PADDING FOR BOTTOM NAV
         ) {
             items(currentBlock.rewards) { reward ->
                 val isClaimed = claimedSet.contains(reward.day)
@@ -205,8 +204,6 @@ private fun DailyTab() {
                  modifier = Modifier.fillMaxWidth()
              )
         }
-        
-        Spacer(modifier = Modifier.height(70.dp))
     }
 }
 
@@ -230,7 +227,7 @@ private fun AchievementsTab() {
             }
             Spacer(modifier = Modifier.height(12.dp))
         }
-        Spacer(modifier = Modifier.height(70.dp))
+        Spacer(modifier = Modifier.height(100.dp)) // PADDING FOR BOTTOM NAV
     }
 }
 
@@ -324,7 +321,7 @@ private fun getRewardIcon(type: String, context: android.content.Context): Strin
         "dust_epic" -> "🟣 " + context.getString(R.string.reward_dust)
         "dust_legendary" -> "🟡 " + context.getString(R.string.reward_dust)
         "card" -> stringResource(R.string.reward_card)
-        else -> "🎁 " + context.getString(R.string.reward_gold) // fallback
+        else -> "🎁 " + context.getString(R.string.reward_gold)
     }
 }
 

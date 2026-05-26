@@ -187,6 +187,9 @@ fun ForgeScreen(
                         message = craftSuccess.format(mythicLabel)
                     } else message = craftFail
                 }
+                
+                // PADDING FOR BOTTOM NAV
+                Spacer(modifier = Modifier.height(100.dp))
             }
         } else {
             Column(
@@ -223,10 +226,11 @@ fun ForgeScreen(
                 
                 Spacer(modifier = Modifier.height(32.dp))
                 GameText(text = message, color = Color.Yellow, fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                
+                // PADDING FOR BOTTOM NAV
+                Spacer(modifier = Modifier.height(100.dp))
             }
         }
-        
-        Spacer(modifier = Modifier.height(70.dp))
     }
 }
 

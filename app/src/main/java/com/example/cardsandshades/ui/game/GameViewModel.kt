@@ -147,13 +147,15 @@ class GameViewModel : ViewModel() {
         if (isAutoBattleActive) {
             autoTurnJob = executeGenericTurn(isOpponent = false)
         }
-        
-        MissionManager.updateProgress("daily_battles", 1, false)
-        MissionManager.updateProgress("weekly_battles", 1, true)
     }
 
     fun claimRewardsAndExit(isPlayerWin: Boolean) {
         autoTurnJob?.cancel()
+        
+        // Count participation only when battle is finished (win or loss)
+        MissionManager.updateProgress("daily_battles", 1, false)
+        MissionManager.updateProgress("weekly_battles", 1, true)
+
         if (isPlayerWin) {
             SoundManager.playSoundByName(null, "victory")
             currentLevel?.let { level ->

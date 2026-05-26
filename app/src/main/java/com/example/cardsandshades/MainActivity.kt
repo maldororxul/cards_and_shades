@@ -101,37 +101,47 @@ class MainActivity : ComponentActivity() {
                         composable("campaign") { 
                             GameBackground(screenId = "campaign") {
                                 CampaignScreen(
-                                    modifier = Modifier.padding(innerPadding),
                                     onLevelSelect = { level ->
                                         gameViewModel.startNewGame(level)
                                         navController.navigate("battle")
-                                    }
+                                    },
+                                    modifier = Modifier.padding(top = innerPadding.calculateTopPadding())
                                 )
                             }
                         }
                         composable("collection") { 
                             GameBackground(screenId = "collection") {
-                                CollectionScreen(modifier = Modifier.padding(innerPadding)) 
+                                CollectionScreen(
+                                    modifier = Modifier.padding(top = innerPadding.calculateTopPadding())
+                                ) 
                             }
                         }
                         composable("shop") { 
                             GameBackground(screenId = "shop") {
-                                BoosterScreen(modifier = Modifier.padding(innerPadding)) 
+                                BoosterScreen(
+                                    modifier = Modifier.padding(top = innerPadding.calculateTopPadding())
+                                ) 
                             }
                         }
                         composable("rewards") { 
                             GameBackground(screenId = "rewards") {
-                                RewardsScreen(modifier = Modifier.padding(innerPadding)) 
+                                RewardsScreen(
+                                    modifier = Modifier.padding(top = innerPadding.calculateTopPadding())
+                                ) 
                             }
                         }
                         composable("missions") { 
                             GameBackground(screenId = "missions") {
-                                MissionScreen(modifier = Modifier.padding(innerPadding)) 
+                                MissionScreen(
+                                    modifier = Modifier.padding(top = innerPadding.calculateTopPadding())
+                                ) 
                             }
                         }
                         composable("forge") { 
                             GameBackground(screenId = "forge") {
-                                ForgeScreen(modifier = Modifier.padding(innerPadding)) 
+                                ForgeScreen(
+                                    modifier = Modifier.padding(top = innerPadding.calculateTopPadding())
+                                ) 
                             }
                         }
                         composable("settings") { 
@@ -139,7 +149,7 @@ class MainActivity : ComponentActivity() {
                                 SettingsScreen(
                                     onBack = { navController.popBackStack() },
                                     viewModel = gameViewModel,
-                                    modifier = Modifier.padding(innerPadding)
+                                    modifier = Modifier.padding(top = innerPadding.calculateTopPadding())
                                 ) 
                             }
                         }
@@ -155,7 +165,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun hideSystemUI() {
+    fun hideSystemUI() {
         val windowInsetsController = WindowCompat.getInsetsController(window, window.decorView)
         windowInsetsController.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         windowInsetsController.hide(WindowInsetsCompat.Type.systemBars())

@@ -79,15 +79,13 @@ fun MissionScreen(
         LazyColumn(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(12.dp),
-            contentPadding = PaddingValues(bottom = 16.dp)
+            contentPadding = PaddingValues(bottom = 100.dp) // PADDING FOR BOTTOM NAV
         ) {
             items(missions) { mission ->
                 val state = states.getOrPut(mission.id) { MissionState(mission.id) }
                 MissionItem(mission, state)
             }
         }
-        
-        Spacer(modifier = Modifier.height(70.dp))
     }
 }
 

@@ -122,31 +122,34 @@ fun DetailedBattleLogDialog(
     )
 }
 
-@Composable
+/**
+ * Formats a log message string. If it contains pipes (|), the first part is a template key
+ * and subsequent parts are arguments.
+ */
 private fun formatLogMessage(context: android.content.Context, message: String): String {
     if (message.contains("|")) {
         val parts = message.split("|")
         val templateName = parts[0]
         val args = parts.drop(1).map { arg ->
-            // If argument starts with card_, localize it
-            if (arg.startsWith("card_")) getStringResourceByName(context, arg) 
-            // If argument is 'player' or 'opponent', localize it
-            else if (arg == "player") stringResource(R.string.player)
-            else if (arg == "opponent") stringResource(R.string.opponent)
-            // If argument is a number, return as number for String.format
-            else arg.toIntOrNull() ?: arg
+            when {
+                arg.startsWith("card_") -> getStringResourceByName(context, arg)
+                arg == "player" -> context.getString(R.string.player)
+                arg == "opponent" -> context.getString(R.string.opponent)
+                else -> arg.toIntOrNull() ?: arg
+            }
         }
         
         val template = getStringResourceByName(context, templateName)
         return try {
-            // String.format needs java format specifiers like %1$s or %d
-            template.format(*args.toTypedArray())
+            // String.format requires an Array<Any?> for varargs
+            val formatArgs = args.toTypedArray()
+            String.format(template, *formatArgs)
         } catch (e: Exception) {
             template + " " + args.joinToString(" ")
         }
     }
 
-    // Регулярное выражение для поиска имен карт (начинаются с card_)
+    // Regex to find and replace card keys like card_shadow_recruit
     val cardRegex = Regex("card_[a-zA-Z0-9_]+")
     var result = message
     
@@ -155,8 +158,7 @@ private fun formatLogMessage(context: android.content.Context, message: String):
         result = result.replace(match.value, localizedName)
     }
     
-    // Также проверяем спец-сообщения
-    if (result == "draw") return stringResource(R.string.draw)
+    if (result == "draw") return context.getString(R.string.draw)
     
     return result
 }

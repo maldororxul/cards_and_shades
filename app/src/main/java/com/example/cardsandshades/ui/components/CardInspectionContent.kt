@@ -36,6 +36,17 @@ fun CardInspectionContent(
     var isFocusMode by remember { mutableStateOf(false) }
     var selectedEffectDesc by remember { mutableStateOf<String?>(null) }
 
+    // Hide system bars when dialog is shown
+    val view = androidx.compose.ui.platform.LocalView.current
+    val window = (context as? android.app.Activity)?.window
+    if (window != null) {
+        val controller = androidx.core.view.WindowCompat.getInsetsController(window, view)
+        LaunchedEffect(Unit) {
+            controller.hide(androidx.core.view.WindowInsetsCompat.Type.systemBars())
+            controller.systemBarsBehavior = androidx.core.view.WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        }
+    }
+
     val rarityColor = when (card.rarity) {
         Rarity.COMMON -> Color.White
         Rarity.UNCOMMON -> Color.Green

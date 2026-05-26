@@ -106,7 +106,7 @@ fun CollectionScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
         // ВЕРХНЯЯ ПАНЕЛЬ: КНОПКИ ДЕЙСТВИЙ
         Row(
@@ -241,7 +241,8 @@ fun CollectionScreen(
         // СПИСОК КАРТ С АККОРДЕОНАМИ ПО РЕДКОСТИ
         LazyColumn(
             modifier = Modifier.weight(1f).fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(bottom = 100.dp) // PADDING FOR BOTTOM NAV
         ) {
             templatesByRarity.forEach { (rarity, templates) ->
                 if (templates.isNotEmpty()) {
@@ -273,8 +274,6 @@ fun CollectionScreen(
                 }
             }
         }
-        
-        Spacer(modifier = Modifier.height(70.dp))
     }
 
     if (inspectedCardsList.isNotEmpty()) {
