@@ -9,47 +9,54 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.example.cardsandshades.model.CardModel
+import com.example.cardsandshades.model.UserProfile
 
 @Composable
 fun CardVisual(
     card: CardModel,
     modifier: Modifier = Modifier,
-    contentScale: ContentScale = ContentScale.Crop
+    contentScale: ContentScale = ContentScale.Crop,
+    forceBlur: Boolean = false,
+    isBackground: Boolean = false // New flag
 ) {
     val context = LocalContext.current
     val resName = card.name
+    
+    // Check ownership ONLY if it's not a background and starts with card_
+    val isRealCard = resName.startsWith("card_") && !isBackground
+    val isOwned = if (isRealCard) UserProfile.collection.any { it.name == card.name } else true
+    val shouldBlur = forceBlur || (isRealCard && !isOwned)
 
     Box(
         modifier = modifier,
         contentAlignment = Alignment.Center
     ) {
+        val visualModifier = if (shouldBlur) Modifier.fillMaxSize().blur(12.dp) else Modifier.fillMaxSize()
+
         if (resName.isNotEmpty()) {
             val cleanResName = resName.lowercase().trim()
             
-            // 1. Сначала ищем DRAWABLE (основной вариант)
             val drawableResId = context.resources.getIdentifier(cleanResName, "drawable", context.packageName)
-            
-            // 2. Затем RAW (видео-фон, если есть)
             val rawResId = context.resources.getIdentifier(cleanResName, "raw", context.packageName)
             
             when {
                 drawableResId != 0 -> {
-                    // СТАТИЧЕСКАЯ КАРТИНКА ИЗ DRAWABLE
                     Image(
                         painter = painterResource(id = drawableResId),
                         contentDescription = card.name,
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = visualModifier,
                         contentScale = contentScale
                     )
                 }
                 rawResId != 0 -> {
-                    // ПЛЕЕР ДЛЯ MP4 ЖИВЫХ ФОНОВ
                     AndroidView(
                         factory = { ctx ->
                             VideoView(ctx).apply {
@@ -62,15 +69,18 @@ fun CardVisual(
                                 start()
                             }
                         },
-                        modifier = Modifier.fillMaxSize()
+                        modifier = visualModifier
                     )
                 }
-                else -> {
-                    PlaceholderVisual(card.name)
-                }
+                else -> PlaceholderVisual(card.name)
             }
         } else {
             PlaceholderVisual(card.name)
+        }
+        
+        // Dark overlay for unowned cards
+        if (shouldBlur) {
+            Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.4f)))
         }
     }
 }
@@ -79,12 +89,12 @@ fun CardVisual(
 private fun PlaceholderVisual(name: String) {
     Box(
         modifier = Modifier.fillMaxSize()
-            .background(Color(0xFF2C2C2C)), // Более светлый серый
+            .background(Color(0xFF2C2C2C)),
         contentAlignment = Alignment.Center
     ) {
         androidx.compose.material3.Text(
-            text = "NO IMG\n${name.takeLast(10)}", // Показываем конец имени для отладки
-            color = Color.Yellow, // Яркий цвет
+            text = "NO IMG\n${name.takeLast(10)}",
+            color = Color.Yellow,
             style = androidx.compose.material3.MaterialTheme.typography.labelSmall,
             textAlign = androidx.compose.ui.text.style.TextAlign.Center
         )

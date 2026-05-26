@@ -1,19 +1,15 @@
 package com.example.cardsandshades
 
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.compose.animation.*
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,204 +19,205 @@ import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
+import com.example.cardsandshades.catalog.*
 import com.example.cardsandshades.model.UserProfile
+import com.example.cardsandshades.sound.SoundManager
+import com.example.cardsandshades.ui.booster.BoosterScreen
 import com.example.cardsandshades.ui.campaign.CampaignScreen
+import com.example.cardsandshades.ui.collection.CollectionScreen
+import com.example.cardsandshades.ui.components.GameText
+import com.example.cardsandshades.ui.components.GameBackground
+import com.example.cardsandshades.ui.forge.ForgeScreen
 import com.example.cardsandshades.ui.game.GameScreen
 import com.example.cardsandshades.ui.game.GameViewModel
-import com.example.cardsandshades.ui.components.GameText
-import com.example.cardsandshades.ui.theme.GameTypography
-import com.example.cardsandshades.ui.components.GameBackground
-import com.example.cardsandshades.sound.SoundManager
+import com.example.cardsandshades.ui.missions.MissionScreen
+import com.example.cardsandshades.ui.rewards.RewardsScreen
 import com.example.cardsandshades.ui.settings.SettingsScreen
-import androidx.compose.ui.res.stringResource
-import kotlinx.coroutines.delay
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
-import com.example.cardsandshades.ui.components.GameDialog
-import com.example.cardsandshades.ui.components.GameButton
-import kotlinx.coroutines.launch
+import com.example.cardsandshades.ui.theme.CardsAndShadesTheme
+import com.example.cardsandshades.utils.LocaleHelper
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : ComponentActivity() {
+
     private val gameViewModel: GameViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        enableEdgeToEdge()
+        hideSystemUI()
+        
+        // Load language first
+        LocaleHelper.setLocale(this, LocaleHelper.getLanguage(this))
 
-        // Инициализируем каталоги и БД
-        com.example.cardsandshades.catalog.CardCatalog.init(this)
-        com.example.cardsandshades.catalog.CampaignCatalog.init(this)
-        com.example.cardsandshades.catalog.RewardsCatalog.init(this)
-        com.example.cardsandshades.catalog.BoosterCatalog.init(this)
-        com.example.cardsandshades.catalog.BackgroundCatalog.init(this)
-        com.example.cardsandshades.catalog.FusionCatalog.init(this)
-        com.example.cardsandshades.catalog.AchievementCatalog.init(this)
+        CardCatalog.init(this)
+        FusionCatalog.init(this)
+        BoosterCatalog.init(this)
+        CampaignCatalog.init(this)
+        AchievementCatalog.init(this)
+        MissionCatalog.init(this)
+        BackgroundCatalog.init(this)
+        RewardsCatalog.init(this)
         UserProfile.initDatabase(this)
         SoundManager.init(this)
-        SoundManager.startMusic(this)
-
-        lifecycle.addObserver(LifecycleEventObserver { _, event ->
-            when (event) {
-                Lifecycle.Event.ON_PAUSE -> SoundManager.pauseMusic()
-                Lifecycle.Event.ON_RESUME -> SoundManager.resumeMusic()
-                else -> {}
-            }
-        })
-
-        // 1. Разрешаем приложению отрисовываться под системными панелями
-        WindowCompat.setDecorFitsSystemWindows(window, false)
-
-        // 2. Скрываем статус-бар и панель навигации (кнопки)
-        val windowInsetsController = WindowCompat.getInsetsController(window, window.decorView)
-        windowInsetsController?.systemBarsBehavior =
-            WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-        windowInsetsController?.hide(WindowInsetsCompat.Type.systemBars())
 
         setContent {
-            MaterialTheme(typography = GameTypography) {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    val screens = listOf("campaign", "collection", "shop", "forge", "rewards", "settings")
-                    val pagerState = rememberPagerState(initialPage = 0, pageCount = { screens.size })
-                    val scope = rememberCoroutineScope()
-                    
-                    val currentScreen = screens[pagerState.currentPage]
+            CardsAndShadesTheme {
+                val navController = rememberNavController()
+                val navBackStackEntry by navController.currentBackStackEntryAsState()
+                val currentRoute = navBackStackEntry?.destination?.route
 
-                    var showDeckWarning by remember { mutableStateOf(false) }
-
-                    if (showDeckWarning) {
-                        GameDialog(
-                            onDismiss = { showDeckWarning = false },
-                            title = stringResource(R.string.collection),
-                            content = {
-                                GameText(stringResource(R.string.deck_warning), textAlign = androidx.compose.ui.text.style.TextAlign.Center)
-                            },
-                            confirmButton = { onAction ->
-                                GameButton(text = stringResource(R.string.go_to_collection), onClick = {
-                                    onAction()
-                                    scope.launch { pagerState.animateScrollToPage(screens.indexOf("collection")) }
-                                })
-                            }
-                        )
+                // Handle music transitions
+                LaunchedEffect(currentRoute) {
+                    if (currentRoute != "battle" && currentRoute != null) {
+                        SoundManager.startMusic(this@MainActivity)
                     }
+                }
 
-                    Box(modifier = Modifier.fillMaxSize()) {
-                        // ЭФФЕКТ ЗАТЕМНЕНИЯ ПРИ СМЕНЕ ЭКРАНА (для кнопок навигации)
-                        // При свайпах анимация и так есть в Pager
-                        var isTransitioning by remember { mutableStateOf(false) }
-
-                        if (gameViewModel.gameState.collectAsState().value != null) {
-                            // ЭКРАН ИГРЫ (Оверлей)
-                            GameScreen(viewModel = gameViewModel, onBackToMenu = { 
-                                gameViewModel.claimRewardsAndExit(false) 
-                            })
-                        } else {
-                    // КОНТЕНТ ТЕКУЩЕГО ЭКРАНА С ПЕЙДЖЕРОМ
-                    HorizontalPager(
-                        state = pagerState,
-                        modifier = Modifier.fillMaxSize(),
-                        userScrollEnabled = gameViewModel.gameState.collectAsState().value == null
-                    ) { page ->
-                                val screen = screens[page]
-                                GameBackground(screenId = screen) {
-                                    when (screen) {
-                                        "campaign" -> {
-                                            CampaignScreen(
-                                                onLevelSelect = { selectedLevel ->
-                                                    if (UserProfile.selectedDeck.size >= 5) {
-                                                        gameViewModel.startNewGame(selectedLevel)
-                                                    } else {
-                                                        showDeckWarning = true
-                                                    }
-                                                }
-                                            )
-                                        }
-                                        "collection" -> {
-                                            com.example.cardsandshades.ui.collection.CollectionScreen()
-                                        }
-                                        "shop" -> {
-                                            com.example.cardsandshades.ui.booster.BoosterScreen()
-                                        }
-                                        "forge" -> {
-                                            com.example.cardsandshades.ui.forge.ForgeScreen()
-                                        }
-                                        "rewards" -> {
-                                            com.example.cardsandshades.ui.rewards.RewardsScreen()
-                                        }
-                                        "settings" -> {
-                                            SettingsScreen(
-                                                onBack = { 
-                                                    scope.launch { pagerState.animateScrollToPage(screens.indexOf("campaign")) }
-                                                },
-                                                viewModel = gameViewModel
-                                            )
-                                        }
+                Scaffold(
+                    modifier = Modifier.fillMaxSize(),
+                    bottomBar = {
+                        if (currentRoute != "battle") {
+                            BottomNavBar(
+                                currentRoute = currentRoute ?: "campaign",
+                                onNavigate = { route ->
+                                    navController.navigate(route) {
+                                        popUpTo(navController.graph.startDestinationId)
+                                        launchSingleTop = true
                                     }
                                 }
-                            }
-
-                            // ВИЗУАЛЬНЫЙ СЛОЙ ЗАТЕМНЕНИЯ (опционально)
-                            AnimatedVisibility(
-                                visible = isTransitioning,
-                                enter = fadeIn(tween(200)),
-                                exit = fadeOut(tween(200))
-                            ) {
-                                Box(modifier = Modifier.fillMaxSize().background(Color.Black))
-                            }
-
-                            // НИЖНЯЯ ПАНЕЛЬ НАВИГАЦИИ
-                            BottomNavBar(
-                                currentScreen = currentScreen,
-                                onScreenChange = { 
-                                    scope.launch { pagerState.animateScrollToPage(screens.indexOf(it)) }
-                                },
-                                modifier = Modifier.align(Alignment.BottomCenter)
                             )
+                        }
+                    }
+                ) { innerPadding ->
+                    NavHost(
+                        navController = navController,
+                        startDestination = "campaign",
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        composable("campaign") { 
+                            GameBackground(screenId = "campaign") {
+                                CampaignScreen(
+                                    modifier = Modifier.padding(innerPadding),
+                                    onLevelSelect = { level ->
+                                        gameViewModel.startNewGame(level)
+                                        navController.navigate("battle")
+                                    }
+                                )
+                            }
+                        }
+                        composable("collection") { 
+                            GameBackground(screenId = "collection") {
+                                CollectionScreen(modifier = Modifier.padding(innerPadding)) 
+                            }
+                        }
+                        composable("shop") { 
+                            GameBackground(screenId = "shop") {
+                                BoosterScreen(modifier = Modifier.padding(innerPadding)) 
+                            }
+                        }
+                        composable("rewards") { 
+                            GameBackground(screenId = "rewards") {
+                                RewardsScreen(modifier = Modifier.padding(innerPadding)) 
+                            }
+                        }
+                        composable("missions") { 
+                            GameBackground(screenId = "missions") {
+                                MissionScreen(modifier = Modifier.padding(innerPadding)) 
+                            }
+                        }
+                        composable("forge") { 
+                            GameBackground(screenId = "forge") {
+                                ForgeScreen(modifier = Modifier.padding(innerPadding)) 
+                            }
+                        }
+                        composable("settings") { 
+                            GameBackground(screenId = "settings") {
+                                SettingsScreen(
+                                    onBack = { navController.popBackStack() },
+                                    viewModel = gameViewModel,
+                                    modifier = Modifier.padding(innerPadding)
+                                ) 
+                            }
+                        }
+                        composable("battle") { 
+                            GameScreen(
+                                viewModel = gameViewModel,
+                                onBackToMenu = { navController.popBackStack() }
+                            ) 
                         }
                     }
                 }
             }
         }
     }
-}
 
-@Composable
-fun BottomNavBar(
-    currentScreen: String,
-    onScreenChange: (String) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(16.dp)
-            .background(Color(0xFF1A1A1A).copy(alpha = 0.95f), RoundedCornerShape(24.dp))
-            .padding(8.dp),
-        horizontalArrangement = Arrangement.SpaceEvenly,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        NavIcon("🗺️", "campaign", stringResource(R.string.campaign), currentScreen == "campaign", onScreenChange)
-        NavIcon("🃏", "collection", stringResource(R.string.collection), currentScreen == "collection", onScreenChange)
-        NavIcon("🏪", "shop", stringResource(R.string.shop), currentScreen == "shop", onScreenChange)
-        NavIcon("🔨", "forge", stringResource(R.string.forge), currentScreen == "forge", onScreenChange)
-        NavIcon("🎁", "rewards", stringResource(R.string.rewards), currentScreen == "rewards", onScreenChange)
-        NavIcon("⚙️", "settings", stringResource(R.string.settings), currentScreen == "settings", onScreenChange)
+    private fun hideSystemUI() {
+        val windowInsetsController = WindowCompat.getInsetsController(window, window.decorView)
+        windowInsetsController.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        windowInsetsController.hide(WindowInsetsCompat.Type.systemBars())
+    }
+
+    override fun onResume() {
+        super.onResume()
+        hideSystemUI()
+        SoundManager.resumeMusic()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        SoundManager.pauseMusic()
     }
 }
 
 @Composable
-private fun NavIcon(icon: String, id: String, label: String, isSelected: Boolean, onClick: (String) -> Unit) {
-    Box(
-        modifier = Modifier
-            .size(56.dp)
-            .background(if (isSelected) Color(0xFF673AB7) else Color.Transparent, RoundedCornerShape(12.dp))
-            .clickable { onClick(id) },
-        contentAlignment = Alignment.Center
+fun BottomNavBar(currentRoute: String, onNavigate: (String) -> Unit, modifier: Modifier = Modifier) {
+    Surface(
+        modifier = modifier
+            .fillMaxWidth()
+            .navigationBarsPadding()
+            .height(70.dp),
+        color = Color.Black.copy(alpha = 0.9f),
+        tonalElevation = 8.dp
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            GameText(text = icon, fontSize = 20.sp)
-            GameText(text = label, fontSize = 8.sp, color = if (isSelected) Color.White else Color.Gray)
+        Row(
+            modifier = Modifier.fillMaxSize(),
+            horizontalArrangement = Arrangement.SpaceAround,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            NavIcon("campaign", "🗺️", "Campaign", currentRoute == "campaign", onNavigate)
+            NavIcon("collection", "🃏", "Cards", currentRoute == "collection", onNavigate)
+            NavIcon("missions", "🎯", "Missions", currentRoute == "missions", onNavigate)
+            NavIcon("shop", "🛍️", "Shop", currentRoute == "shop", onNavigate)
+            NavIcon("forge", "⚒️", "Forge", currentRoute == "forge", onNavigate)
+            NavIcon("rewards", "🎁", "Daily", currentRoute == "rewards", onNavigate)
+            NavIcon("settings", "⚙️", "Settings", currentRoute == "settings", onNavigate)
         }
+    }
+}
+
+@Composable
+fun NavIcon(route: String, icon: String, label: String, isSelected: Boolean, onNavigate: (String) -> Unit) {
+    Column(
+        modifier = Modifier
+            .clickable { onNavigate(route) }
+            .padding(4.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Box(
+            modifier = Modifier
+                .size(if (isSelected) 40.dp else 34.dp)
+                .background(
+                    if (isSelected) Color.White.copy(alpha = 0.2f) else Color.Transparent,
+                    RoundedCornerShape(8.dp)
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            GameText(text = icon, fontSize = if (isSelected) 22.sp else 18.sp)
+        }
+        GameText(text = label, fontSize = 9.sp, color = if (isSelected) Color.White else Color.Gray)
     }
 }

@@ -8,7 +8,7 @@ object GameEngine {
     private const val MAX_BOARD_SIZE = 5
     private const val MAX_MANA_CAP = 10
 
-    // 1. Старт нового хода: увеличиваем ману, добираем карту
+    // 1. Старт нового хода
     fun startTurn(state: GameState) {
         if (state.isGameOver) return
         val activePlayer = if (state.currentTurn == Turn.PLAYER) state.player else state.opponent
@@ -16,7 +16,7 @@ object GameEngine {
         if (activePlayer.maxMana < MAX_MANA_CAP) activePlayer.maxMana += 1
         activePlayer.currentMana = activePlayer.maxMana
 
-        // ОБРАБОТКА ХЕРОЯ (Периодический урон и баффы)
+        // ОБРАБОТКА ХЕРОЯ
         activePlayer.buffs.forEach { buff ->
             when (buff.tag) {
                 EffectTag.BLEED -> activePlayer.currentHp -= 1
@@ -31,10 +31,8 @@ object GameEngine {
 
         // ОБРАБОТКА КАРТ НА СТОЛЕ
         activePlayer.board.filterNotNull().forEach { card ->
-            // Срабатывание эффектов начала хода
             card.activeEffects.forEach { it.onStartTurn(state, activePlayer, card) }
 
-            // Применяем периодические эффекты (Кровотечение, Яд, Горение)
             card.buffs.forEach { buff ->
                 when (buff.tag) {
                     EffectTag.BLEED -> applyPeriodicDamage(card, 1)
@@ -44,7 +42,6 @@ object GameEngine {
                 }
             }
 
-            // Уменьшаем длительность баффов и снимаем просроченные
             val expired = card.buffs.filter { it.duration <= 0 }
             expired.forEach { buff ->
                 card.currentAttack -= buff.attackBonus
@@ -54,13 +51,12 @@ object GameEngine {
             card.removeBuffs(expired)
             card.buffs.forEach { it.duration -= 1 }
 
-            // Обновляем состояния (заморозка, оглушение)
             if (card.isFrozen) {
                 card.isFrozen = false
-                card.hasAttackedThisTurn = true // Пропускает ход
+                card.hasAttackedThisTurn = true 
             } else if (card.isStunned) {
                 card.isStunned = false
-                card.hasAttackedThisTurn = true // Пропускает ход
+                card.hasAttackedThisTurn = true
             } else {
                 card.resetTurnState()
             }
@@ -76,13 +72,12 @@ object GameEngine {
         card.isTakingDamage = true
     }
 
-    // 2. Добор карты из колоды в руку
+    // 2. Добор карты
     fun drawCard(player: PlayerModel, state: GameState) {
         if (player.deck.isNotEmpty()) {
             val card = player.deck.removeAt(0)
             player.hand.add(card)
             
-            // Логируем добор
             val isOpponent = state.opponent == player
             val logType = if (isOpponent) LogType.OPPONENT else LogType.PLAYER
             val actorKey = if (isOpponent) "opponent" else "player"
@@ -90,7 +85,7 @@ object GameEngine {
         }
     }
 
-    // 3. Разыгрывание карты из руки на стол
+    // 3. Разыгрывание карты
     fun playCard(state: GameState, card: CardModel, slotIndex: Int): Boolean {
         val activePlayer = if (state.currentTurn == Turn.PLAYER) state.player else state.opponent
         val opponentPlayer = if (state.currentTurn == Turn.PLAYER) state.opponent else state.player
@@ -102,17 +97,14 @@ object GameEngine {
             
             if (wasRemoved) {
                 activePlayer.currentMana -= card.manaCost
-
-                // ТРИГГЕР: Активируем эффекты при призыве
                 card.activeEffects.forEach { it.onSummon(state, activePlayer, card) }
-
-                // ПРИМЕНЕНИЕ ПОЗИЦИОННЫХ БАФФОВ
                 applyNeighborBuffs(activePlayer, card, slotIndex)
-
                 activePlayer.board[slotIndex] = card
-
-                // РЕАКЦИЯ ОППОНЕНТА (Guard mechanic)
                 triggerOpponentAmbush(state, opponentPlayer, slotIndex, card)
+
+                if (state.currentTurn == Turn.PLAYER) {
+                    MissionManager.updateProgress("daily_play_cards", 1, false)
+                }
 
                 checkAutoWinCondition(state)
                 return true
@@ -126,7 +118,6 @@ object GameEngine {
         val right = if (slotIndex < MAX_BOARD_SIZE - 1) player.board[slotIndex + 1] else null
         val neighbors = listOfNotNull(left, right)
 
-        // 1. Карта баффает соседей
         val atkBonusFromCard = if (card.activeTags.contains(EffectTag.NEIGHBOR_BUFF_ATTACK)) 1 else 0
         val hpBonusFromCard = if (card.activeTags.contains(EffectTag.NEIGHBOR_BUFF_HEALTH)) 2 else 0
 
@@ -139,7 +130,6 @@ object GameEngine {
             }
         }
 
-        // 2. Соседи баффают карту
         neighbors.forEach { neighbor ->
             val atkBonusFromNeighbor = if (neighbor.activeTags.contains(EffectTag.NEIGHBOR_BUFF_ATTACK)) 1 else 0
             val hpBonusFromNeighbor = if (neighbor.activeTags.contains(EffectTag.NEIGHBOR_BUFF_HEALTH)) 2 else 0
@@ -155,11 +145,9 @@ object GameEngine {
 
     private fun triggerOpponentAmbush(state: GameState, opponent: PlayerModel, slotIndex: Int, playedCard: CardModel) {
         val indicesToCheck = listOf(slotIndex - 1, slotIndex, slotIndex + 1).filter { it in 0 until MAX_BOARD_SIZE }
-        
         indicesToCheck.forEach { i ->
             val ambushCard = opponent.board[i]
             if (ambushCard != null && ambushCard.activeTags.contains(EffectTag.AUTO_ATTACK_PLAYED)) {
-                // Если карта оглушена, заморожена или спит - она не может амбушить
                 if (!ambushCard.isFrozen && !ambushCard.isStunned && !ambushCard.isSleeping) {
                     calculateCombat(state, ambushCard, playedCard, isCounterRetaliation = true)
                 }
@@ -167,14 +155,11 @@ object GameEngine {
         }
     }
 
-    // Валидация атаки
     fun canAttackTarget(state: GameState, attacker: CardModel, target: CardModel?): Boolean {
         if (attacker.isSleeping || attacker.hasAttackedThisTurn || attacker.isStunned || attacker.isFrozen) return false
-
         val enemyPlayer = if (state.currentTurn == Turn.PLAYER) state.opponent else state.player
         val hasTauntOnBoard = enemyPlayer.board.any { it?.hasTaunt == true }
         if (hasTauntOnBoard && (target == null || !target.hasTaunt)) return false
-
         return true
     }
 
@@ -185,39 +170,24 @@ object GameEngine {
     fun calculateCombat(state: GameState, attacker: CardModel, target: CardModel, isCounterRetaliation: Boolean = false) {
         if (!isCounterRetaliation) attacker.hasAttackedThisTurn = true
 
-        // 1. РАСЧЕТ ИСХОДЯЩЕГО УРОНА (с учетом критов и баффов)
         var damageToTarget = attacker.currentAttack
         attacker.activeEffects.forEach { damageToTarget = it.modifyOutgoingDamage(attacker, target, damageToTarget) }
         target.activeEffects.forEach { damageToTarget = it.modifyIncomingDamage(target, damageToTarget) }
 
-        // 2. РАСЧЕТ ОТВЕТНОГО УРОНА (Только если атакующий - MELEE)
-        // Проверяем группы атакующего на наличие MELEE. Если атакующий - ближник, он получает сдачи.
         val isMeleeAttacker = attacker.groups.contains(GroupTag.MELEE)
         var counterDamageToAttacker = if (isMeleeAttacker) target.currentAttack else 0
-        
-        // Модификаторы ответного урона (эффекты цели и атакующего)
         target.activeEffects.forEach { counterDamageToAttacker = it.modifyOutgoingDamage(target, attacker, counterDamageToAttacker) }
         attacker.activeEffects.forEach { counterDamageToAttacker = it.modifyCounterDamage(attacker, target, counterDamageToAttacker) }
 
-        // 3. НАНЕСЕНИЕ УРОНА (Симультанно)
-        // Важно: мы рассчитываем урон заранее, поэтому даже если одна из карт "погибает" в процессе, 
-        // она успевает нанести ответный урон.
         target.currentHealth -= damageToTarget
         attacker.currentHealth -= counterDamageToAttacker
-
         target.lastDamageTaken = damageToTarget
         attacker.lastDamageTaken = counterDamageToAttacker
 
-        // 4. ТРИГГЕРЫ УРОНА
         attacker.activeEffects.forEach { it.onDamageDealt(state, attacker, damageToTarget) }
         target.activeEffects.forEach { it.onDamageDealt(state, target, counterDamageToAttacker) }
 
-        // 5. ВОЗМЕЗДИЕ СОСЕДЕЙ (Retribution)
-        if (!isCounterRetaliation) {
-            triggerRetribution(state, target, attacker)
-        }
-
-        // 6. ПОСТ-ЭФФЕКТЫ
+        if (!isCounterRetaliation) triggerRetribution(state, target, attacker)
         attacker.activeEffects.forEach { it.onAfterAttack(state, attacker, target) }
 
         checkWinCondition(state)
@@ -228,11 +198,9 @@ object GameEngine {
         val owner = if (state.player.board.contains(attackedCard)) state.player else state.opponent
         val slot = owner.board.indexOf(attackedCard)
         if (slot == -1) return
-
         val neighbors = listOf(slot - 1, slot + 1).filter { it in 0 until MAX_BOARD_SIZE }.mapNotNull { owner.board[it] }
         neighbors.forEach { neighbor ->
             if (neighbor.activeTags.contains(EffectTag.RETRIBUTION)) {
-                // Если сосед оглушен, заморожен или спит - он не может мстить
                 if (!neighbor.isFrozen && !neighbor.isStunned && !neighbor.isSleeping) {
                     calculateCombat(state, neighbor, attacker, isCounterRetaliation = true)
                 }
@@ -243,14 +211,11 @@ object GameEngine {
     fun attackHero(state: GameState, attacker: CardModel) {
         attacker.hasAttackedThisTurn = true
         val enemy = if (state.currentTurn == Turn.PLAYER) state.opponent else state.player
-        
         var damage = attacker.currentAttack
-        attacker.activeEffects.forEach { damage = it.modifyOutgoingDamage(attacker, attacker, damage) } // Dummy target card
-        
+        attacker.activeEffects.forEach { damage = it.modifyOutgoingDamage(attacker, attacker, damage) } 
         enemy.currentHp -= damage
         attacker.activeEffects.forEach { it.onDamageDealt(state, attacker, damage) }
 
-        // ПРИМЕНЕНИЕ ДЕБАФФОВ НА ГЕРОЯ (Bleed, Poison, Burn)
         attacker.activeEffects.forEach { effect ->
             when (effect) {
                 is com.example.cardsandshades.effect.BleedEffect -> effect.applyToHero(enemy)
@@ -258,7 +223,6 @@ object GameEngine {
                 is com.example.cardsandshades.effect.BurnEffect -> effect.applyToHero(enemy)
             }
         }
-
         checkWinCondition(state)
         checkAutoWinCondition(state)
     }
@@ -273,14 +237,11 @@ object GameEngine {
 
     private fun checkWinCondition(state: GameState) {
         if (state.player.isDead && state.opponent.isDead) {
-            state.isGameOver = true
-            state.winnerName = "draw"
+            state.isGameOver = true; state.winnerName = "draw"
         } else if (state.opponent.isDead) {
-            state.isGameOver = true
-            state.winnerName = state.player.name
+            state.isGameOver = true; state.winnerName = state.player.name
         } else if (state.player.isDead) {
-            state.isGameOver = true
-            state.winnerName = state.opponent.name
+            state.isGameOver = true; state.winnerName = state.opponent.name
         }
     }
 
@@ -288,13 +249,17 @@ object GameEngine {
         if (state.isGameOver) return
         val p = state.player
         val o = state.opponent
-        if (p.hand.isEmpty() && p.board.all { it == null } && p.deck.isEmpty()) {
-            val dmg = o.board.filterNotNull().sumOf { it.currentAttack }
-            if (dmg >= p.currentHp) { state.isGameOver = true; state.winnerName = o.name }
-        }
-        if (o.hand.isEmpty() && o.board.all { it == null } && o.deck.isEmpty()) {
-            val dmg = p.board.filterNotNull().sumOf { it.currentAttack }
-            if (dmg >= o.currentHp) { state.isGameOver = true; state.winnerName = p.name }
+        
+        // КРИТЕРИЙ: Нет ресурсов для игры (пустая рука, пустой стол, пустая колода)
+        val pNoRes = p.hand.isEmpty() && p.board.all { it == null } && p.deck.isEmpty()
+        val oNoRes = o.hand.isEmpty() && o.board.all { it == null } && o.deck.isEmpty()
+
+        if (pNoRes) {
+             state.isGameOver = true
+             state.winnerName = o.name
+        } else if (oNoRes) {
+             state.isGameOver = true
+             state.winnerName = p.name
         }
     }
 }

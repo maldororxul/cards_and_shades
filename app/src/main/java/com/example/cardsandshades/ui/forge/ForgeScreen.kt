@@ -38,6 +38,13 @@ fun ForgeScreen(
     val dustL by UserProfile.dustLegendary.collectAsState()
     val dustM by UserProfile.dustMythic.collectAsState()
 
+    val hammerC by UserProfile.hammerCommon.collectAsState()
+    val hammerU by UserProfile.hammerUncommon.collectAsState()
+    val hammerR by UserProfile.hammerRare.collectAsState()
+    val hammerE by UserProfile.hammerEpic.collectAsState()
+    val hammerL by UserProfile.hammerLegendary.collectAsState()
+    val hammerM by UserProfile.hammerMythic.collectAsState()
+
     var forgedCard by remember { mutableStateOf<CardModel?>(null) }
     val welcomeMsg = stringResource(R.string.forge_welcome)
     var message by remember { mutableStateOf(welcomeMsg) }
@@ -62,19 +69,27 @@ fun ForgeScreen(
     ) {
         GameText(stringResource(R.string.forge_title), fontSize = 28.sp, fontWeight = FontWeight.Black, color = Color.White)
         
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
-        // ИНФОРМАЦИЯ О ПЫЛИ (всегда сверху)
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            DustChip("C", Color.White, dustC)
-            DustChip("U", Color.Green, dustU)
-            DustChip("R", Color(0xFF2196F3), dustR)
-            DustChip("E", Color(0xFF9C27B0), dustE)
-            DustChip("L", Color.Yellow, dustL)
-            DustChip("M", Color.Red, dustM)
+        // RESOURCES (Dust & Hammers)
+        Column(modifier = Modifier.fillMaxWidth().background(Color.Black.copy(alpha = 0.3f), RoundedCornerShape(12.dp)).padding(8.dp)) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+                DustChip("C", Color.White, dustC)
+                DustChip("U", Color.Green, dustU)
+                DustChip("R", Color(0xFF2196F3), dustR)
+                DustChip("E", Color(0xFF9C27B0), dustE)
+                DustChip("L", Color.Yellow, dustL)
+                DustChip("M", Color.Red, dustM)
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+                HammerChip(Color.White, hammerC)
+                HammerChip(Color.Green, hammerU)
+                HammerChip(Color(0xFF2196F3), hammerR)
+                HammerChip(Color(0xFF9C27B0), hammerE)
+                HammerChip(Color.Yellow, hammerL)
+                HammerChip(Color.Red, hammerM)
+            }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -131,42 +146,42 @@ fun ForgeScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                ForgeRow(Rarity.COMMON, Color.White, dustC, 40) {
+                ForgeRow(Rarity.COMMON, Color.White, dustC, hammerC, 40) {
                     if (UserProfile.craftCard(Rarity.COMMON)) {
                         forgedCard = UserProfile.collection.lastOrNull()
                         message = craftSuccess.format(commonLabel)
                     } else message = craftFail
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                ForgeRow(Rarity.UNCOMMON, Color.Green, dustU, 80) {
+                ForgeRow(Rarity.UNCOMMON, Color.Green, dustU, hammerU, 80) {
                     if (UserProfile.craftCard(Rarity.UNCOMMON)) {
                         forgedCard = UserProfile.collection.lastOrNull()
                         message = craftSuccess.format(uncommonLabel)
                     } else message = craftFail
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                ForgeRow(Rarity.RARE, Color(0xFF2196F3), dustR, 100) {
+                ForgeRow(Rarity.RARE, Color(0xFF2196F3), dustR, hammerR, 100) {
                     if (UserProfile.craftCard(Rarity.RARE)) {
                         forgedCard = UserProfile.collection.lastOrNull()
                         message = craftSuccess.format(rareLabel)
                     } else message = craftFail
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                ForgeRow(Rarity.EPIC, Color(0xFF9C27B0), dustE, 400) {
+                ForgeRow(Rarity.EPIC, Color(0xFF9C27B0), dustE, hammerE, 400) {
                     if (UserProfile.craftCard(Rarity.EPIC)) {
                         forgedCard = UserProfile.collection.lastOrNull()
                         message = craftSuccess.format(epicLabel)
                     } else message = craftFail
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                ForgeRow(Rarity.LEGENDARY, Color.Yellow, dustL, 1600) {
+                ForgeRow(Rarity.LEGENDARY, Color.Yellow, dustL, hammerL, 1600) {
                     if (UserProfile.craftCard(Rarity.LEGENDARY)) {
                         forgedCard = UserProfile.collection.lastOrNull()
                         message = forgeLegendaryReady
                     } else message = craftFail
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                ForgeRow(Rarity.MYTHIC, Color.Red, dustM, 5000) {
+                ForgeRow(Rarity.MYTHIC, Color.Red, dustM, hammerM, 5000) {
                     if (UserProfile.craftCard(Rarity.MYTHIC)) {
                         forgedCard = UserProfile.collection.lastOrNull()
                         message = craftSuccess.format(mythicLabel)
@@ -224,7 +239,17 @@ private fun DustChip(label: String, color: Color, amount: Int) {
 }
 
 @Composable
-private fun ForgeRow(rarity: Rarity, color: Color, dust: Int, cost: Int, onClick: () -> Unit) {
+private fun HammerChip(color: Color, amount: Int) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        GameText("⚒️", fontSize = 10.sp)
+        Spacer(modifier = Modifier.width(2.dp))
+        GameText(amount.toString(), color = color, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+    }
+}
+
+@Composable
+private fun ForgeRow(rarity: Rarity, color: Color, dust: Int, hammers: Int, cost: Int, onClick: () -> Unit) {
+    val canForge = dust >= cost && hammers >= 1
     Row(
         modifier = Modifier.fillMaxWidth().background(Color(0xFF1E1E1E).copy(alpha = 0.8f), RoundedCornerShape(8.dp)).padding(12.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -240,9 +265,13 @@ private fun ForgeRow(rarity: Rarity, color: Color, dust: Int, cost: Int, onClick
                 Rarity.MYTHIC -> stringResource(R.string.rarity_mythic)
             }
             GameText(rarityLabel, color = color, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-            GameText(stringResource(R.string.dust_label, dust), fontSize = 12.sp, color = if (dust >= cost) Color.Green else Color.Gray)
+            Row {
+                GameText(stringResource(R.string.dust_label, dust), fontSize = 11.sp, color = if (dust >= cost) Color.Green else Color.Gray)
+                Spacer(modifier = Modifier.width(8.dp))
+                GameText("⚒️ $hammers", fontSize = 11.sp, color = if (hammers >= 1) Color.Yellow else Color.Gray)
+            }
         }
-        GameButton(text = stringResource(R.string.forge_craft_btn, cost), onClick = onClick, enabled = dust >= cost, containerColor = if (dust >= cost) color else Color.DarkGray, fontSize = 10.sp)
+        GameButton(text = stringResource(R.string.forge_craft_btn, cost), onClick = onClick, enabled = canForge, containerColor = if (canForge) color else Color.DarkGray, fontSize = 10.sp)
     }
 }
 

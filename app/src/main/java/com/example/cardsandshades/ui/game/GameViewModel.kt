@@ -70,6 +70,14 @@ class GameViewModel : ViewModel() {
 
     init {
         _gameState.value = null
+        
+        // Таймер времени в игре
+        viewModelScope.launch {
+            while (true) {
+                delay(5000) // Раз в 5 сек
+                MissionManager.tickPlaytime(5)
+            }
+        }
     }
 
     fun startNewGame(level: LevelModel) {
@@ -139,6 +147,9 @@ class GameViewModel : ViewModel() {
         if (isAutoBattleActive) {
             autoTurnJob = executeGenericTurn(isOpponent = false)
         }
+        
+        MissionManager.updateProgress("daily_battles", 1, false)
+        MissionManager.updateProgress("weekly_battles", 1, true)
     }
 
     fun claimRewardsAndExit(isPlayerWin: Boolean) {
@@ -148,27 +159,15 @@ class GameViewModel : ViewModel() {
             currentLevel?.let { level ->
                 val isFirstTime = level.id >= UserProfile.maxUnlockedLevel.value
                 val rewards = if (isFirstTime) level.firstTimeReward else level.repeatReward
-
-                UserProfile.gold.value += rewards.gold
-                UserProfile.crystals.value += rewards.crystals
-                
-                UserProfile.dustCommon.value += rewards.dustCommon
-                UserProfile.dustRare.value += rewards.dustRare
-                UserProfile.dustEpic.value += rewards.dustEpic
-                UserProfile.dustLegendary.value += rewards.dustLegendary
-                UserProfile.dustMythic.value += rewards.dustMythic
-
-                rewards.cardName?.let { cardName ->
-                    CardCatalog.createCardInstance(cardName)?.let { prizeCard ->
-                        UserProfile.collection.add(prizeCard)
-                    }
-                }
+                UserProfile.applyReward(rewards)
 
                 if (level.id == UserProfile.maxUnlockedLevel.value) {
                     UserProfile.maxUnlockedLevel.value = level.id + 1
                 }
                 UserProfile.save()
             }
+            MissionManager.updateProgress("daily_win", 1, false)
+            MissionManager.updateProgress("weekly_win_streak", 1, true)
         } else {
             SoundManager.playSoundByName(null, "defeat")
         }
@@ -239,11 +238,8 @@ class GameViewModel : ViewModel() {
 
                 _gameState.update { currentState ->
                     currentState?.deepCopy()?.apply {
-                        // Сбрасываем все флаги анимаций атаки
                         player.board.filterNotNull().forEach { it.isAttacking = false }
                         opponent.board.filterNotNull().forEach { it.isAttacking = false }
-                        
-                        // Переходим к фазе получения урона (тряска)
                         player.board.filterNotNull().forEach { if (it.lastDamageTaken > 0) it.isTakingDamage = true }
                         opponent.board.filterNotNull().forEach { if (it.lastDamageTaken > 0) it.isTakingDamage = true }
                     }
@@ -311,7 +307,6 @@ class GameViewModel : ViewModel() {
     fun attackEnemyHero(attacker: CardModel) {
         val state = _gameState.value ?: return
         if (state.isAnimating || state.currentTurn != Turn.PLAYER) return
-
         if (!GameEngine.canAttackHero(state, attacker)) return
 
         viewModelScope.launch {
@@ -319,7 +314,6 @@ class GameViewModel : ViewModel() {
             try {
                 updateCardAnimation(attacker.id, isAttacking = true)
                 delay(getDelay(200))
-
                 SoundManager.playSoundByName(null, attacker.attackSound)
 
                 opponentHeroDamageValue = attacker.currentAttack
@@ -337,7 +331,6 @@ class GameViewModel : ViewModel() {
 
                 updateCardAnimation(attacker.id, isAttacking = false)
                 delay(getDelay(500))
-
                 opponentHeroTakingDamage = false
                 _gameState.update { it?.copy(isAnimating = false) }
 
@@ -377,14 +370,12 @@ class GameViewModel : ViewModel() {
         delay(getDelay(1000))
         if (!isActive) return@launch
 
-        // ФАЗА 1: Розыгрыш карт
         _gameState.update { currentState ->
             currentState?.deepCopy()?.apply {
                 val actor = if (isOpponent) opponent else player
                 val actorKey = if (isOpponent) "opponent" else "player"
                 val cardsInHand = actor.hand.sortedByDescending { it.manaCost }
                 for (card in cardsInHand) {
-                    // Ищем первый пустой слот
                     val emptySlot = actor.board.indexOfFirst { it == null }
                     if (emptySlot != -1) {
                         GameEngine.playCard(this, card, emptySlot)
@@ -398,7 +389,6 @@ class GameViewModel : ViewModel() {
         delay(getDelay(500))
         if (!isActive) return@launch
 
-        // ФАЗА 2: Атака
         val state = _gameState.value
         if (state != null && !state.isGameOver) {
             val actor = if (isOpponent) state.opponent else state.player
@@ -436,7 +426,6 @@ class GameViewModel : ViewModel() {
 
                 updateCardAnimation(activeAttacker.id, isAttacking = true)
                 delay(getDelay(200))
-
                 SoundManager.playSoundByName(null, activeAttacker.attackSound)
 
                 _gameState.update { currentState ->
@@ -456,12 +445,9 @@ class GameViewModel : ViewModel() {
                                     if (nextAttacker.groups.contains(GroupTag.MELEE)) {
                                         nextTarget.isAttacking = true
                                     }
-                                    
                                     val atkVal = nextAttacker.currentAttack
                                     val retVal = if (nextAttacker.groups.contains(GroupTag.MELEE)) nextTarget.currentAttack else 0
-
                                     GameEngine.calculateCombat(this, nextAttacker, nextTarget)
-                                    
                                     logHistory.add(LogEntry("battle_card_attack|$actorKey|card_${nextAttacker.name}|card_${nextTarget.name}|$atkVal", if (isOpponent) LogType.OPPONENT else LogType.PLAYER, turnNumber))
                                     if (nextAttacker.groups.contains(GroupTag.MELEE)) {
                                         logHistory.add(LogEntry("battle_card_retaliate|$opponentKey|card_${nextTarget.name}|card_${nextAttacker.name}|$retVal", if (isOpponent) LogType.PLAYER else LogType.OPPONENT, turnNumber))
@@ -483,7 +469,6 @@ class GameViewModel : ViewModel() {
                 }
 
                 delay(getDelay(400))
-                
                 _gameState.update { currentState ->
                     currentState?.deepCopy()?.apply {
                         player.board.filterNotNull().forEach { it.isAttacking = false }
@@ -494,7 +479,6 @@ class GameViewModel : ViewModel() {
                 }
                 
                 delay(getDelay(400))
-
                 _gameState.update { currentState ->
                     currentState?.deepCopy()?.apply {
                         player.board.filterNotNull().forEach { card ->
@@ -545,7 +529,6 @@ class GameViewModel : ViewModel() {
         if (!isActive) return@launch
         delay(getDelay(600))
 
-        // ФАЗА 3: Передача хода
         _gameState.update { currentState ->
             currentState?.deepCopy()?.apply {
                 GameEngine.endTurn(this)

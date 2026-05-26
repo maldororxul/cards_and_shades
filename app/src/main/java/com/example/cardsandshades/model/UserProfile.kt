@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import com.example.cardsandshades.catalog.CardCatalog
+import com.example.cardsandshades.catalog.MissionCatalog
 import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -16,13 +17,12 @@ object UserProfile {
     val gold = MutableStateFlow(50)
     val crystals = MutableStateFlow(10)
     
-    // Используем SnapshotStateList для гарантированной реактивности в Compose
     val collection: SnapshotStateList<CardModel> = mutableStateListOf()
     val selectedDeck: SnapshotStateList<CardModel> = mutableStateListOf()
     
     val maxUnlockedLevel = MutableStateFlow(1)
 
-    // ПОРОШОК ДЛЯ КРАФТА (по редкостям)
+    // ПОРОШОК ДЛЯ КРАФТА
     val dustCommon = MutableStateFlow(0)
     val dustUncommon = MutableStateFlow(0)
     val dustRare = MutableStateFlow(0)
@@ -30,7 +30,15 @@ object UserProfile {
     val dustLegendary = MutableStateFlow(0)
     val dustMythic = MutableStateFlow(0)
 
-    // ДНЕВНЫЕ НАГРАДЫ
+    // МОЛОТЫ (НОВЫЙ РЕСУРС)
+    val hammerCommon = MutableStateFlow(0)
+    val hammerUncommon = MutableStateFlow(0)
+    val hammerRare = MutableStateFlow(0)
+    val hammerEpic = MutableStateFlow(0)
+    val hammerLegendary = MutableStateFlow(0)
+    val hammerMythic = MutableStateFlow(0)
+
+    // ДНЕВНЫЕ НАГРАДЫ (СТАРАЯ СИСТЕМА - Оставляем как есть для совместимости или мигрируем)
     val loginChainDays = MutableStateFlow(1)
     val lastClaimTimestamp = MutableStateFlow(0L)
     val rewardsClaimed = MutableStateFlow<Set<Int>>(emptySet())
@@ -57,14 +65,17 @@ object UserProfile {
                 dustLegendary.value = prefs.getInt("dustLegendary", 0)
                 dustMythic.value = prefs.getInt("dustMythic", 0)
 
+                hammerCommon.value = prefs.getInt("hammerCommon", 0)
+                hammerUncommon.value = prefs.getInt("hammerUncommon", 0)
+                hammerRare.value = prefs.getInt("hammerRare", 0)
+                hammerEpic.value = prefs.getInt("hammerEpic", 0)
+                hammerLegendary.value = prefs.getInt("hammerLegendary", 0)
+                hammerMythic.value = prefs.getInt("hammerMythic", 0)
+
                 loginChainDays.value = prefs.getInt("loginChainDays", 1)
                 lastClaimTimestamp.value = prefs.getLong("lastClaimTimestamp", 0L)
                 val claimedJson = prefs.getString("rewardsClaimed", "[]") ?: "[]"
                 rewardsClaimed.value = gson.fromJson(claimedJson, object : com.google.gson.reflect.TypeToken<Set<Int>>() {}.type) ?: emptySet()
-
-                // ЛОГИКА ДНЕВНОГО ЗАХОДА (Линейная прогрессия, без сброса)
-                // val now = System.currentTimeMillis()
-                // lastClaimTimestamp is loaded from prefs
 
                 val collectionJson = prefs.getString("collection", "[]") ?: "[]"
                 val deckJson = prefs.getString("deck", "[]") ?: "[]"
@@ -77,29 +88,31 @@ object UserProfile {
                 val achStates: List<AchievementState> = gson.fromJson(achJson, object : com.google.gson.reflect.TypeToken<List<AchievementState>>() {}.type) ?: emptyList()
                 AchievementManager.loadStates(achStates)
 
-                // Обновляем SnapshotStateList в главном потоке для безопасности
+                // ЗАГРУЗКА ЗАДАНИЙ
+                val dailyMissionsJson = prefs.getString("dailyMissions", "[]") ?: "[]"
+                val weeklyMissionsJson = prefs.getString("weeklyMissions", "[]") ?: "[]"
+                val dailyMissionsList: List<MissionState> = gson.fromJson(dailyMissionsJson, object : com.google.gson.reflect.TypeToken<List<MissionState>>() {}.type) ?: emptyList()
+                val weeklyMissionsList: List<MissionState> = gson.fromJson(weeklyMissionsJson, object : com.google.gson.reflect.TypeToken<List<MissionState>>() {}.type) ?: emptyList()
+                
+                MissionManager.dailyStates.clear()
+                dailyMissionsList.forEach { MissionManager.dailyStates[it.id] = it }
+                MissionManager.weeklyStates.clear()
+                weeklyMissionsList.forEach { MissionManager.weeklyStates[it.id] = it }
+
+                MissionManager.dailyPlaytimeSeconds = prefs.getLong("dailyPlaytime", 0L)
+                val claimedPlaytimeJson = prefs.getString("claimedPlaytime", "[]") ?: "[]"
+                val claimedPlaytime: Set<Int> = gson.fromJson(claimedPlaytimeJson, object : com.google.gson.reflect.TypeToken<Set<Int>>() {}.type) ?: emptySet()
+                MissionManager.claimedPlaytimeRewards.clear()
+                MissionManager.claimedPlaytimeRewards.addAll(claimedPlaytime)
+
                 launch(Dispatchers.Main) {
                     collection.clear()
                     collection.addAll(loadedCollection)
-
                     selectedDeck.clear()
                     selectedDeck.addAll(loadedDeck)
-                    val hasIllegalDuplicates = loadedDeck.groupBy { it.name }.any { entry ->
-                        val first = entry.value.first()
-                        val limit = when(first.rarity) {
-                            Rarity.COMMON -> 3
-                            Rarity.UNCOMMON -> 2
-                            Rarity.RARE, Rarity.EPIC -> 2
-                            Rarity.LEGENDARY, Rarity.MYTHIC -> 1
-                        }
-                        entry.value.size > limit
-                    }
-                    if (hasIllegalDuplicates || loadedDeck.size > 20) {
-                        selectedDeck.clear()
-                    }
                 }
             } else {
-                // ПЕРВЫЙ ЗАПУСК: Загрузка из start_profile.yaml
+                // ПЕРВЫЙ ЗАПУСК
                 try {
                     val yaml = Yaml()
                     val inputStream = context.assets.open("start_profile.yaml")
@@ -125,10 +138,8 @@ object UserProfile {
                     launch(Dispatchers.Main) {
                         collection.clear()
                         collection.addAll(startCollection)
-
                         selectedDeck.clear()
                         selectedDeck.addAll(startCollection.map { it.copy(id = UUID.randomUUID().toString()) })
-                        
                         save(context)
                     }
                 } catch (e: Exception) {
@@ -154,6 +165,13 @@ object UserProfile {
                 putInt("dustLegendary", dustLegendary.value)
                 putInt("dustMythic", dustMythic.value)
 
+                putInt("hammerCommon", hammerCommon.value)
+                putInt("hammerUncommon", hammerUncommon.value)
+                putInt("hammerRare", hammerRare.value)
+                putInt("hammerEpic", hammerEpic.value)
+                putInt("hammerLegendary", hammerLegendary.value)
+                putInt("hammerMythic", hammerMythic.value)
+
                 putInt("loginChainDays", loginChainDays.value)
                 putLong("lastClaimTimestamp", lastClaimTimestamp.value)
                 putString("rewardsClaimed", gson.toJson(rewardsClaimed.value))
@@ -161,9 +179,36 @@ object UserProfile {
                 putString("collection", gson.toJson(collection.toList()))
                 putString("deck", gson.toJson(selectedDeck.toList()))
                 putString("achievements", gson.toJson(AchievementManager.getAllStates()))
+
+                putString("dailyMissions", gson.toJson(MissionManager.dailyStates.values.toList()))
+                putString("weeklyMissions", gson.toJson(MissionManager.weeklyStates.values.toList()))
+                putLong("dailyPlaytime", MissionManager.dailyPlaytimeSeconds)
+                putString("claimedPlaytime", gson.toJson(MissionManager.claimedPlaytimeRewards))
+
                 apply()
             }
         }
+    }
+
+    fun applyReward(reward: RewardSetModel) {
+        gold.value += reward.gold
+        crystals.value += reward.crystals
+        dustCommon.value += reward.dustCommon
+        dustUncommon.value += reward.dustUncommon
+        dustRare.value += reward.dustRare
+        dustEpic.value += reward.dustEpic
+        dustLegendary.value += reward.dustLegendary
+        dustMythic.value += reward.dustMythic
+        hammerCommon.value += reward.hammerCommon
+        hammerUncommon.value += reward.hammerUncommon
+        hammerRare.value += reward.hammerRare
+        hammerEpic.value += reward.hammerEpic
+        hammerLegendary.value += reward.hammerLegendary
+        hammerMythic.value += reward.hammerMythic
+        if (reward.cardName != null) {
+            CardCatalog.createCardInstance(reward.cardName)?.let { collection.add(it) }
+        }
+        save()
     }
 
     fun dustExtras(): Int {
@@ -199,6 +244,7 @@ object UserProfile {
         if (totalDusted > 0) {
             collection.clear()
             collection.addAll(newCollection)
+            MissionManager.updateProgress("daily_disenchant", totalDusted, false)
             save()
         }
         return totalDusted
@@ -221,12 +267,25 @@ object UserProfile {
             Rarity.LEGENDARY -> dustLegendary
             Rarity.MYTHIC -> dustMythic
         }
+        val currentHammer = when (rarity) {
+            Rarity.COMMON -> hammerCommon
+            Rarity.UNCOMMON -> hammerUncommon
+            Rarity.RARE -> hammerRare
+            Rarity.EPIC -> hammerEpic
+            Rarity.LEGENDARY -> hammerLegendary
+            Rarity.MYTHIC -> hammerMythic
+        }
         
-        if (currentDust.value >= cost) {
+        if (currentDust.value >= cost && currentHammer.value >= 1) {
             val newCard = com.example.cardsandshades.catalog.CardCatalog.generateRandomCardByRarityOnly(rarity)
             if (newCard != null) {
                 currentDust.value -= cost
+                currentHammer.value -= 1
                 collection.add(newCard)
+                MissionManager.updateProgress("daily_craft", 1, false)
+                if (rarity == Rarity.EPIC || rarity == Rarity.LEGENDARY || rarity == Rarity.MYTHIC) {
+                    MissionManager.updateProgress("weekly_craft_epic", 1, true)
+                }
                 save()
                 return true
             }
@@ -246,32 +305,33 @@ object UserProfile {
             Rarity.UNCOMMON -> {
                 if (dustUncommon.value >= 100) {
                     dustUncommon.value -= 100
-                    dustRare.value += 10
-                    save(); true
+                    rareMerge(); true
                 } else false
             }
             Rarity.RARE -> {
                 if (dustRare.value >= 100) {
                     dustRare.value -= 100
-                    dustEpic.value += 10
-                    save(); true
+                    epicMerge(); true
                 } else false
             }
             Rarity.EPIC -> {
                 if (dustEpic.value >= 100) {
                     dustEpic.value -= 100
-                    dustLegendary.value += 10
-                    save(); true
+                    legendaryMerge(); true
                 } else false
             }
             Rarity.LEGENDARY -> {
                 if (dustLegendary.value >= 100) {
                     dustLegendary.value -= 100
-                    dustMythic.value += 10
-                    save(); true
+                    mythicMerge(); true
                 } else false
             }
             else -> false
         }
     }
+
+    private fun rareMerge() { dustRare.value += 10 }
+    private fun epicMerge() { dustEpic.value += 10 }
+    private fun legendaryMerge() { dustLegendary.value += 10 }
+    private fun mythicMerge() { dustMythic.value += 10 }
 }

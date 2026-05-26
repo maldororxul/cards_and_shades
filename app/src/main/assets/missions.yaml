@@ -1,0 +1,94 @@
+daily_missions:
+  - id: "daily_battles"
+    name_key: "mission_daily_battles"
+    goal: 5
+    reward:
+      gold: 100
+      hammer_common: 1
+  - id: "daily_craft"
+    name_key: "mission_daily_craft"
+    goal: 1
+    reward:
+      gold: 50
+      dust_common: 40
+  - id: "daily_disenchant"
+    name_key: "mission_daily_disenchant"
+    goal: 1
+    reward:
+      gold: 50
+      crystals: 10
+  - id: "daily_win"
+    name_key: "mission_daily_win"
+    goal: 2
+    reward:
+      gold: 150
+      hammer_uncommon: 1
+  - id: "daily_play_cards"
+    name_key: "mission_daily_play_cards"
+    goal: 20
+    reward:
+      gold: 100
+      dust_uncommon: 20
+
+weekly_missions:
+  - id: "weekly_battles"
+    name_key: "mission_weekly_battles"
+    goal: 30
+    reward:
+      gold: 1000
+      crystals: 100
+      hammer_rare: 1
+  - id: "weekly_craft_epic"
+    name_key: "mission_weekly_craft_epic"
+    goal: 1
+    reward:
+      gold: 500
+      hammer_epic: 1
+  - id: "weekly_win_streak"
+    name_key: "mission_weekly_win"
+    goal: 10
+    reward:
+      gold: 800
+      crystals: 50
+      hammer_legendary: 1
+  - id: "weekly_spend_gold"
+    name_key: "mission_weekly_spend"
+    goal: 2000
+    reward:
+      crystals: 150
+      dust_rare: 100
+  - id: "weekly_collect_cards"
+    name_key: "mission_weekly_collect"
+    goal: 5
+    reward:
+      gold: 1000
+      hammer_mythic: 1
+
+playtime_rewards:
+  - minutes: 2
+    reward:
+      gold: 20
+  - minutes: 5
+    reward:
+      gold: 50
+      dust_common: 10
+  - minutes: 10
+    reward:
+      crystals: 5
+      hammer_common: 1
+  - minutes: 20
+    reward:
+      gold: 100
+      dust_uncommon: 20
+  - minutes: 30
+    reward:
+      crystals: 15
+      hammer_uncommon: 1
+  - minutes: 45
+    reward:
+      gold: 200
+      dust_rare: 50
+  - minutes: 60
+    reward:
+      crystals: 50
+      hammer_rare: 1

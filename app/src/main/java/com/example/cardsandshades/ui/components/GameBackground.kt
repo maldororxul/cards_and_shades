@@ -29,7 +29,8 @@ fun GameBackground(
                     baseHealth = 0,
                     rarity = Rarity.COMMON,
                 ),
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
+                isBackground = true // Explicitly marked as background
             )
         }
         content()

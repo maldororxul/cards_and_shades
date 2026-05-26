@@ -860,9 +860,9 @@ cards:
     attackSound: "attack"
     quotes: []
 
-  # MYTHIC (Godlike)
+  # MYTHIC (Godlike) - REBALANCED MANA
   - name: "card_world_eater"
-    manaCost: 7
+    manaCost: 5
     baseAttack: 12
     baseHealth: 13
     rarity: "MYTHIC"
@@ -886,7 +886,7 @@ cards:
     attackSound: "attack"
     quotes: []
   - name: "card_forgotten_titan"
-    manaCost: 7
+    manaCost: 4
     baseAttack: 8
     baseHealth: 22
     rarity: "MYTHIC"
@@ -1342,7 +1342,7 @@ cards:
     quotes: []
 
   - name: "card_leviathan_awakened"
-    manaCost: 7
+    manaCost: 6
     baseAttack: 11
     baseHealth: 14
     rarity: "MYTHIC"
@@ -1354,7 +1354,7 @@ cards:
     attackSound: "attack"
     quotes: []
   - name: "card_infinite_stormlord"
-    manaCost: 8
+    manaCost: 5
     baseAttack: 12
     baseHealth: 12
     rarity: "MYTHIC"
@@ -1366,7 +1366,7 @@ cards:
     attackSound: "attack"
     quotes: []
   - name: "card_blood_eternal"
-    manaCost: 7
+    manaCost: 6
     baseAttack: 13
     baseHealth: 11
     rarity: "MYTHIC"
@@ -1378,7 +1378,7 @@ cards:
     attackSound: "attack"
     quotes: []
   - name: "card_mother_fungus"
-    manaCost: 8
+    manaCost: 5
     baseAttack: 7
     baseHealth: 18
     rarity: "MYTHIC"
@@ -1390,7 +1390,7 @@ cards:
     attackSound: "attack"
     quotes: []
   - name: "card_dream_eater"
-    manaCost: 7
+    manaCost: 6
     baseAttack: 10
     baseHealth: 11
     rarity: "MYTHIC"
@@ -1402,7 +1402,7 @@ cards:
     attackSound: "attack"
     quotes: []
   - name: "card_celestial_kraken"
-    manaCost: 9
+    manaCost: 6
     baseAttack: 14
     baseHealth: 16
     rarity: "MYTHIC"
@@ -1855,7 +1855,7 @@ cards:
     quotes: []
 
   - name: "card_emanation_of_light"
-    manaCost: 8
+    manaCost: 6
     baseAttack: 9
     baseHealth: 16
     rarity: "MYTHIC"
@@ -1867,7 +1867,7 @@ cards:
     attackSound: "attack"
     quotes: []
   - name: "card_goddess_of_compassion"
-    manaCost: 9
+    manaCost: 7
     baseAttack: 8
     baseHealth: 18
     rarity: "MYTHIC"
@@ -1879,7 +1879,7 @@ cards:
     attackSound: "attack"
     quotes: []
   - name: "card_eternal_spring_spirit"
-    manaCost: 8
+    manaCost: 5
     baseAttack: 7
     baseHealth: 17
     rarity: "MYTHIC"
@@ -1891,7 +1891,7 @@ cards:
     attackSound: "attack"
     quotes: []
   - name: "card_crown_of_hope"
-    manaCost: 7
+    manaCost: 4
     baseAttack: 11
     baseHealth: 14
     rarity: "MYTHIC"
@@ -1903,7 +1903,7 @@ cards:
     attackSound: "attack"
     quotes: []
   - name: "card_astral_unicorn_queen"
-    manaCost: 8
+    manaCost: 5
     baseAttack: 10
     baseHealth: 15
     rarity: "MYTHIC"
@@ -1915,7 +1915,7 @@ cards:
     attackSound: "attack"
     quotes: []
   - name: "card_lord_of_dawn"
-    manaCost: 9
+    manaCost: 7
     baseAttack: 13
     baseHealth: 16
     rarity: "MYTHIC"

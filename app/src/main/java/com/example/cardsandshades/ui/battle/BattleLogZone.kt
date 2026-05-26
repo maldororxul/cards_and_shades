@@ -122,17 +122,24 @@ fun DetailedBattleLogDialog(
     )
 }
 
+@Composable
 private fun formatLogMessage(context: android.content.Context, message: String): String {
     if (message.contains("|")) {
         val parts = message.split("|")
         val templateName = parts[0]
         val args = parts.drop(1).map { arg ->
-            // Если аргумент похож на card_*, локализуем его
-            if (arg.startsWith("card_")) getStringResourceByName(context, arg) else arg
+            // If argument starts with card_, localize it
+            if (arg.startsWith("card_")) getStringResourceByName(context, arg) 
+            // If argument is 'player' or 'opponent', localize it
+            else if (arg == "player") stringResource(R.string.player)
+            else if (arg == "opponent") stringResource(R.string.opponent)
+            // If argument is a number, return as number for String.format
+            else arg.toIntOrNull() ?: arg
         }
         
         val template = getStringResourceByName(context, templateName)
         return try {
+            // String.format needs java format specifiers like %1$s or %d
             template.format(*args.toTypedArray())
         } catch (e: Exception) {
             template + " " + args.joinToString(" ")
@@ -149,7 +156,7 @@ private fun formatLogMessage(context: android.content.Context, message: String):
     }
     
     // Также проверяем спец-сообщения
-    if (result == "draw") return getStringResourceByName(context, "draw")
+    if (result == "draw") return stringResource(R.string.draw)
     
     return result
 }
