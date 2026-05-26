@@ -1,6 +1,7 @@
 package com.example.cardsandshades.ui.components
 
 import android.annotation.SuppressLint
+import android.view.WindowManager
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -17,6 +18,7 @@ import androidx.compose.ui.draw.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -24,6 +26,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.window.DialogWindowProvider
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import com.example.cardsandshades.R
 import com.example.cardsandshades.model.CardModel
 import com.example.cardsandshades.model.Rarity
@@ -46,6 +52,18 @@ fun CardInspectionDialog(
             decorFitsSystemWindows = false
         )
     ) {
+
+        val window = (LocalView.current.parent as? DialogWindowProvider)?.window
+        SideEffect {
+            window?.let {
+                // Убираем затемнение и скрываем системные панели
+                it.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+                val controller = WindowCompat.getInsetsController(it, it.decorView)
+                controller.hide(WindowInsetsCompat.Type.systemBars())
+                controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            }
+        }
+
         Box(modifier = Modifier.fillMaxSize().background(Color.Black)) {
             HorizontalPager(
                 state = pagerState,
