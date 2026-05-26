@@ -2,7 +2,6 @@ package com.example.cardsandshades.ui.components
 
 import android.annotation.SuppressLint
 import androidx.compose.animation.core.*
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -16,11 +15,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -56,58 +51,9 @@ fun CardInspectionDialog(
                 state = pagerState,
                 modifier = Modifier.fillMaxSize()
             ) { page ->
-                Box(modifier = Modifier.fillMaxSize()) {
-                    CardInspectionContent(card = cards[page], onDismiss = onDismiss)
-                    
-                    val rarityColor = when (cards[page].rarity) {
-                        Rarity.COMMON -> Color.White
-                        Rarity.UNCOMMON -> Color.Green
-                        Rarity.RARE -> Color(0xFF2196F3)
-                        Rarity.EPIC -> Color(0xFF9C27B0)
-                        Rarity.LEGENDARY -> Color.Yellow
-                        Rarity.MYTHIC -> Color.Red
-                    }
-                    CrackedStoneFrame(color = rarityColor)
-                }
+                CardInspectionContent(card = cards[page], onDismiss = onDismiss)
             }
         }
-    }
-}
-
-@Composable
-fun CrackedStoneFrame(color: Color) {
-    Canvas(modifier = Modifier.fillMaxSize()) {
-        val w = size.width
-        val h = size.height
-        val thickness = 10.dp.toPx()
-        
-        val path = Path().apply {
-            moveTo(0f, 0f)
-            lineTo(w * 0.3f, 5f)
-            lineTo(w * 0.35f, 0f)
-            lineTo(w * 0.7f, 8f)
-            lineTo(w, 0f)
-            lineTo(w - 5f, h * 0.4f)
-            lineTo(w, h * 0.45f)
-            lineTo(w - 10f, h)
-            lineTo(w * 0.6f, h - 5f)
-            lineTo(w * 0.55f, h)
-            lineTo(0f, h - 8f)
-            lineTo(8f, h * 0.5f)
-            close()
-        }
-        
-        drawPath(
-            path = path,
-            color = color.copy(alpha = 0.7f),
-            style = Stroke(width = thickness, cap = StrokeCap.Round)
-        )
-        
-        val crackColor = color.copy(alpha = 0.4f)
-        drawLine(crackColor, Offset(0f, h * 0.2f), Offset(w * 0.1f, h * 0.25f), strokeWidth = 2f)
-        drawLine(crackColor, Offset(w, h * 0.7f), Offset(w * 0.85f, h * 0.65f), strokeWidth = 3f)
-        drawLine(crackColor, Offset(w * 0.4f, 0f), Offset(w * 0.45f, h * 0.08f), strokeWidth = 2f)
-        drawLine(crackColor, Offset(w * 0.5f, h), Offset(w * 0.48f, h * 0.9f), strokeWidth = 4f)
     }
 }
 
@@ -149,18 +95,31 @@ fun CardComponent(
         Rarity.MYTHIC -> Color.Red
     }
     
-    val borderThickness = when(card.rarity) {
-        Rarity.COMMON -> 1.dp
-        Rarity.UNCOMMON -> 2.dp
-        Rarity.RARE -> 3.dp
-        Rarity.EPIC -> 4.dp
-        Rarity.LEGENDARY -> 5.dp
-        Rarity.MYTHIC -> 6.dp
+    // THINNER BORDERS FOR COMBAT (using isPreview as proxy for 'not inspecting')
+    val borderThickness = if (isPreview) {
+        when(card.rarity) {
+            Rarity.COMMON -> 1.dp
+            Rarity.UNCOMMON -> 1.5.dp
+            Rarity.RARE -> 2.dp
+            Rarity.EPIC -> 2.5.dp
+            Rarity.LEGENDARY -> 3.dp
+            Rarity.MYTHIC -> 3.5.dp
+        }
+    } else {
+        when(card.rarity) {
+            Rarity.COMMON -> 1.dp
+            Rarity.UNCOMMON -> 2.dp
+            Rarity.RARE -> 3.dp
+            Rarity.EPIC -> 4.dp
+            Rarity.LEGENDARY -> 5.dp
+            Rarity.MYTHIC -> 6.dp
+        }
     }
-    val finalBorderThickness = if (card.hasTaunt && !isPreview) borderThickness + 2.dp else borderThickness
-    val finalBorderColor = if (card.hasTaunt && !isPreview) Color(0xFFFF9800) else borderColor
+    
+    val finalBorderThickness = if (card.hasTaunt && isPreview) borderThickness + 1.dp else borderThickness
+    val finalBorderColor = if (card.hasTaunt && isPreview) Color(0xFFFF9800) else borderColor
 
-    val cardAlpha = if ((card.isSleeping || card.hasAttackedThisTurn) && !isPreview) 0.6f else 1f
+    val cardAlpha = if ((card.isSleeping || card.hasAttackedThisTurn) && isPreview) 0.6f else 1f
 
     val cardBaseModifier = if (modifier == Modifier) Modifier.size(105.dp, 150.dp) else modifier
 
@@ -178,7 +137,7 @@ fun CardComponent(
                 .padding(finalBorderThickness)
                 .border(1.dp, Color.Black.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
                 .combinedClickable(
-                    enabled = !isPreview || onClick != null,
+                    enabled = isPreview || onClick != null,
                     onClick = {
                         if (onClick != null) {
                             onClick()

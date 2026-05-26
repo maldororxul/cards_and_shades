@@ -29,7 +29,7 @@ fun HealthOrb(
     liquidColor: Color = Color(0xFFD32F2F)
 ) {
     val hpPercentage = (currentHp.toFloat() / maxHp.toFloat()).coerceIn(0f, 1f)
-    val animatedHp by animateFloatAsState(targetValue = hpPercentage, animationSpec = tween(1000))
+    val animatedHp by animateFloatAsState(targetValue = hpPercentage, animationSpec = tween(1000), label = "hp")
     
     val infiniteTransition = rememberInfiniteTransition(label = "wave")
     val waveOffset by infiniteTransition.animateFloat(
@@ -67,7 +67,7 @@ fun HealthOrb(
                 
                 val wavePath = Path().apply {
                     moveTo(0f, fillHeight)
-                    val waveAmplitude = 10f
+                    val waveAmplitude = size.toPx() * 0.05f
                     val waveLength = width
                     
                     for (x in 0..width.toInt()) {
@@ -85,6 +85,40 @@ fun HealthOrb(
                     brush = Brush.verticalGradient(
                         colors = listOf(liquidColor.copy(alpha = 0.7f), liquidColor)
                     )
+                )
+
+                // --- 3D EFFECT REFINEMENT ---
+                
+                // 1. HIGHLIGHT (Gloss)
+                drawOval(
+                    brush = Brush.radialGradient(
+                        colors = listOf(Color.White.copy(alpha = 0.5f), Color.Transparent),
+                        center = androidx.compose.ui.geometry.Offset(width * 0.3f, height * 0.25f),
+                        radius = width * 0.35f
+                    ),
+                    topLeft = androidx.compose.ui.geometry.Offset(width * 0.15f, height * 0.15f),
+                    size = androidx.compose.ui.geometry.Size(width * 0.3f, height * 0.3f)
+                )
+
+                // 2. INNER SHADOW (Depth)
+                drawPath(
+                    path = circlePath,
+                    brush = Brush.radialGradient(
+                        colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.4f)),
+                        center = androidx.compose.ui.geometry.Offset(width * 0.5f, height * 0.5f),
+                        radius = width * 0.5f
+                    )
+                )
+
+                // 3. BOTTOM REFLECTION (3D Sphere feeling)
+                drawOval(
+                    brush = Brush.radialGradient(
+                        colors = listOf(Color.White.copy(alpha = 0.2f), Color.Transparent),
+                        center = androidx.compose.ui.geometry.Offset(width * 0.5f, height * 0.85f),
+                        radius = width * 0.3f
+                    ),
+                    topLeft = androidx.compose.ui.geometry.Offset(width * 0.35f, height * 0.75f),
+                    size = androidx.compose.ui.geometry.Size(width * 0.3f, height * 0.2f)
                 )
             }
         }

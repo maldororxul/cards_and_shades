@@ -39,6 +39,7 @@
     <string name="battle_round_start">--- Round %d Start ---</string>
     <string name="battle_round_end">--- Round %d End ---</string>
     <string name="battle_attack_hero">%1$s: Attacking hero for %2$d damage!</string>
+    <string name="battle_card_died">%1$s: %2$s has died!</string>
     <string name="auto_deck">Auto-Deck</string>
     <string name="auto_deck_success">✅ Deck generated!</string>
     <string name="auto_deck_fail">❌ Not enough cards in collection!</string>

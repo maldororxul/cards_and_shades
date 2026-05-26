@@ -4,6 +4,7 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -15,6 +16,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -26,6 +28,7 @@ import com.example.cardsandshades.R
 import com.example.cardsandshades.model.CardModel
 import com.example.cardsandshades.model.Rarity
 import com.example.cardsandshades.utils.getStringResourceByName
+import kotlin.math.abs
 
 @Composable
 fun CardInspectionContent(
@@ -67,7 +70,21 @@ fun CardInspectionContent(
         label = "scale"
     )
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .pointerInput(Unit) {
+                detectDragGestures(
+                    onDrag = { change, dragAmount ->
+                        change.consume()
+                        // If vertical swipe distance is large enough, dismiss
+                        if (abs(dragAmount.y) > 50f) {
+                            onDismiss()
+                        }
+                    }
+                )
+            }
+    ) {
         CardVisual(
             card = card, 
             modifier = Modifier
@@ -76,7 +93,12 @@ fun CardInspectionContent(
             contentScale = ContentScale.Crop
         )
         
-        // CrackedStoneFrame(color = rarityColor) // Defined in CardComponent.kt or move it
+        // Solid opaque border frame
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .border(12.dp, rarityColor, RoundedCornerShape(0.dp))
+        )
         
         if (!isFocusMode) {
             // HEADER

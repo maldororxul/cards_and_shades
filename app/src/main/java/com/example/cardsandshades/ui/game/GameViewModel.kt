@@ -250,12 +250,15 @@ class GameViewModel : ViewModel() {
                 delay(getDelay(400))
 
                 _gameState.update { currentState ->
-                    currentState?.deepCopy()?.apply {
+                    val newState = currentState?.deepCopy()
+                    newState?.apply {
                         player.board.filterNotNull().forEach { card ->
                             card.isTakingDamage = false
                             if (card.currentHealth <= 0) {
                                 card.isDying = true
                                 SoundManager.playSoundByName(null, card.deathSound)
+                                // Log card death
+                                logHistory.add(LogEntry("battle_card_died|player|card_${card.name}", LogType.PLAYER, turnNumber))
                             }
                         }
                         opponent.board.filterNotNull().forEach { card ->
@@ -263,9 +266,12 @@ class GameViewModel : ViewModel() {
                             if (card.currentHealth <= 0) {
                                 card.isDying = true
                                 SoundManager.playSoundByName(null, card.deathSound)
+                                // Log card death
+                                logHistory.add(LogEntry("battle_card_died|opponent|card_${card.name}", LogType.OPPONENT, turnNumber))
                             }
                         }
                     }
+                    newState
                 }
 
                 val hasDeaths = _gameState.value?.player?.board?.filterNotNull()?.any { it.isDying } == true ||
@@ -431,7 +437,8 @@ class GameViewModel : ViewModel() {
                 SoundManager.playSoundByName(null, activeAttacker.attackSound)
 
                 _gameState.update { currentState ->
-                    currentState?.deepCopy()?.apply {
+                    val newState = currentState?.deepCopy()
+                    newState?.apply {
                         val cActor = if (isOpponent) opponent else player
                         val cDefender = if (isOpponent) player else opponent
                         val nextAttacker = cActor.board.filterNotNull().find { it.id == activeAttacker.id }
@@ -468,6 +475,7 @@ class GameViewModel : ViewModel() {
                             }
                         }
                     }
+                    newState
                 }
 
                 delay(getDelay(400))
@@ -482,12 +490,15 @@ class GameViewModel : ViewModel() {
                 
                 delay(getDelay(400))
                 _gameState.update { currentState ->
-                    currentState?.deepCopy()?.apply {
+                    val newState = currentState?.deepCopy()
+                    newState?.apply {
                         player.board.filterNotNull().forEach { card ->
                             card.isTakingDamage = false
                             if (card.currentHealth <= 0) {
                                 card.isDying = true
                                 SoundManager.playSoundByName(null, card.deathSound)
+                                // Log card death
+                                logHistory.add(LogEntry("battle_card_died|player|card_${card.name}", LogType.PLAYER, turnNumber))
                             }
                         }
                         opponent.board.filterNotNull().forEach { card ->
@@ -495,9 +506,12 @@ class GameViewModel : ViewModel() {
                             if (card.currentHealth <= 0) {
                                 card.isDying = true
                                 SoundManager.playSoundByName(null, card.deathSound)
+                                // Log card death
+                                logHistory.add(LogEntry("battle_card_died|opponent|card_${card.name}", LogType.OPPONENT, turnNumber))
                             }
                         }
                     }
+                    newState
                 }
 
                 opponentAttackerId = null

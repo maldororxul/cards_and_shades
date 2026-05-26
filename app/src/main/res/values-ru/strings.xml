@@ -38,6 +38,7 @@
     <string name="battle_round_start">--- Раунд %d ---</string>
     <string name="battle_round_end">--- Конец раунда %d ---</string>
     <string name="battle_attack_hero">%1$s: Атака героя на %2$d урона!</string>
+    <string name="battle_card_died">%1$s: %2$s погибает!</string>
     <string name="auto_deck">Авто-колода</string>
     <string name="auto_deck_success">✅ Колода сформирована!</string>
     <string name="auto_deck_fail">❌ Недостаточно карт в коллекции!</string>

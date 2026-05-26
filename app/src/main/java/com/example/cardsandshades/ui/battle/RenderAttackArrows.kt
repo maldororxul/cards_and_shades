@@ -8,17 +8,17 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
-import kotlin.math.PI
 
 @Composable
 fun RenderAttackArrows(
     isPlayerDrawing: Boolean,
     playerStart: Offset,
-    playerTargetOffset: Offset?,
+    playerTargetOffset: Offset,
     enemyHeroOffset: Offset,
     isEnemyBoardEmpty: Boolean,
     aiAttackerId: String?,
@@ -29,36 +29,44 @@ fun RenderAttackArrows(
     playerHeroOffset: Offset
 ) {
     Canvas(modifier = Modifier.fillMaxSize()) {
-        // 1. Рисуем стрелку прицеливания игрока
-        if (isPlayerDrawing) {
-            val isActuallyDragging = playerTargetOffset != null && playerTargetOffset != Offset.Zero && playerTargetOffset != playerStart
-            
-            if (isActuallyDragging) {
-                drawAttackArrow(start = playerStart, end = playerTargetOffset!!, color = Color.Red.copy(alpha = 0.8f))
-            } else if (isEnemyBoardEmpty && enemyHeroOffset != Offset.Zero) {
-                // Если вражеское поле пустое, можно сразу показывать стрелку в героя
-                drawAttackArrow(start = playerStart, end = enemyHeroOffset, color = Color.Red.copy(alpha = 0.8f))
+        // AI ARROWS
+        if (aiAttackerId != null) {
+            val start = playerCardsOffsets[aiAttackerId] ?: enemyCardsOffsets[aiAttackerId]
+            val end = if (isAiTargetingHero) {
+                if (playerCardsOffsets.containsKey(aiAttackerId)) enemyHeroOffset else playerHeroOffset
+            } else {
+                aiTargetId?.let { tid ->
+                    enemyCardsOffsets[tid] ?: playerCardsOffsets[tid]
+                }
+            }
+
+            if (start != null && end != null) {
+                drawAttackArrow(start, end, Color.Red)
             }
         }
 
-        // 2. Рисуем стрелку прицеливания ИИ в его ход
-        if (aiAttackerId != null) {
-            val aiStart = enemyCardsOffsets[aiAttackerId]
-            val aiEnd = if (isAiTargetingHero) playerHeroOffset else playerCardsOffsets[aiTargetId]
-
-            if (aiStart != null && aiEnd != null) {
-                drawAttackArrow(start = aiStart, end = aiEnd, color = Color.Yellow.copy(alpha = 0.8f))
+        // PLAYER ARROW
+        if (isPlayerDrawing) {
+            // Target validation: Arrow only points to ENEMY units (board or hero)
+            // We check if target is near any enemy board slot or the enemy hero
+            val isTargetingEnemyBoard = enemyCardsOffsets.values.any { (it - playerTargetOffset).getDistance() < 100f }
+            val isTargetingEnemyHero = (enemyHeroOffset - playerTargetOffset).getDistance() < 150f
+            
+            if (isTargetingEnemyBoard || isTargetingEnemyHero) {
+                drawAttackArrow(playerStart, playerTargetOffset, Color.Yellow)
+            } else {
+                // Dimmed or different color if pointing to invalid target
+                drawAttackArrow(playerStart, playerTargetOffset, Color.White.copy(alpha = 0.3f))
             }
         }
     }
 }
 
-private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawAttackArrow(start: Offset, end: Offset, color: Color) {
-    if (start == end || start == Offset.Zero || end == Offset.Zero) return
-    
+fun androidx.compose.ui.graphics.drawscope.DrawScope.drawAttackArrow(start: Offset, end: Offset, color: Color) {
     val strokeWidth = 6.dp.toPx()
-    
-    // Линия
+    val headSize = 15.dp.toPx()
+
+    // Line
     drawLine(
         color = color,
         start = start,
@@ -66,26 +74,24 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawAttackArrow(sta
         strokeWidth = strokeWidth,
         cap = StrokeCap.Round
     )
-    
-    // Наконечник стрелки
-    val angle = atan2((end.y - start.y).toDouble(), (end.x - start.x).toDouble())
-    val arrowSize = 20.dp.toPx()
-    
-    val p1 = Offset(
-        (end.x - arrowSize * cos(angle - PI / 6)).toFloat(),
-        (end.y - arrowSize * sin(angle - PI / 6)).toFloat()
-    )
-    val p2 = Offset(
-        (end.x - arrowSize * cos(angle + PI / 6)).toFloat(),
-        (end.y - arrowSize * sin(angle + PI / 6)).toFloat()
-    )
-    
+
+    // Arrow Head
+    val angle = atan2(end.y - start.y, end.x - start.x)
     val path = Path().apply {
         moveTo(end.x, end.y)
-        lineTo(p1.x, p1.y)
-        lineTo(p2.x, p2.y)
-        close()
+        lineTo(
+            end.x - headSize * cos(angle - 0.5f),
+            end.y - headSize * sin(angle - 0.5f)
+        )
+        moveTo(end.x, end.y)
+        lineTo(
+            end.x - headSize * cos(angle + 0.5f),
+            end.y - headSize * sin(angle + 0.5f)
+        )
     }
-    
-    drawPath(path = path, color = color)
+    drawPath(
+        path = path,
+        color = color,
+        style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
+    )
 }
