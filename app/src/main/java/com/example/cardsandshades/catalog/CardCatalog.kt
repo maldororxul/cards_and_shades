@@ -16,9 +16,11 @@ object CardCatalog {
         val yaml = Yaml()
         val inputStream = context.assets.open("cards.yaml")
         val data: Map<String, Any> = yaml.load(inputStream)
+        @Suppress("UNCHECKED_CAST")
         val cardsList = data["cards"] as List<Map<String, Any>>
 
         _templates = cardsList.map { cardMap ->
+            @Suppress("UNCHECKED_CAST")
             CardTemplate(
                 name = cardMap["name"] as String,
                 manaCost = cardMap["manaCost"] as Int,
@@ -28,7 +30,12 @@ object CardCatalog {
                 effectTags = (cardMap["effectTags"] as? List<String>)?.map { EffectTag.valueOf(it) } ?: emptyList(),
                 groupTags = (cardMap["groupTags"] as? List<String>)?.map { com.example.cardsandshades.model.GroupTag.valueOf(it) } ?: emptyList(),
                 canDropFromBooster = cardMap["canDropFromBooster"] as? Boolean ?: true,
-                canCraftFromDust = cardMap["canCraftFromDust"] as? Boolean ?: true
+                canCraftFromDust = cardMap["canCraftFromDust"] as? Boolean ?: true,
+                deckLimit = cardMap["deckLimit"] as? Int ?: 3,
+                deathSound = cardMap["deathSound"] as? String ?: "card_death",
+                playSound = cardMap["playSound"] as? String ?: "card_place",
+                attackSound = cardMap["attackSound"] as? String ?: "attack",
+                quotes = (cardMap["quotes"] as? List<String>) ?: emptyList()
             )
         }
     }
@@ -36,7 +43,7 @@ object CardCatalog {
     fun createCardInstance(templateName: String): CardModel? {
         val template = templates.find { it.name == templateName } ?: return null
         return CardModel(
-            id = java.util.UUID.randomUUID().toString(),
+            id = UUID.randomUUID().toString(),
             name = template.name,
             manaCost = template.manaCost,
             baseAttack = template.baseAttack,
@@ -44,7 +51,12 @@ object CardCatalog {
             rarity = template.rarity,
             effectTags = template.effectTags,
             groupTags = template.groupTags,
-            critMultiplier = if (template.effectTags.contains(EffectTag.CRIT)) 2.0f else 1.0f
+            critMultiplier = if (template.effectTags.contains(EffectTag.CRIT)) 2.0f else 1.0f,
+            limit = template.deckLimit,
+            dSound = template.deathSound,
+            pSound = template.playSound,
+            aSound = template.attackSound,
+            quoteList = template.quotes
         )
     }
 
@@ -62,7 +74,13 @@ object CardCatalog {
                     baseAttack = randomTemplate.baseAttack,
                     baseHealth = randomTemplate.baseHealth,
                     rarity = randomTemplate.rarity,
-                    effectTags = randomTemplate.effectTags
+                    effectTags = randomTemplate.effectTags,
+                    groupTags = randomTemplate.groupTags,
+                    limit = randomTemplate.deckLimit,
+                    dSound = randomTemplate.deathSound,
+                    pSound = randomTemplate.playSound,
+                    aSound = randomTemplate.attackSound,
+                    quoteList = randomTemplate.quotes
                 )
             )
         }
@@ -119,5 +137,10 @@ data class CardTemplate(
     val effectTags: List<EffectTag> = emptyList(),
     val groupTags: List<com.example.cardsandshades.model.GroupTag> = emptyList(),
     val canDropFromBooster: Boolean = true,
-    val canCraftFromDust: Boolean = true
+    val canCraftFromDust: Boolean = true,
+    val deckLimit: Int = 3,
+    val deathSound: String = "card_death",
+    val playSound: String = "card_place",
+    val attackSound: String = "attack",
+    val quotes: List<String> = emptyList()
 )

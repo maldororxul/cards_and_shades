@@ -20,6 +20,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalContext
 import com.example.cardsandshades.R
 import com.example.cardsandshades.catalog.CardCatalog
 import com.example.cardsandshades.model.CardModel
@@ -37,7 +38,8 @@ data class FilterState(
     val showOwnedOnly: Boolean = true,
     val selectedRarity: Rarity? = null,
     val selectedGroup: GroupTag? = null,
-    val selectedEffect: EffectTag? = null
+    val selectedEffect: EffectTag? = null,
+    val selectedMana: Int? = null
 )
 
 @SuppressLint("LocalContextGetResourceValueCall")
@@ -45,7 +47,7 @@ data class FilterState(
 fun CollectionScreen(
     modifier: Modifier = Modifier
 ) {
-    val context = androidx.compose.ui.platform.LocalContext.current
+    val context = LocalContext.current
     val userCards = UserProfile.collection
     val userDeck = UserProfile.selectedDeck
 
@@ -86,8 +88,9 @@ fun CollectionScreen(
             val passesRarity = filterState.selectedRarity == null || t.rarity == filterState.selectedRarity
             val passesGroup = filterState.selectedGroup == null || t.groupTags.contains(filterState.selectedGroup)
             val passesEffect = filterState.selectedEffect == null || t.effectTags.contains(filterState.selectedEffect)
+            val passesMana = filterState.selectedMana == null || t.manaCost == filterState.selectedMana
             
-            passesOwned && passesRarity && passesGroup && passesEffect
+            passesOwned && passesRarity && passesGroup && passesEffect && passesMana
         }
     }
 
@@ -134,7 +137,7 @@ fun CollectionScreen(
                     if (autoDeck.isNotEmpty()) {
                         currentDeck.clear()
                         currentDeck.addAll(autoDeck)
-                        statusMessage = context.getString(R.string.auto_deck_success)
+                        // No status message as requested
                     } else {
                         statusMessage = context.getString(R.string.auto_deck_fail)
                     }
@@ -144,7 +147,7 @@ fun CollectionScreen(
             )
 
             GameButton(
-                text = "Clear",
+                text = stringResource(R.string.clear),
                 onClick = {
                     currentDeck.clear()
                     statusMessage = context.getString(R.string.deck_count, 0)
@@ -180,7 +183,7 @@ fun CollectionScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                GameText("Filters", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                GameText(stringResource(R.string.filters), fontWeight = FontWeight.Bold, fontSize = 16.sp)
                 GameText(if (filtersExpanded) "▲" else "▼", color = Color.Gray)
             }
 
@@ -193,13 +196,16 @@ fun CollectionScreen(
                         onCheckedChange = { filterState = filterState.copy(showOwnedOnly = it) },
                         colors = CheckboxDefaults.colors(checkedColor = Color(0xFF673AB7))
                     )
-                    GameText("Owned Only", fontSize = 14.sp)
+                    GameText(stringResource(R.string.owned_only), fontSize = 14.sp)
                 }
 
-                // Можно добавить выпадающие списки для групп и редкостей здесь позже
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                FilterDropdownRow(filterState, onFilterChange = { filterState = it })
+
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                     TextButton(onClick = { filterState = FilterState() }) {
-                        GameText("Reset Filters", color = Color.Cyan, fontSize = 12.sp)
+                        GameText(stringResource(R.string.reset_filters), color = Color.Cyan, fontSize = 12.sp)
                     }
                 }
             }
@@ -252,12 +258,8 @@ fun CollectionScreen(
                                 initialInspectedIndex = filteredTemplates.indexOfFirst { it.name == card.name }
                             },
                             onDeckAdd = { card -> 
-                                val limit = when(card.rarity) {
-                                    Rarity.COMMON -> 3
-                                    Rarity.UNCOMMON -> 2
-                                    Rarity.RARE, Rarity.EPIC -> 2
-                                    Rarity.LEGENDARY, Rarity.MYTHIC -> 1
-                                }
+                                val template = CardCatalog.templates.find { it.name == card.name }
+                                val limit = template?.deckLimit ?: 3
                                 if (currentDeck.size < 20 && currentDeck.count { it.name == card.name } < limit) {
                                     currentDeck.add(card.copy(id = java.util.UUID.randomUUID().toString()))
                                 }
@@ -284,6 +286,100 @@ fun CollectionScreen(
     }
 }
 
+@Composable
+private fun FilterDropdownRow(state: FilterState, onFilterChange: (FilterState) -> Unit) {
+    val allText = stringResource(R.string.all)
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            // Rarity
+            FilterDropdown(
+                label = stringResource(R.string.filter_rarity),
+                selected = state.selectedRarity?.name ?: allText,
+                options = listOf(allText) + Rarity.entries.map { it.name },
+                onSelect = { 
+                    onFilterChange(state.copy(selectedRarity = if (it == allText) null else Rarity.valueOf(it)))
+                },
+                modifier = Modifier.weight(1f)
+            )
+            // Group
+            FilterDropdown(
+                label = stringResource(R.string.filter_tag),
+                selected = state.selectedGroup?.name ?: allText,
+                options = listOf(allText) + GroupTag.entries.map { it.name },
+                onSelect = {
+                    onFilterChange(state.copy(selectedGroup = if (it == allText) null else GroupTag.valueOf(it)))
+                },
+                modifier = Modifier.weight(1f)
+            )
+        }
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+             // Effect
+             FilterDropdown(
+                 label = stringResource(R.string.filter_effect),
+                 selected = state.selectedEffect?.name ?: allText,
+                 options = listOf(allText) + EffectTag.entries.map { it.name },
+                 onSelect = {
+                     onFilterChange(state.copy(selectedEffect = if (it == allText) null else EffectTag.valueOf(it)))
+                 },
+                 modifier = Modifier.weight(1f)
+             )
+             // Mana
+             FilterDropdown(
+                 label = stringResource(R.string.filter_mana),
+                 selected = state.selectedMana?.toString() ?: allText,
+                 options = listOf(allText) + (0..10).map { it.toString() },
+                 onSelect = {
+                     onFilterChange(state.copy(selectedMana = if (it == allText) null else it.toInt()))
+                 },
+                 modifier = Modifier.weight(1f)
+             )
+        }
+    }
+}
+
+@Composable
+private fun FilterDropdown(
+    label: String,
+    selected: String,
+    options: List<String>,
+    onSelect: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var expanded by remember { mutableStateOf(false) }
+    
+    Box(modifier = modifier) {
+        Column {
+            GameText(label, fontSize = 10.sp, color = Color.Gray)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.White.copy(alpha = 0.05f), RoundedCornerShape(4.dp))
+                    .border(1.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(4.dp))
+                    .clickable { expanded = true }
+                    .padding(8.dp)
+            ) {
+                GameText(selected, fontSize = 12.sp, maxLines = 1)
+            }
+        }
+        
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.background(Color(0xFF1A1A1A)).border(1.dp, Color.Gray, RoundedCornerShape(4.dp))
+        ) {
+            options.forEach { option ->
+                DropdownMenuItem(
+                    text = { GameText(option, fontSize = 12.sp) },
+                    onClick = {
+                        onSelect(option)
+                        expanded = false
+                    }
+                )
+            }
+        }
+    }
+}
+
 private fun generateAutoDeck(userCards: List<CardModel>): List<CardModel> {
     if (userCards.isEmpty()) return emptyList()
 
@@ -293,7 +389,6 @@ private fun generateAutoDeck(userCards: List<CardModel>): List<CardModel> {
     val availableGroups = userCards.groupBy { it.name }.mapValues { it.value.toMutableList() }
     
     // Сортируем все уникальные карты по "ценности"
-    // Ценность = редкость (индекс) * 10 + (атака + хп)
     val sortedTemplates = CardCatalog.templates
         .filter { t -> userCards.any { it.name == t.name } }
         .sortedByDescending { t ->
@@ -305,19 +400,12 @@ private fun generateAutoDeck(userCards: List<CardModel>): List<CardModel> {
     for (template in sortedTemplates) {
         if (deck.size >= 20) break
         
-        val limit = when(template.rarity) {
-            Rarity.COMMON -> 3
-            Rarity.UNCOMMON -> 2
-            Rarity.RARE, Rarity.EPIC -> 2
-            Rarity.LEGENDARY, Rarity.MYTHIC -> 1
-        }
-        
+        val limit = template.deckLimit
         val ownedInstances = availableGroups[template.name] ?: continue
         
         repeat(limit) {
             if (deck.size < 20 && ownedInstances.isNotEmpty()) {
                 val card = ownedInstances.removeAt(0)
-                // Создаем новый экземпляр через copy, так как id - это val
                 val newCard = card.copy(id = java.util.UUID.randomUUID().toString())
                 deck.add(newCard)
             }
@@ -378,12 +466,7 @@ private fun RaritySection(
                         val inDeckCount = currentDeck.count { it.name == template.name }
                         val isOwned = ownedCount > 0
                         
-                        val limit = when(template.rarity) {
-                            Rarity.COMMON -> 3
-                            Rarity.UNCOMMON -> 2
-                            Rarity.RARE, Rarity.EPIC -> 2
-                            Rarity.LEGENDARY, Rarity.MYTHIC -> 1
-                        }
+                        val limit = template.deckLimit
                         
                         val displayCard = ownedCards.firstOrNull() ?: CardCatalog.createCardInstance(template.name)!!
 

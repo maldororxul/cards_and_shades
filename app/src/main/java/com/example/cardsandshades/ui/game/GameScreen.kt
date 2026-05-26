@@ -125,14 +125,15 @@ private fun GameScreenContent(
         Box(
             modifier = Modifier.fillMaxSize()
                 .pointerInput(Unit) {
-                    // Отслеживаем движение пальца даже если оно перехвачено дочерними элементами
                     awaitPointerEventScope {
                         while (true) {
                             val event = awaitPointerEvent(PointerEventPass.Initial)
-                            if (isDrawingArrow) {
-                                event.changes.firstOrNull()?.let {
-                                    fingerOffset = it.position
-                                }
+                            val change = event.changes.firstOrNull()
+                            if (change != null && selectedCardForAttack != null) {
+                                fingerOffset = change.position
+                                // Show arrow if finger is far enough from the start point
+                                val dist = (fingerOffset - startArrowOffset).getDistance()
+                                isDrawingArrow = dist > 40f
                             }
                         }
                     }
@@ -217,9 +218,8 @@ private fun GameScreenContent(
                                 if (canAttack) {
                                     selectedCardForAttack = card
                                     startArrowOffset = offset
-                                    isDrawingArrow = true
-                                    // Устанавливаем fingerOffset чуть выше карты, чтобы стрелка была сразу видна
-                                    fingerOffset = Offset(offset.x, offset.y - 50f)
+                                    isDrawingArrow = false // Don't show immediately
+                                    fingerOffset = Offset.Zero
                                     val cardName = getStringResourceByName(context, card.name)
                                     battleLog = selectedHint.format(cardName)
                                 } else {

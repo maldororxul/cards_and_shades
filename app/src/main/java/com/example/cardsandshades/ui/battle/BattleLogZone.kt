@@ -17,6 +17,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.example.cardsandshades.R
 import com.example.cardsandshades.model.LogEntry
 import com.example.cardsandshades.model.LogType
 import com.example.cardsandshades.ui.components.GameDialog
@@ -79,7 +81,7 @@ fun DetailedBattleLogDialog(
     
     GameDialog(
         onDismiss = onDismiss,
-        title = "Battle History",
+        title = stringResource(R.string.battle_history),
         content = {
             Box(modifier = Modifier.heightIn(max = 400.dp)) {
                 LazyColumn(

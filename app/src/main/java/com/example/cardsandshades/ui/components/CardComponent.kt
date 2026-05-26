@@ -54,13 +54,19 @@ fun CardInspectionDialog(
 
     Dialog(
         onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
+        properties = DialogProperties(
+            usePlatformDefaultWidth = false,
+            decorFitsSystemWindows = false // Allow drawing behind notch
+        )
     ) {
-        HorizontalPager(
-            state = pagerState,
-            modifier = Modifier.fillMaxSize()
-        ) { page ->
-            CardInspectionContent(card = cards[page], onDismiss = onDismiss)
+        // FULL BLACK BACKGROUND FOR THE ENTIRE DIALOG WINDOW
+        Box(modifier = Modifier.fillMaxSize().background(Color.Black)) {
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.fillMaxSize()
+            ) { page ->
+                CardInspectionContent(card = cards[page], onDismiss = onDismiss)
+            }
         }
     }
 }
@@ -87,9 +93,9 @@ private fun CardInspectionContent(
     val infiniteTransition = rememberInfiniteTransition(label = "pulse")
     val pulseScale by infiniteTransition.animateFloat(
         initialValue = 1.0f,
-        targetValue = 1.08f, // Увеличили степень приближения (было 1.06)
+        targetValue = 1.08f,
         animationSpec = infiniteRepeatable(
-            animation = tween(2500, easing = LinearEasing), // В 3 раза быстрее (было 1300)
+            animation = tween(2500, easing = LinearEasing),
             repeatMode = RepeatMode.Reverse
         ),
         label = "scale"
@@ -113,9 +119,9 @@ private fun CardInspectionContent(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(200.dp)
-                    .background(Brush.verticalGradient(listOf(Color.Black.copy(alpha = 0.85f), Color.Transparent)))
-                    .padding(32.dp)
+                    .height(220.dp) // Slightly taller to cover status bar areas
+                    .background(Brush.verticalGradient(listOf(Color.Black.copy(alpha = 0.9f), Color.Transparent)))
+                    .padding(horizontal = 32.dp, vertical = 48.dp) // Padded for notches
             ) {
                 Column(modifier = Modifier.align(Alignment.TopStart)) {
                     GameText(getStringResourceByName(context, card.name), fontSize = 26.sp, fontWeight = FontWeight.Black)
@@ -129,7 +135,7 @@ private fun CardInspectionContent(
                     }
                     GameText(rarityLabel, color = rarityColor, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                     
-                    // ГРУППЫ
+                    // ГРУППИРОВКА
                     Row(modifier = Modifier.padding(top = 6.dp)) {
                         card.groups.forEach { group ->
                             Box(

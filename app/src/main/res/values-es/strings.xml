@@ -30,12 +30,19 @@
     <string name="battle_start_msg">¡La batalla ha comenzado!</string>
     <string name="battle_your_turn">Tu Turno</string>
     <string name="battle_opponent_turn">Turno del Oponente</string>
-    <string name="battle_attack_hero">¡Atacó al héroе por %d de daño!</string>
     <string name="battle_attack_hero_fail">¡No puedes atacar al héroе! Hay un Guardián en el camino.</string>
-    <string name="battle_card_attack">%1$s atacó a %2$s</string>
-    <string name="battle_card_played">Jugó %s</string>
+    <string name="battle_card_attack">%1$s: %2$s atacó a %3$s por %4$d</string>
+    <string name="battle_card_retaliate">%1$s: %2$s contraatacó a %3$s por %4$d</string>
+    <string name="battle_card_played">%1$s: Carta jugada: %2$s</string>
+    <string name="battle_card_drawn">%1$s: Carta robada: %2$s</string>
+    <string name="battle_round_start">--- Ronda %d Inicio ---</string>
+    <string name="battle_round_end">--- Ronda %d Fin ---</string>
+    <string name="battle_attack_hero">%1$s: ¡Atacando al héroе por %2$d de daño!</string>
+    <string name="auto_deck">Auto-Mazo</string>
+    <string name="auto_deck_success">✅ ¡Mazo generado!</string>
+    <string name="auto_deck_fail">❌ ¡No hay suficientes cartas!</string>
     <string name="battle_play_fail">No se puede jugar la carta (sin maná o tablero lleno)</string>
-    <string name="battle_loading">Cargando batalla...</string>
+    <string name="battle_loading">Cargando batalla&#8230;</string>
     <string name="battle_finished">¡Batalla Finalizada!</string>
     <string name="victory_msg">¡HAS GANADO! 🎉</string>
     <string name="defeat_msg">HAS PERDIDO 💀</string>
@@ -49,6 +56,86 @@
     <string name="locked_icon">🔒</string>
     <string name="unlocked_icon">➡️</string>
     <string name="completed_icon">✅</string>
+    <string name="deck_warning">Por favor, añade al menos 5 cartas a tu mazo para participar en la campaña.</string>
+    <string name="go_to_collection">Ir a Colección</string>
+    <string name="settings_audio">Audio</string>
+    <string name="settings_battle">Ajustes de Batalla</string>
+    <string name="settings_speed">Velocidad: x%d</string>
+    <string name="settings_cycle">Ciclo</string>
+    <string name="settings_auto_battle">Auto-batalla por defecto</string>
+    <string name="settings_promo_btn">Introducir Código</string>
+    <string name="settings_promo_title">Código Promocional</string>
+    <string name="settings_promo_hint">Código</string>
+    <string name="settings_apply">Aplicar</string>
+    <string name="settings_rewards">Recompensas</string>
+
+    <string name="chapter_1">El Despertar</string>
+    <string name="chapter_2">Las Sombras se Profundizan</string>
+    <string name="chapter_3">Corazón de la Oscuridad</string>
+    <string name="level_1_1">Explorador Goblin</string>
+    <string name="level_1_2">Bandido del Bosque</string>
+    <string name="level_1_3">Cazador del Pantano</string>
+    <string name="level_1_4">Acólito del Culto</string>
+    <string name="level_1_5">Vigilante de Piedra</string>
+    <string name="level_1_6">Cultista de la Llama</string>
+    <string name="level_1_7">Sacerdote de las Sombras</string>
+    <string name="level_2_1">Bruja del Veneno</string>
+    <string name="level_2_2">Jinete del Viento</string>
+    <string name="level_2_3">Invocador de Coral</string>
+    <string name="level_2_4">Adepto de la Sangre</string>
+    <string name="level_2_5">Druida Antiguo</string>
+    <string name="level_2_6">Caballero Alaplata</string>
+    <string name="level_2_7">Sabio de la Tormenta</string>
+    <string name="level_3_1">Horror del Abismo</string>
+    <string name="level_3_2">Guardián Eterno</string>
+    <string name="level_3_3">Diosa de la Sangre</string>
+    <string name="level_3_4">Susurrador del Vacío</string>
+    <string name="level_3_5">Padre del Sol</string>
+    <string name="level_3_6">Señor de la Peste</string>
+    <string name="level_3_7">Leviatán Despierto</string>
+    <string name="level_1_1_desc">Un explorador de bajo nivel. Fácil de derrotar.</string>
+    <string name="level_1_2_desc">Un bandido común. Un poco más fuerte.</string>
+    <string name="level_1_3_desc">Usa criaturas del pantano para frenarte.</string>
+    <string name="level_1_4_desc">Un devoto del vacío. Cuidado con la carga.</string>
+    <string name="level_1_5_desc">Duro como una roca. Guardianes por doquier.</string>
+    <string name="level_1_6_desc">Los elementales de fuego quemarán tu tablero.</string>
+    <string name="level_1_7_desc">Maestro de las sombras. Jefe del Capítulo 1.</string>
+    <string name="level_2_1_desc">El veneno drenará tu salud lentamente.</string>
+    <string name="level_2_2_desc">Criaturas rápidas del viento.</string>
+    <string name="level_2_3_desc">Sirenas y merrows de las mareas.</string>
+    <string name="level_2_4_desc">Magia de sangre con robo de vida.</string>
+    <string name="level_2_5_desc">Ira de la naturaleza y gran curación.</string>
+    <string name="level_2_6_desc">Ángeles и caballeros de la orden.</string>
+    <string name="level_2_7_desc">Un huracán en el tablero. Jefe final del Capítulo 2.</string>
+    <string name="level_3_1_desc">Terror de las profundidades.</string>
+    <string name="level_3_2_desc">Constructos mecánicos и eternos.</string>
+    <string name="level_3_3_desc">La diosa oscura de la sangre.</string>
+    <string name="level_3_4_desc">Asesinos de las sombras y susurros.</string>
+    <string name="level_3_5_desc">Poder radiante и luz sagrada.</string>
+    <string name="level_3_6_desc">El señor de la pestilencia.</string>
+    <string name="level_3_7_desc">¡El antiguo leviatán ha despertado!</string>
+
+    <string name="opponent_goblin_scout">Explorador Goblin</string>
+    <string name="opponent_forest_bandit">Bandido del Bosque</string>
+    <string name="opponent_swamp_hunter">Cazador del Pantano</string>
+    <string name="opponent_cult_acolyte">Acólito del Culto</string>
+    <string name="opponent_stone_watcher">Vigilante de Piedra</string>
+    <string name="opponent_flame_cultist">Cultista de la Llama</string>
+    <string name="opponent_shadow_priest">Sacerdote de las Sombras</string>
+    <string name="opponent_venom_witch">Bruja del Veneno</string>
+    <string name="opponent_wind_rider">Jinete del Viento</string>
+    <string name="opponent_coral_tidecaller">Invocador de Coral</string>
+    <string name="opponent_blood_adept">Adepto de la Sangre</string>
+    <string name="opponent_ancient_druid">Druida Antiguo</string>
+    <string name="opponent_silverwing_knight">Caballero Alaplata</string>
+    <string name="opponent_storm_sage">Sabio de la Tormenta</string>
+    <string name="opponent_deep_sea_horror">Horror del Abismo</string>
+    <string name="opponent_eternal_guardian">Guardián Eterno</string>
+    <string name="opponent_blood_goddess">Diosa de la Sangre</string>
+    <string name="opponent_void_whisperer">Susurrador del Vacío</string>
+    <string name="opponent_sunfather">Padre del Sol</string>
+    <string name="opponent_plague_lord">Señor de la Peste</string>
+    <string name="opponent_leviathan_awakened">Leviatán Despierto</string>
 
     <!-- Achievements -->
     <string name="daily_tab">Diario</string>
@@ -93,7 +180,10 @@
     <string name="reward_gold">Oro</string>
     <string name="reward_crystals">Cristales</string>
     <string name="reward_dust">Polvo</string>
-    <string name="reward_item">Objeto</string>
+    <string name="reward_card">🃏 CARTA</string>
+    <string name="reward_next">Próxima recompensa en: %1$dh %2$dm</string>
+    <string name="week_label">SEMANA %d</string>
+    <string name="day_label">DÍA %d</string>
 
     <!-- Forge Screen -->
     <string name="forge_title">⚒️ FORJA ⚒️</string>
@@ -112,10 +202,21 @@
     <!-- Collection Screen -->
     <string name="deck_count">Mazo: %d/20 cartas</string>
     <string name="deck_saved">✅ ¡Mazo guardado!</string>
-    <string name="deck_error">❌ ¡El mazo no может быть vacío!</string>
+    <string name="deck_error">❌ ¡El mazo no puede estar vacío!</string>
     <string name="collection_empty">¡Tu colección está vacía! 📦</string>
     <string name="in_stock">En stock: %d</string>
     <string name="dust_extras">Desencantar (%d)</string>
+    <string name="clear">Limpiar</string>
+    <string name="filters">Filtros</string>
+    <string name="owned_only">Sólo en propiedad</string>
+    <string name="reset_filters">Restablecer filtros</string>
+    <string name="filter_rarity">Rareza</string>
+    <string name="filter_tag">Etiqueta</string>
+    <string name="filter_effect">Efecto</string>
+    <string name="filter_mana">Maná</string>
+    <string name="all">Todo</string>
+    <string name="player">Jugador</string>
+    <string name="opponent">Oponente</string>
 
     <!-- Booster Screen -->
     <string name="booster_choose">¡Elige un sobre de cartas!</string>
@@ -168,7 +269,7 @@
     <string name="card_forest_ambusher">Emboscador del Bosque</string>
     <string name="card_web_spinner">Tejedor de Redes</string>
     <string name="card_sparking_golem">Gólem de Chispas</string>
-    <string name="card_mage_apprentice">Aprendзи de Mago</string>
+    <string name="card_mage_apprentice">Aprendiz de Mago</string>
     <string name="card_hired_crossbowman">Ballestero Contratado</string>
     <string name="card_cave_yeti">Yeti de Cueva</string>
     <string name="card_forgotten_cadaver">Cadáver Olvidado</string>
@@ -193,7 +294,7 @@
     <string name="card_bone_golem">Gólem de Hueso</string>
     <string name="card_dark_sectarian">Sectario Oscuro</string>
     <string name="card_inquisitor">Inquisidor</string>
-    <string name="card_grove_keeper">Guardián de la Arболеда</string>
+    <string name="card_grove_keeper">Guardián de la Arboleda</string>
     <string name="card_soul_reaper">Segador de Almas</string>
     <string name="card_thunderbolt_mage">Mago del Rayo</string>
     <string name="card_fire_giant">Gigante de Fuego</string>
@@ -252,4 +353,5 @@
     <string name="stat_attack">Ataque</string>
     <string name="stat_health">Salud</string>
     <string name="close">Cerrar</string>
+    <string name="battle_history">Historial de batalla</string>
 </resources>

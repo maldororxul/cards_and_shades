@@ -188,8 +188,8 @@ class GameViewModel : ViewModel() {
                     val cardInHand = player.hand.find { it.id == card.id }
                     if (cardInHand != null && player.currentMana >= cardInHand.manaCost && player.board[slotIndex] == null) {
                         GameEngine.playCard(this, cardInHand, slotIndex)
-                        SoundManager.playSoundByName(null, "card_place")
-                        logHistory.add(LogEntry("battle_card_played|${cardInHand.name}", LogType.PLAYER, turnNumber))
+                        SoundManager.playSoundByName(null, cardInHand.playSound)
+                        logHistory.add(LogEntry("battle_card_played|player|card_${cardInHand.name}", LogType.PLAYER, turnNumber))
                         isPlayed = true
                     }
                 }
@@ -208,7 +208,7 @@ class GameViewModel : ViewModel() {
                 updateCardAnimation(attacker.id, isAttacking = true)
                 delay(getDelay(200))
 
-                SoundManager.playSoundByName(null, "attack")
+                SoundManager.playSoundByName(null, attacker.attackSound)
 
                 _gameState.update { currentState ->
                     currentState?.deepCopy()?.apply {
@@ -221,11 +221,15 @@ class GameViewModel : ViewModel() {
                             if (aCard.groups.contains(GroupTag.MELEE)) {
                                 tCard.isAttacking = true
                             }
+                            
+                            val atkVal = aCard.currentAttack
+                            val retVal = if (aCard.groups.contains(GroupTag.MELEE)) tCard.currentAttack else 0
+                            
                             GameEngine.calculateCombat(this, aCard, tCard)
                             
-                            logHistory.add(LogEntry("battle_card_attack|${aCard.name}|${tCard.name}", LogType.PLAYER, turnNumber))
+                            logHistory.add(LogEntry("battle_card_attack|player|card_${aCard.name}|card_${tCard.name}|$atkVal", LogType.PLAYER, turnNumber))
                             if (aCard.groups.contains(GroupTag.MELEE)) {
-                                logHistory.add(LogEntry("battle_card_retaliate|${tCard.name}|${aCard.name}", LogType.OPPONENT, turnNumber))
+                                logHistory.add(LogEntry("battle_card_retaliate|opponent|card_${tCard.name}|card_${aCard.name}|$retVal", LogType.OPPONENT, turnNumber))
                             }
                         }
                     }
@@ -251,11 +255,17 @@ class GameViewModel : ViewModel() {
                     currentState?.deepCopy()?.apply {
                         player.board.filterNotNull().forEach { card ->
                             card.isTakingDamage = false
-                            if (card.currentHealth <= 0) card.isDying = true
+                            if (card.currentHealth <= 0) {
+                                card.isDying = true
+                                SoundManager.playSoundByName(null, card.deathSound)
+                            }
                         }
                         opponent.board.filterNotNull().forEach { card ->
                             card.isTakingDamage = false
-                            if (card.currentHealth <= 0) card.isDying = true
+                            if (card.currentHealth <= 0) {
+                                card.isDying = true
+                                SoundManager.playSoundByName(null, card.deathSound)
+                            }
                         }
                     }
                 }
@@ -263,7 +273,6 @@ class GameViewModel : ViewModel() {
                 val hasDeaths = _gameState.value?.player?.board?.filterNotNull()?.any { it.isDying } == true ||
                         _gameState.value?.opponent?.board?.filterNotNull()?.any { it.isDying } == true
                 if (hasDeaths) {
-                    SoundManager.playSoundByName(null, "card_death")
                     delay(getDelay(400))
                 }
 
@@ -311,7 +320,7 @@ class GameViewModel : ViewModel() {
                 updateCardAnimation(attacker.id, isAttacking = true)
                 delay(getDelay(200))
 
-                SoundManager.playSoundByName(null, "attack")
+                SoundManager.playSoundByName(null, attacker.attackSound)
 
                 opponentHeroDamageValue = attacker.currentAttack
                 opponentHeroTakingDamage = true
@@ -321,7 +330,7 @@ class GameViewModel : ViewModel() {
                         val aCard = player.board.filterNotNull().find { it.id == attacker.id }
                         if (aCard != null) {
                             GameEngine.attackHero(this, aCard)
-                            logHistory.add(LogEntry("battle_attack_hero|${aCard.currentAttack}", LogType.PLAYER, turnNumber))
+                            logHistory.add(LogEntry("battle_attack_hero|player|${aCard.currentAttack}", LogType.PLAYER, turnNumber))
                         }
                     }
                 }
@@ -372,13 +381,15 @@ class GameViewModel : ViewModel() {
         _gameState.update { currentState ->
             currentState?.deepCopy()?.apply {
                 val actor = if (isOpponent) opponent else player
+                val actorKey = if (isOpponent) "opponent" else "player"
                 val cardsInHand = actor.hand.sortedByDescending { it.manaCost }
                 for (card in cardsInHand) {
                     // Ищем первый пустой слот
                     val emptySlot = actor.board.indexOfFirst { it == null }
                     if (emptySlot != -1) {
                         GameEngine.playCard(this, card, emptySlot)
-                        logHistory.add(LogEntry("battle_card_played|${card.name}", if (isOpponent) LogType.OPPONENT else LogType.PLAYER, turnNumber))
+                        SoundManager.playSoundByName(null, card.playSound)
+                        logHistory.add(LogEntry("battle_card_played|$actorKey|card_${card.name}", if (isOpponent) LogType.OPPONENT else LogType.PLAYER, turnNumber))
                     }
                 }
             }
@@ -426,7 +437,7 @@ class GameViewModel : ViewModel() {
                 updateCardAnimation(activeAttacker.id, isAttacking = true)
                 delay(getDelay(200))
 
-                SoundManager.playSoundByName(null, "attack")
+                SoundManager.playSoundByName(null, activeAttacker.attackSound)
 
                 _gameState.update { currentState ->
                     currentState?.deepCopy()?.apply {
@@ -434,6 +445,9 @@ class GameViewModel : ViewModel() {
                         val cDefender = if (isOpponent) player else opponent
                         val nextAttacker = cActor.board.filterNotNull().find { it.id == activeAttacker.id }
                         if (nextAttacker != null) {
+                            val actorKey = if (isOpponent) "opponent" else "player"
+                            val opponentKey = if (isOpponent) "player" else "opponent"
+                            
                             if (!isOpponentTargetingHero) {
                                 val nextTarget = cDefender.board.filterNotNull().find { it.id == opponentTargetId }
                                 if (nextTarget != null) {
@@ -442,11 +456,15 @@ class GameViewModel : ViewModel() {
                                     if (nextAttacker.groups.contains(GroupTag.MELEE)) {
                                         nextTarget.isAttacking = true
                                     }
+                                    
+                                    val atkVal = nextAttacker.currentAttack
+                                    val retVal = if (nextAttacker.groups.contains(GroupTag.MELEE)) nextTarget.currentAttack else 0
+
                                     GameEngine.calculateCombat(this, nextAttacker, nextTarget)
                                     
-                                    logHistory.add(LogEntry("battle_card_attack|${nextAttacker.name}|${nextTarget.name}", if (isOpponent) LogType.OPPONENT else LogType.PLAYER, turnNumber))
+                                    logHistory.add(LogEntry("battle_card_attack|$actorKey|card_${nextAttacker.name}|card_${nextTarget.name}|$atkVal", if (isOpponent) LogType.OPPONENT else LogType.PLAYER, turnNumber))
                                     if (nextAttacker.groups.contains(GroupTag.MELEE)) {
-                                        logHistory.add(LogEntry("battle_card_retaliate|${nextTarget.name}|${nextAttacker.name}", if (isOpponent) LogType.PLAYER else LogType.OPPONENT, turnNumber))
+                                        logHistory.add(LogEntry("battle_card_retaliate|$opponentKey|card_${nextTarget.name}|card_${nextAttacker.name}|$retVal", if (isOpponent) LogType.PLAYER else LogType.OPPONENT, turnNumber))
                                     }
                                 }
                             } else {
@@ -458,7 +476,7 @@ class GameViewModel : ViewModel() {
                                     opponentHeroTakingDamage = true
                                 }
                                 GameEngine.attackHero(this, nextAttacker)
-                                logHistory.add(LogEntry("battle_attack_hero|${nextAttacker.currentAttack}", if (isOpponent) LogType.OPPONENT else LogType.PLAYER, turnNumber))
+                                logHistory.add(LogEntry("battle_attack_hero|$actorKey|${nextAttacker.currentAttack}", if (isOpponent) LogType.OPPONENT else LogType.PLAYER, turnNumber))
                             }
                         }
                     }
@@ -481,11 +499,17 @@ class GameViewModel : ViewModel() {
                     currentState?.deepCopy()?.apply {
                         player.board.filterNotNull().forEach { card ->
                             card.isTakingDamage = false
-                            if (card.currentHealth <= 0) card.isDying = true
+                            if (card.currentHealth <= 0) {
+                                card.isDying = true
+                                SoundManager.playSoundByName(null, card.deathSound)
+                            }
                         }
                         opponent.board.filterNotNull().forEach { card ->
                             card.isTakingDamage = false
-                            if (card.currentHealth <= 0) card.isDying = true
+                            if (card.currentHealth <= 0) {
+                                card.isDying = true
+                                SoundManager.playSoundByName(null, card.deathSound)
+                            }
                         }
                     }
                 }
@@ -497,7 +521,6 @@ class GameViewModel : ViewModel() {
                 val hasDeaths = _gameState.value?.player?.board?.filterNotNull()?.any { it.isDying } == true ||
                         _gameState.value?.opponent?.board?.filterNotNull()?.any { it.isDying } == true
                 if (hasDeaths) {
-                    SoundManager.playSoundByName(null, "card_death")
                     delay(getDelay(400))
                 }
 

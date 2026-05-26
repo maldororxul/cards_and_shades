@@ -94,10 +94,10 @@ class MainActivity : AppCompatActivity() {
                             onDismiss = { showDeckWarning = false },
                             title = stringResource(R.string.collection),
                             content = {
-                                GameText("Please add at least 5 cards to your deck to participate in the campaign.", textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                                GameText(stringResource(R.string.deck_warning), textAlign = androidx.compose.ui.text.style.TextAlign.Center)
                             },
                             confirmButton = { onAction ->
-                                GameButton(text = "Go to Collection", onClick = {
+                                GameButton(text = stringResource(R.string.go_to_collection), onClick = {
                                     onAction()
                                     scope.launch { pagerState.animateScrollToPage(screens.indexOf("collection")) }
                                 })

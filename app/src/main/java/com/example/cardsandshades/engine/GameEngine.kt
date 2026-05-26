@@ -85,7 +85,8 @@ object GameEngine {
             // Логируем добор
             val isOpponent = state.opponent == player
             val logType = if (isOpponent) LogType.OPPONENT else LogType.PLAYER
-            state.logHistory.add(LogEntry("battle_card_drawn|${card.name}", logType, state.turnNumber))
+            val actorKey = if (isOpponent) "opponent" else "player"
+            state.logHistory.add(LogEntry("battle_card_drawn|$actorKey|card_${card.name}", logType, state.turnNumber))
         }
     }
 

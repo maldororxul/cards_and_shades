@@ -2,6 +2,7 @@ package com.example.cardsandshades.ui.settings
 
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -29,11 +30,12 @@ import androidx.core.os.LocaleListCompat
 import androidx.activity.compose.BackHandler
 import com.example.cardsandshades.model.UserProfile
 import com.example.cardsandshades.catalog.PromoCodeCatalog
+import com.example.cardsandshades.utils.changeLocale
 
 @Composable
 fun SettingsScreen(
     onBack: () -> Unit,
-    viewModel: GameViewModel // Передаем viewModel для настройки скорости и автобоя
+    viewModel: GameViewModel
 ) {
     val context = LocalContext.current
     var musicVol by remember { mutableFloatStateOf(SoundManager.musicVolume) }
@@ -58,7 +60,7 @@ fun SettingsScreen(
         Spacer(modifier = Modifier.height(24.dp))
 
         // ЗВУК И МУЗЫКА
-        SettingsSection(title = "Audio") {
+        SettingsSection(title = stringResource(R.string.settings_audio)) {
             GameText(stringResource(R.string.music, (musicVol * 100).toInt()), fontSize = 14.sp)
             Slider(value = musicVol, onValueChange = { musicVol = it; SoundManager.updateMusicVolume(context, it) }, modifier = Modifier.fillMaxWidth())
             
@@ -71,25 +73,32 @@ fun SettingsScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         // БОЙ
-        SettingsSection(title = "Battle Settings") {
+        SettingsSection(title = stringResource(R.string.settings_battle)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                GameText("Combat Speed: x${viewModel.animationSpeed}", fontSize = 14.sp)
-                GameButton(text = "Cycle", onClick = { viewModel.cycleAnimationSpeed() }, modifier = Modifier.width(100.dp))
+                GameText(stringResource(R.string.settings_speed, viewModel.animationSpeed), fontSize = 14.sp)
+                GameButton(text = stringResource(R.string.settings_cycle), onClick = { viewModel.cycleAnimationSpeed() }, modifier = Modifier.width(100.dp))
             }
             
             Spacer(modifier = Modifier.height(16.dp))
             
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                GameText("Auto-Battle by default", fontSize = 14.sp)
+                GameText(stringResource(R.string.settings_auto_battle), fontSize = 14.sp)
                 Switch(checked = viewModel.isAutoBattleActive, onCheckedChange = { viewModel.toggleAutoBattle() })
             }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // ЯЗЫК
+        SettingsSection(title = stringResource(R.string.language)) {
+            LanguageSelector()
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
         // ПРОМОКОДЫ
-        SettingsSection(title = "Rewards") {
-            GameButton(text = "Enter Promo Code", onClick = { showPromoDialog = true }, modifier = Modifier.fillMaxWidth())
+        SettingsSection(title = stringResource(R.string.settings_rewards)) {
+            GameButton(text = stringResource(R.string.settings_promo_btn), onClick = { showPromoDialog = true }, modifier = Modifier.fillMaxWidth())
             if (promoResult != null) {
                 GameText(promoResult!!, color = Color.Yellow, fontSize = 12.sp, modifier = Modifier.padding(top = 8.dp))
             }
@@ -106,13 +115,13 @@ fun SettingsScreen(
         var codeInput by remember { mutableStateOf("") }
         GameDialog(
             onDismiss = { showPromoDialog = false },
-            title = "Promo Code",
+            title = stringResource(R.string.settings_promo_title),
             content = {
                 Column {
                     OutlinedTextField(
                         value = codeInput,
                         onValueChange = { codeInput = it },
-                        label = { Text("Code", color = Color.Gray) },
+                        label = { Text(stringResource(R.string.settings_promo_hint), color = Color.Gray) },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
                         colors = OutlinedTextFieldDefaults.colors(
@@ -125,7 +134,7 @@ fun SettingsScreen(
                 }
             },
             confirmButton = { onAction ->
-                GameButton(text = "Apply", onClick = {
+                GameButton(text = stringResource(R.string.settings_apply), onClick = {
                     val result = PromoCodeCatalog.applyCode(context, codeInput)
                     promoResult = result
                     onAction()
@@ -146,5 +155,67 @@ private fun SettingsSection(title: String, content: @Composable ColumnScope.() -
         GameText(title, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.Gray)
         Spacer(modifier = Modifier.height(12.dp))
         content()
+    }
+}
+
+@Composable
+private fun LanguageSelector() {
+    val context = LocalContext.current
+    val currentLocales = AppCompatDelegate.getApplicationLocales()
+    val currentLangCode = if (currentLocales.isEmpty) "en" else currentLocales[0]?.language ?: "en"
+    
+    var expanded by remember { mutableStateOf(false) }
+    
+    val languages = listOf(
+        "en" to stringResource(R.string.lang_en),
+        "ru" to stringResource(R.string.lang_ru),
+        "es" to stringResource(R.string.lang_es)
+    )
+    
+    val currentLangName = languages.find { it.first == currentLangCode }?.second ?: languages[0].second
+
+    Box(modifier = Modifier.fillMaxWidth()) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color.White.copy(alpha = 0.05f), RoundedCornerShape(8.dp))
+                .border(1.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(8.dp))
+                .clickable { expanded = true }
+                .padding(12.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                GameText(currentLangName, fontSize = 14.sp)
+                GameText("▼", color = Color.Gray, fontSize = 12.sp)
+            }
+        }
+
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier
+                .fillMaxWidth(0.8f)
+                .background(Color(0xFF1A1A1A))
+                .border(1.dp, Color.Gray, RoundedCornerShape(4.dp))
+        ) {
+            languages.forEach { (code, name) ->
+                DropdownMenuItem(
+                    text = {
+                        GameText(
+                            text = name,
+                            fontSize = 14.sp,
+                            color = if (code == currentLangCode) Color.Yellow else Color.White
+                        )
+                    },
+                    onClick = {
+                        expanded = false
+                        changeLocale(context, code)
+                    }
+                )
+            }
+        }
     }
 }

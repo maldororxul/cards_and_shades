@@ -83,7 +83,11 @@ fun RewardsScreen(
 private fun DailyTab() {
     val chainDay by UserProfile.loginChainDays.collectAsState()
     val claimedSet by UserProfile.rewardsClaimed.collectAsState()
+    val lastClaim by UserProfile.lastClaimTimestamp.collectAsState()
     val context = androidx.compose.ui.platform.LocalContext.current
+    
+    val now = System.currentTimeMillis()
+    val isCooldownActive = now - lastClaim < 24 * 60 * 60 * 1000 // 24 hours
     
     // Ищем текущий блок наград (порции по 7 дней)
     val currentBlock = RewardsCatalog.blocks.find { block ->
@@ -106,7 +110,7 @@ private fun DailyTab() {
                     contentAlignment = Alignment.Center
                 ) {
                     GameText(
-                        text = "WEEK ${currentBlock.id}",
+                        text = stringResource(R.string.week_label, currentBlock.id),
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Black,
                         color = Color.White
@@ -150,14 +154,14 @@ private fun DailyTab() {
                         .aspectRatio(0.8f)
                         .background(bgColor, RoundedCornerShape(8.dp))
                         .border(1.dp, borderColor, RoundedCornerShape(8.dp))
-                        .clickable(enabled = canClaim) {
+                        .clickable(enabled = canClaim && !isCooldownActive) {
                             claimReward(reward.day)
                         }
                         .padding(4.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    GameText(text = "DAY ${reward.day}", fontSize = 10.sp, color = Color.Gray)
+                    GameText(text = stringResource(R.string.day_label, reward.day), fontSize = 10.sp, color = Color.Gray)
                     Spacer(modifier = Modifier.height(4.dp))
                     
                     if (reward.type == "card") {
@@ -189,6 +193,11 @@ private fun DailyTab() {
         
         if (claimedSet.contains(chainDay)) {
              GameText(stringResource(R.string.reward_claimed_msg), color = Color.Yellow, textAlign = TextAlign.Center)
+        } else if (isCooldownActive) {
+             val nextAvailable = lastClaim + 24 * 60 * 60 * 1000
+             val hoursLeft = (nextAvailable - now) / (1000 * 60 * 60)
+             val minsLeft = ((nextAvailable - now) / (1000 * 60)) % 60
+             GameText(stringResource(R.string.reward_next, hoursLeft, minsLeft), color = Color.Yellow, textAlign = TextAlign.Center)
         } else {
              GameButton(
                  text = stringResource(R.string.claim_reward), 
@@ -304,6 +313,7 @@ private fun getRewardText(reward: com.example.cardsandshades.model.RewardSetMode
     return parts.joinToString(" ")
 }
 
+@Composable
 private fun getRewardIcon(type: String, context: android.content.Context): String {
     return when (type) {
         "gold" -> "🪙 " + context.getString(R.string.reward_gold)
@@ -313,8 +323,8 @@ private fun getRewardIcon(type: String, context: android.content.Context): Strin
         "dust_rare" -> "🔵 " + context.getString(R.string.reward_dust)
         "dust_epic" -> "🟣 " + context.getString(R.string.reward_dust)
         "dust_legendary" -> "🟡 " + context.getString(R.string.reward_dust)
-        "card" -> "🃏 CARD"
-        else -> "🎁 " + context.getString(R.string.reward_item)
+        "card" -> stringResource(R.string.reward_card)
+        else -> "🎁 " + context.getString(R.string.reward_gold) // fallback
     }
 }
 
@@ -322,6 +332,9 @@ private fun claimReward(day: Int) {
     val reward = RewardsCatalog.allRewards.find { it.day == day } ?: return
     if (UserProfile.rewardsClaimed.value.contains(day)) return
     
+    val now = System.currentTimeMillis()
+    if (now - UserProfile.lastClaimTimestamp.value < 24 * 60 * 60 * 1000) return
+
     when (reward.type) {
         "gold" -> UserProfile.gold.value += reward.amount
         "crystals" -> UserProfile.crystals.value += reward.amount
@@ -340,8 +353,7 @@ private fun claimReward(day: Int) {
     
     val newClaimed = UserProfile.rewardsClaimed.value + day
     UserProfile.rewardsClaimed.value = newClaimed
-    // Линейная прогрессия: следующий день доступен СРАЗУ? Нет, только через 24 часа.
-    // Но по условию мы не сбрасываем.
+    UserProfile.lastClaimTimestamp.value = now
     UserProfile.loginChainDays.value = day + 1
     UserProfile.save()
 }

@@ -54,12 +54,25 @@ data class CardModel(
     // НОВЫЕ СОСТОЯНИЯ
     var isFrozen: Boolean = false,
     var isStunned: Boolean = false,
-    var critMultiplier: Float = 1.0f
+    var critMultiplier: Float = 1.0f,
+
+    // НОВЫЕ ПОЛЯ ИЗ YAML (с backing fields для Gson)
+    private val limit: Int? = 3,
+    private val dSound: String? = "card_death",
+    private val pSound: String? = "card_place",
+    private val aSound: String? = "attack",
+    private val quoteList: List<String>? = emptyList()
 ) {
     init {
         if (currentAttack == -1) currentAttack = baseAttack
         if (currentHealth == -1) currentHealth = baseHealth
     }
+
+    val deckLimit: Int get() = limit ?: 3
+    val deathSound: String get() = dSound ?: "card_death"
+    val playSound: String get() = pSound ?: "card_place"
+    val attackSound: String get() = aSound ?: "attack"
+    val quotes: List<String> get() = quoteList ?: emptyList()
 
     val isDead: Boolean get() = currentHealth <= 0
 
@@ -126,7 +139,9 @@ data class CardModel(
 
     fun deepCopy(): CardModel {
         val b = (activeBuffs ?: emptyList()).map { it.copy() }
-        val copy = this.copy(activeBuffs = b)
+        // quotes safe check
+        val q = (quoteList ?: emptyList()).toList()
+        val copy = this.copy(activeBuffs = b, quoteList = q)
         return copy
     }
 

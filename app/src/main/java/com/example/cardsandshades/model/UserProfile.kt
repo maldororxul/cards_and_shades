@@ -32,7 +32,7 @@ object UserProfile {
 
     // ДНЕВНЫЕ НАГРАДЫ
     val loginChainDays = MutableStateFlow(1)
-    val lastLoginTimestamp = MutableStateFlow(0L)
+    val lastClaimTimestamp = MutableStateFlow(0L)
     val rewardsClaimed = MutableStateFlow<Set<Int>>(emptySet())
 
     private const val PREFS_NAME = "cards_and_shades_prefs"
@@ -58,13 +58,13 @@ object UserProfile {
                 dustMythic.value = prefs.getInt("dustMythic", 0)
 
                 loginChainDays.value = prefs.getInt("loginChainDays", 1)
-                lastLoginTimestamp.value = prefs.getLong("lastLoginTimestamp", 0L)
+                lastClaimTimestamp.value = prefs.getLong("lastClaimTimestamp", 0L)
                 val claimedJson = prefs.getString("rewardsClaimed", "[]") ?: "[]"
                 rewardsClaimed.value = gson.fromJson(claimedJson, object : com.google.gson.reflect.TypeToken<Set<Int>>() {}.type) ?: emptySet()
 
                 // ЛОГИКА ДНЕВНОГО ЗАХОДА (Линейная прогрессия, без сброса)
-                val now = System.currentTimeMillis()
-                lastLoginTimestamp.value = now
+                // val now = System.currentTimeMillis()
+                // lastClaimTimestamp is loaded from prefs
 
                 val collectionJson = prefs.getString("collection", "[]") ?: "[]"
                 val deckJson = prefs.getString("deck", "[]") ?: "[]"
@@ -155,7 +155,7 @@ object UserProfile {
                 putInt("dustMythic", dustMythic.value)
 
                 putInt("loginChainDays", loginChainDays.value)
-                putLong("lastLoginTimestamp", lastLoginTimestamp.value)
+                putLong("lastClaimTimestamp", lastClaimTimestamp.value)
                 putString("rewardsClaimed", gson.toJson(rewardsClaimed.value))
 
                 putString("collection", gson.toJson(collection.toList()))

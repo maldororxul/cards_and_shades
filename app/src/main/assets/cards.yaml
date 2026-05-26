@@ -6,12 +6,22 @@ cards:
     baseHealth: 2
     rarity: "COMMON"
     groupTags: ["HUMAN", "MELEE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_wild_hyena"
     manaCost: 1
     baseAttack: 2
     baseHealth: 2
     rarity: "COMMON"
     groupTags: ["BEAST", "MELEE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_rotting_zombie"
     manaCost: 1
     baseAttack: 1
@@ -19,12 +29,22 @@ cards:
     rarity: "COMMON"
     effectTags: ["BLEED"]
     groupTags: ["UNDEAD", "MELEE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_order_adept"
     manaCost: 1
     baseAttack: 1
     baseHealth: 2
     rarity: "COMMON"
     groupTags: ["HUMAN", "MAGE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_agile_imp"
     manaCost: 2
     baseAttack: 2
@@ -32,18 +52,33 @@ cards:
     rarity: "COMMON"
     groupTags: ["ABSTRACTION", "MELEE"]
     canDropFromBooster: false
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_town_guard"
     manaCost: 2
     baseAttack: 2
     baseHealth: 3
     rarity: "COMMON"
     groupTags: ["HUMAN", "MELEE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_young_archer"
     manaCost: 2
     baseAttack: 2
     baseHealth: 1
     rarity: "COMMON"
     groupTags: ["HUMAN", "RANGER"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_gnome_shieldbearer"
     manaCost: 2
     baseAttack: 1
@@ -51,6 +86,11 @@ cards:
     rarity: "COMMON"
     effectTags: ["TAUNT"]
     groupTags: ["HUMAN", "MELEE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_rabid_wolf"
     manaCost: 2
     baseAttack: 3
@@ -58,6 +98,11 @@ cards:
     rarity: "COMMON"
     effectTags: ["RUSH"]
     groupTags: ["BEAST", "MELEE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_fire_elemental"
     manaCost: 2
     baseAttack: 3
@@ -65,12 +110,22 @@ cards:
     rarity: "UNCOMMON"
     effectTags: ["BURN"]
     groupTags: ["ELEMENTAL", "MAGE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_elemental_wisp"
     manaCost: 2
     baseAttack: 2
     baseHealth: 3
     rarity: "COMMON"
     groupTags: ["ELEMENTAL", "MAGE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_void_tracker"
     manaCost: 2
     baseAttack: 2
@@ -78,12 +133,22 @@ cards:
     rarity: "COMMON"
     effectTags: ["RUSH"]
     groupTags: ["ABSTRACTION", "MELEE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_corrupted_wolf"
     manaCost: 2
     baseAttack: 2
     baseHealth: 2
     rarity: "COMMON"
     groupTags: ["BEAST", "MELEE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_stone_guardian"
     manaCost: 3
     baseAttack: 1
@@ -91,6 +156,11 @@ cards:
     rarity: "COMMON"
     effectTags: ["TAUNT"]
     groupTags: ["ELEMENTAL", "MELEE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_sparking_golem"
     manaCost: 3
     baseAttack: 4
@@ -98,12 +168,22 @@ cards:
     rarity: "UNCOMMON"
     effectTags: ["DEBUFF_ATTACK"]
     groupTags: ["MECHANICAL", "MELEE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_mage_apprentice"
     manaCost: 3
     baseAttack: 3
     baseHealth: 3
     rarity: "COMMON"
     groupTags: ["HUMAN", "MAGE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_forest_ambusher"
     manaCost: 3
     baseAttack: 3
@@ -111,6 +191,11 @@ cards:
     rarity: "COMMON"
     effectTags: ["RUSH"]
     groupTags: ["BEAST", "MELEE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_web_spinner"
     manaCost: 3
     baseAttack: 1
@@ -118,30 +203,55 @@ cards:
     rarity: "COMMON"
     effectTags: ["TAUNT", "POISON"]
     groupTags: ["BEAST", "MELEE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_arcane_adept"
     manaCost: 3
     baseAttack: 4
     baseHealth: 3
     rarity: "UNCOMMON"
     groupTags: ["HUMAN", "MAGE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_elven_archer"
     manaCost: 3
     baseAttack: 2
     baseHealth: 3
     rarity: "COMMON"
     groupTags: ["HUMAN", "RANGER"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_light_servant"
     manaCost: 3
     baseAttack: 2
     baseHealth: 3
     rarity: "COMMON"
     groupTags: ["ABSTRACTION", "MAGE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_siege_spearman"
     manaCost: 3
     baseAttack: 3
     baseHealth: 3
     rarity: "COMMON"
     groupTags: ["HUMAN", "RANGER"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_stone_beast"
     manaCost: 3
     baseAttack: 2
@@ -149,12 +259,22 @@ cards:
     rarity: "UNCOMMON"
     effectTags: ["TAUNT"]
     groupTags: ["ELEMENTAL", "MELEE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_hired_crossbowman"
     manaCost: 4
     baseAttack: 3
     baseHealth: 4
     rarity: "COMMON"
     groupTags: ["HUMAN", "RANGER"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_cave_yeti"
     manaCost: 4
     baseAttack: 4
@@ -162,6 +282,11 @@ cards:
     rarity: "UNCOMMON"
     effectTags: ["IMMUNE_BLEED"]
     groupTags: ["BEAST", "MELEE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_forgotten_cadaver"
     manaCost: 4
     baseAttack: 4
@@ -169,12 +294,22 @@ cards:
     rarity: "COMMON"
     effectTags: ["RUSH", "BLEED"]
     groupTags: ["UNDEAD", "MELEE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_cult_mystic"
     manaCost: 4
     baseAttack: 2
     baseHealth: 5
     rarity: "COMMON"
     groupTags: ["HUMAN", "MAGE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_lava_jumper"
     manaCost: 4
     baseAttack: 4
@@ -182,6 +317,11 @@ cards:
     rarity: "UNCOMMON"
     effectTags: ["BURN"]
     groupTags: ["BEAST", "MELEE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_kings_guardsman"
     manaCost: 5
     baseAttack: 3
@@ -189,12 +329,22 @@ cards:
     rarity: "UNCOMMON"
     effectTags: ["TAUNT", "RETRIBUTION", "NEIGHBOR_BUFF_ATTACK"]
     groupTags: ["HUMAN", "MELEE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_hungry_crocolisk"
     manaCost: 5
     baseAttack: 5
     baseHealth: 6
     rarity: "UNCOMMON"
     groupTags: ["BEAST", "MELEE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_lesser_demon"
     manaCost: 5
     baseAttack: 6
@@ -202,6 +352,11 @@ cards:
     rarity: "UNCOMMON"
     effectTags: ["BLEED"]
     groupTags: ["ABSTRACTION", "MELEE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_swamp_thing"
     manaCost: 5
     baseAttack: 4
@@ -209,6 +364,11 @@ cards:
     rarity: "UNCOMMON"
     effectTags: ["POISON"]
     groupTags: ["ABSTRACTION", "MELEE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_steel_golem"
     manaCost: 5
     baseAttack: 2
@@ -216,6 +376,11 @@ cards:
     rarity: "UNCOMMON"
     effectTags: ["TAUNT", "IMMUNE_POISON"]
     groupTags: ["MECHANICAL", "MELEE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_armored_rhino"
     manaCost: 6
     baseAttack: 4
@@ -223,12 +388,22 @@ cards:
     rarity: "UNCOMMON"
     effectTags: ["TAUNT"]
     groupTags: ["BEAST", "MELEE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_siege_giant"
     manaCost: 6
     baseAttack: 5
     baseHealth: 6
     rarity: "UNCOMMON"
     groupTags: ["ABSTRACTION", "MELEE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
 
   # RARE (Superior Stats)
   - name: "card_levitation_adept"
@@ -237,6 +412,11 @@ cards:
     baseHealth: 2
     rarity: "RARE"
     groupTags: ["HUMAN", "MAGE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_vanguard_shieldbearer"
     manaCost: 1
     baseAttack: 1
@@ -244,6 +424,11 @@ cards:
     rarity: "RARE"
     effectTags: ["TAUNT"]
     groupTags: ["HUMAN", "MELEE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_void_acolyte"
     manaCost: 1
     baseAttack: 2
@@ -251,6 +436,11 @@ cards:
     rarity: "RARE"
     effectTags: ["IMMUNE_POISON"]
     groupTags: ["ABSTRACTION", "MAGE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_sand_stalker"
     manaCost: 2
     baseAttack: 3
@@ -258,6 +448,11 @@ cards:
     rarity: "RARE"
     effectTags: ["RUSH", "BLEED"]
     groupTags: ["BEAST", "MELEE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_elven_warden"
     manaCost: 2
     baseAttack: 2
@@ -267,6 +462,11 @@ cards:
     groupTags: ["HUMAN", "MELEE"]
     canDropFromBooster: false
     canCraftFromDust: false
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_dawn_sentinel"
     manaCost: 3
     baseAttack: 2
@@ -274,6 +474,11 @@ cards:
     rarity: "RARE"
     effectTags: ["TAUNT", "IMMUNE_BURN", "HEAL"]
     groupTags: ["ELEMENTAL", "MELEE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_shadow_blade"
     manaCost: 3
     baseAttack: 5
@@ -281,6 +486,11 @@ cards:
     rarity: "RARE"
     effectTags: ["RUSH", "BLEED", "CRIT"]
     groupTags: ["HUMAN", "MELEE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_destruction_mage"
     manaCost: 3
     baseAttack: 4
@@ -288,6 +498,11 @@ cards:
     rarity: "RARE"
     effectTags: ["SPLASH", "BURN"]
     groupTags: ["HUMAN", "MAGE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_emerald_drake"
     manaCost: 4
     baseAttack: 4
@@ -295,6 +510,11 @@ cards:
     rarity: "RARE"
     effectTags: ["POISON"]
     groupTags: ["DRAGON", "RANGER"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_bone_golem"
     manaCost: 4
     baseAttack: 4
@@ -302,6 +522,11 @@ cards:
     rarity: "RARE"
     effectTags: ["TAUNT", "LIFESTEAL", "IMMUNE_BLEED"]
     groupTags: ["UNDEAD", "MELEE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_ice_maiden"
     manaCost: 4
     baseAttack: 4
@@ -309,6 +534,11 @@ cards:
     rarity: "RARE"
     effectTags: ["TAUNT", "DEBUFF_ATTACK", "FREEZE"]
     groupTags: ["ELEMENTAL", "MAGE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_clan_berserk"
     manaCost: 4
     baseAttack: 6
@@ -316,6 +546,11 @@ cards:
     rarity: "RARE"
     effectTags: ["RUSH", "CRIT"]
     groupTags: ["HUMAN", "MELEE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_royal_archer"
     manaCost: 4
     baseAttack: 5
@@ -323,6 +558,11 @@ cards:
     rarity: "RARE"
     effectTags: ["STUN"]
     groupTags: ["HUMAN", "RANGER"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_inquisitor"
     manaCost: 5
     baseAttack: 5
@@ -330,6 +570,11 @@ cards:
     rarity: "RARE"
     effectTags: ["SPLASH", "STUN"]
     groupTags: ["HUMAN", "MAGE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_grove_keeper"
     manaCost: 5
     baseAttack: 4
@@ -337,6 +582,11 @@ cards:
     rarity: "RARE"
     effectTags: ["TAUNT", "IMMUNE_POISON", "HEAL"]
     groupTags: ["ELEMENTAL", "MELEE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_soul_reaper"
     manaCost: 5
     baseAttack: 6
@@ -344,6 +594,11 @@ cards:
     rarity: "RARE"
     effectTags: ["LIFESTEAL", "RUSH", "BLEED"]
     groupTags: ["UNDEAD", "MELEE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_bastion_turtle"
     manaCost: 6
     baseAttack: 3
@@ -351,6 +606,11 @@ cards:
     rarity: "RARE"
     effectTags: ["TAUNT", "IMMUNE_CRIT"]
     groupTags: ["BEAST", "MELEE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_iron_colossus"
     manaCost: 7
     baseAttack: 6
@@ -358,6 +618,11 @@ cards:
     rarity: "RARE"
     effectTags: ["TAUNT", "RETRIBUTION"]
     groupTags: ["MECHANICAL", "MELEE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_fire_lord"
     manaCost: 6
     baseAttack: 7
@@ -365,6 +630,11 @@ cards:
     rarity: "RARE"
     effectTags: ["SPLASH", "RUSH", "BURN"]
     groupTags: ["ELEMENTAL", "MAGE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_fire_giant"
     manaCost: 7
     baseAttack: 8
@@ -372,6 +642,11 @@ cards:
     rarity: "RARE"
     effectTags: ["SPLASH", "BURN", "IMMUNE_BURN"]
     groupTags: ["ELEMENTAL", "MELEE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
 
   # EPIC (Strong Effects)
   - name: "card_light_squire"
@@ -383,6 +658,11 @@ cards:
     groupTags: ["HUMAN", "MELEE"]
     canDropFromBooster: false
     canCraftFromDust: false
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_vampire_aristocrat"
     manaCost: 3
     baseAttack: 4
@@ -390,13 +670,23 @@ cards:
     rarity: "EPIC"
     effectTags: ["LIFESTEAL", "BLEED"]
     groupTags: ["UNDEAD", "MELEE"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_void_sorcerer"
-    manaCost: 4
-    baseAttack: 5
-    baseHealth: 6
+    manaCost: 3
+    baseAttack: 4
+    baseHealth: 5
     rarity: "EPIC"
     effectTags: ["SPLASH", "FREEZE"]
     groupTags: ["ABSTRACTION", "MAGE"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_cursed_paladin"
     manaCost: 4
     baseAttack: 6
@@ -404,6 +694,11 @@ cards:
     rarity: "EPIC"
     effectTags: ["LIFESTEAL", "BLEED", "STUN"]
     groupTags: ["UNDEAD", "MELEE"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_goblin_demolisher"
     manaCost: 3
     baseAttack: 5
@@ -411,41 +706,71 @@ cards:
     rarity: "EPIC"
     effectTags: ["SPLASH", "BURN", "CRIT"]
     groupTags: ["HUMAN", "MAGE"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_dark_knight"
-    manaCost: 5
-    baseAttack: 6
-    baseHealth: 8
+    manaCost: 4
+    baseAttack: 5
+    baseHealth: 7
     rarity: "EPIC"
     effectTags: ["TAUNT", "LIFESTEAL", "RETRIBUTION"]
     groupTags: ["UNDEAD", "MELEE"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_storm_herald"
-    manaCost: 5
-    baseAttack: 6
-    baseHealth: 7
+    manaCost: 4
+    baseAttack: 5
+    baseHealth: 6
     rarity: "EPIC"
     effectTags: ["SPLASH", "STUN"]
     groupTags: ["ELEMENTAL", "MAGE"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_storm_adept"
-    manaCost: 4
-    baseAttack: 4
-    baseHealth: 5
+    manaCost: 3
+    baseAttack: 3
+    baseHealth: 4
     rarity: "EPIC"
     effectTags: ["SPLASH", "FREEZE"]
     groupTags: ["HUMAN", "MAGE"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_arch_lich"
-    manaCost: 7
-    baseAttack: 7
-    baseHealth: 8
+    manaCost: 6
+    baseAttack: 6
+    baseHealth: 7
     rarity: "EPIC"
     effectTags: ["LIFESTEAL", "BUFF"]
     groupTags: ["UNDEAD", "MAGE"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_guardian_angel"
-    manaCost: 6
-    baseAttack: 6
-    baseHealth: 10
+    manaCost: 5
+    baseAttack: 5
+    baseHealth: 9
     rarity: "EPIC"
     effectTags: ["TAUNT", "BUFF", "MASS_HEAL"]
     groupTags: ["ABSTRACTION", "MAGE"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
 
   # LEGENDARY (Game Changers)
   - name: "card_shadow_king"
@@ -455,22 +780,37 @@ cards:
     rarity: "LEGENDARY"
     groupTags: ["UNDEAD", "MELEE"]
     canDropFromBooster: false
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_void_dragon"
-    manaCost: 7
-    baseAttack: 12
-    baseHealth: 10
+    manaCost: 5
+    baseAttack: 10
+    baseHealth: 9
     rarity: "LEGENDARY"
     effectTags: ["SPLASH", "BURN", "CRIT"]
     groupTags: ["DRAGON", "MAGE"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_shadow_reaper"
-    manaCost: 5
-    baseAttack: 6
-    baseHealth: 6
+    manaCost: 4
+    baseAttack: 5
+    baseHealth: 5
     rarity: "LEGENDARY"
     effectTags: ["LIFESTEAL", "RUSH", "BLEED", "RETRIBUTION"]
     groupTags: ["UNDEAD", "MELEE"]
     canDropFromBooster: false
     canCraftFromDust: false
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_spirit_mentor"
     manaCost: 2
     baseAttack: 3
@@ -478,50 +818,85 @@ cards:
     rarity: "LEGENDARY"
     effectTags: ["BUFF", "MASS_HEAL"]
     groupTags: ["ABSTRACTION", "MAGE"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_ancient_ent"
-    manaCost: 6
-    baseAttack: 5
-    baseHealth: 12
+    manaCost: 5
+    baseAttack: 4
+    baseHealth: 11
     rarity: "LEGENDARY"
     effectTags: ["TAUNT", "BUFF", "IMMUNE_POISON", "HEAL"]
     groupTags: ["ELEMENTAL", "MELEE"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_ghost_reaper"
-    manaCost: 5
-    baseAttack: 6
+    manaCost: 4
+    baseAttack: 5
     baseHealth: 5
     rarity: "LEGENDARY"
     effectTags: ["LIFESTEAL", "BLEED", "FREEZE"]
     groupTags: ["UNDEAD", "RANGER"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_void_archmage"
-    manaCost: 8
-    baseAttack: 8
-    baseHealth: 10
+    manaCost: 6
+    baseAttack: 7
+    baseHealth: 9
     rarity: "LEGENDARY"
     effectTags: ["SPLASH", "BUFF", "BURN", "FREEZE"]
     groupTags: ["HUMAN", "MAGE"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
 
   # MYTHIC (Godlike)
   - name: "card_world_eater"
-    manaCost: 9
-    baseAttack: 15
-    baseHealth: 15
+    manaCost: 7
+    baseAttack: 12
+    baseHealth: 13
     rarity: "MYTHIC"
     effectTags: ["SPLASH", "LIFESTEAL", "BLEED", "STUN"]
     groupTags: ["ABSTRACTION", "MELEE"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_celestial_dragon"
-    manaCost: 10
-    baseAttack: 20
-    baseHealth: 20
+    manaCost: 8
+    baseAttack: 16
+    baseHealth: 18
     rarity: "MYTHIC"
     effectTags: ["BUFF", "BURN", "CRIT"]
     groupTags: ["DRAGON", "RANGER"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_forgotten_titan"
-    manaCost: 8
-    baseAttack: 10
-    baseHealth: 25
+    manaCost: 7
+    baseAttack: 8
+    baseHealth: 22
     rarity: "MYTHIC"
     effectTags: ["TAUNT", "SPLASH", "IMMUNE_BURN", "IMMUNE_BLEED", "IMMUNE_POISON", "RETRIBUTION"]
     groupTags: ["ELEMENTAL", "MELEE"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
 
   # NEW CARDS (for variety)
   - name: "card_tidal_siren"
@@ -530,6 +905,11 @@ cards:
     baseHealth: 3
     rarity: "COMMON"
     groupTags: ["ABSTRACTION", "RANGER"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_reef_crawler"
     manaCost: 2
     baseAttack: 3
@@ -537,6 +917,11 @@ cards:
     rarity: "COMMON"
     effectTags: ["RUSH"]
     groupTags: ["BEAST", "MELEE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_glow_kelp"
     manaCost: 2
     baseAttack: 1
@@ -544,18 +929,33 @@ cards:
     rarity: "COMMON"
     effectTags: ["TAUNT"]
     groupTags: ["ELEMENTAL", "MELEE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_wind_sprite"
     manaCost: 1
     baseAttack: 2
     baseHealth: 2
     rarity: "COMMON"
     groupTags: ["ELEMENTAL", "MAGE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_thunder_wisp"
     manaCost: 2
     baseAttack: 3
     baseHealth: 2
     rarity: "COMMON"
     groupTags: ["ELEMENTAL", "MAGE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_venom_spitter"
     manaCost: 3
     baseAttack: 3
@@ -563,6 +963,11 @@ cards:
     rarity: "UNCOMMON"
     effectTags: ["POISON"]
     groupTags: ["BEAST", "RANGER"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_blood_leech"
     manaCost: 2
     baseAttack: 2
@@ -570,6 +975,11 @@ cards:
     rarity: "COMMON"
     effectTags: ["LIFESTEAL"]
     groupTags: ["BEAST", "MELEE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_moss_troll"
     manaCost: 3
     baseAttack: 2
@@ -577,6 +987,11 @@ cards:
     rarity: "UNCOMMON"
     effectTags: ["TAUNT"]
     groupTags: ["BEAST", "MELEE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_spore_shaman"
     manaCost: 3
     baseAttack: 3
@@ -584,12 +999,22 @@ cards:
     rarity: "UNCOMMON"
     effectTags: ["POISON"]
     groupTags: ["HUMAN", "MAGE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_clockwork_spider"
     manaCost: 2
     baseAttack: 2
     baseHealth: 3
     rarity: "COMMON"
     groupTags: ["MECHANICAL", "MELEE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
 
   - name: "card_abyssal_merrow"
     manaCost: 4
@@ -597,6 +1022,11 @@ cards:
     baseHealth: 6
     rarity: "RARE"
     groupTags: ["ABSTRACTION", "RANGER"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_tempest_harpy"
     manaCost: 4
     baseAttack: 5
@@ -604,6 +1034,11 @@ cards:
     rarity: "RARE"
     effectTags: ["RUSH"]
     groupTags: ["BEAST", "MELEE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_coral_leviathan"
     manaCost: 5
     baseAttack: 4
@@ -611,6 +1046,11 @@ cards:
     rarity: "RARE"
     effectTags: ["TAUNT", "RETRIBUTION"]
     groupTags: ["BEAST", "MELEE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_stormcaller"
     manaCost: 4
     baseAttack: 4
@@ -618,6 +1058,11 @@ cards:
     rarity: "RARE"
     effectTags: ["SPLASH", "STUN"]
     groupTags: ["HUMAN", "MAGE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_poison_dryad"
     manaCost: 3
     baseAttack: 4
@@ -625,6 +1070,11 @@ cards:
     rarity: "RARE"
     effectTags: ["POISON", "IMMUNE_POISON"]
     groupTags: ["ELEMENTAL", "MAGE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_sanguine_baron"
     manaCost: 5
     baseAttack: 6
@@ -632,6 +1082,11 @@ cards:
     rarity: "RARE"
     effectTags: ["LIFESTEAL", "CRIT"]
     groupTags: ["UNDEAD", "MELEE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_ancient_mushroom"
     manaCost: 4
     baseAttack: 3
@@ -639,6 +1094,11 @@ cards:
     rarity: "RARE"
     effectTags: ["TAUNT", "HEAL"]
     groupTags: ["ELEMENTAL", "MELEE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_ether_wraith"
     manaCost: 3
     baseAttack: 5
@@ -646,6 +1106,11 @@ cards:
     rarity: "RARE"
     effectTags: ["RUSH", "FREEZE"]
     groupTags: ["UNDEAD", "MELEE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_rune_golem"
     manaCost: 5
     baseAttack: 3
@@ -653,176 +1118,301 @@ cards:
     rarity: "RARE"
     effectTags: ["TAUNT", "IMMUNE_STUN"]
     groupTags: ["MECHANICAL", "MELEE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_fungal_behemoth"
     manaCost: 6
     baseAttack: 5
     baseHealth: 8
     rarity: "RARE"
     groupTags: ["BEAST", "MELEE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
 
   - name: "card_kraken_tidecaller"
-    manaCost: 6
-    baseAttack: 6
-    baseHealth: 9
-    rarity: "EPIC"
-    effectTags: ["SPLASH", "FREEZE"]
-    groupTags: ["BEAST", "MAGE"]
-  - name: "card_hurricane_elemental"
     manaCost: 5
-    baseAttack: 7
-    baseHealth: 6
-    rarity: "EPIC"
-    effectTags: ["RUSH", "SPLASH", "STUN"]
-    groupTags: ["ELEMENTAL", "MAGE"]
-  - name: "card_blood_covenant"
-    manaCost: 5
-    baseAttack: 6
-    baseHealth: 7
-    rarity: "EPIC"
-    effectTags: ["LIFESTEAL", "CRIT"]
-    groupTags: ["ABSTRACTION", "MELEE"]
-  - name: "card_mindflayer"
-    manaCost: 6
     baseAttack: 5
     baseHealth: 8
     rarity: "EPIC"
+    effectTags: ["SPLASH", "FREEZE"]
+    groupTags: ["BEAST", "MAGE"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
+  - name: "card_hurricane_elemental"
+    manaCost: 4
+    baseAttack: 6
+    baseHealth: 5
+    rarity: "EPIC"
+    effectTags: ["RUSH", "SPLASH", "STUN"]
+    groupTags: ["ELEMENTAL", "MAGE"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
+  - name: "card_blood_covenant"
+    manaCost: 4
+    baseAttack: 5
+    baseHealth: 6
+    rarity: "EPIC"
+    effectTags: ["LIFESTEAL", "CRIT"]
+    groupTags: ["ABSTRACTION", "MELEE"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
+  - name: "card_mindflayer"
+    manaCost: 5
+    baseAttack: 4
+    baseHealth: 7
+    rarity: "EPIC"
     effectTags: ["STUN"]
     groupTags: ["ABSTRACTION", "RANGER"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_thorn_colossus"
-    manaCost: 6
-    baseAttack: 4
-    baseHealth: 11
+    manaCost: 5
+    baseAttack: 3
+    baseHealth: 10
     rarity: "EPIC"
     effectTags: ["TAUNT", "RETRIBUTION"]
     groupTags: ["ELEMENTAL", "MELEE"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_spectral_assassin"
-    manaCost: 4
-    baseAttack: 8
-    baseHealth: 5
+    manaCost: 3
+    baseAttack: 7
+    baseHealth: 4
     rarity: "EPIC"
     effectTags: ["RUSH", "BLEED", "CRIT"]
     groupTags: ["UNDEAD", "MELEE"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_toxic_hydra"
-    manaCost: 5
+    manaCost: 4
+    baseAttack: 5
+    baseHealth: 6
+    rarity: "EPIC"
+    effectTags: ["SPLASH", "POISON", "IMMUNE_POISON"]
+    groupTags: ["BEAST", "MELEE"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
+  - name: "card_living_storm"
+    manaCost: 6
     baseAttack: 6
     baseHealth: 7
     rarity: "EPIC"
-    effectTags: ["SPLASH", "POISON", "IMMUNE_POISON"]
-    groupTags: ["BEAST", "MELEE"]
-  - name: "card_living_storm"
-    manaCost: 7
-    baseAttack: 7
-    baseHealth: 8
-    rarity: "EPIC"
     effectTags: ["SPLASH", "STUN", "IMMUNE_STUN"]
     groupTags: ["ELEMENTAL", "MAGE"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_heartstealer"
-    manaCost: 5
-    baseAttack: 7
-    baseHealth: 6
+    manaCost: 4
+    baseAttack: 6
+    baseHealth: 5
     rarity: "EPIC"
     effectTags: ["LIFESTEAL", "RUSH"]
     groupTags: ["ABSTRACTION", "MELEE"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
 
   - name: "card_deep_sea_emperor"
-    manaCost: 7
-    baseAttack: 9
-    baseHealth: 11
+    manaCost: 6
+    baseAttack: 8
+    baseHealth: 10
     rarity: "LEGENDARY"
     effectTags: ["TAUNT", "SPLASH", "RETRIBUTION"]
     groupTags: ["BEAST", "MELEE"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_eternal_tempest"
-    manaCost: 6
-    baseAttack: 8
-    baseHealth: 9
-    rarity: "LEGENDARY"
-    effectTags: ["SPLASH", "RUSH", "STUN"]
-    groupTags: ["ELEMENTAL", "MAGE"]
-  - name: "card_blood_goddess"
-    manaCost: 6
-    baseAttack: 10
-    baseHealth: 8
-    rarity: "LEGENDARY"
-    effectTags: ["LIFESTEAL", "CRIT"]
-    groupTags: ["ABSTRACTION", "MELEE"]
-  - name: "card_void_whisperer"
     manaCost: 5
     baseAttack: 7
     baseHealth: 8
     rarity: "LEGENDARY"
+    effectTags: ["SPLASH", "RUSH", "STUN"]
+    groupTags: ["ELEMENTAL", "MAGE"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
+  - name: "card_blood_goddess"
+    manaCost: 5
+    baseAttack: 9
+    baseHealth: 7
+    rarity: "LEGENDARY"
+    effectTags: ["LIFESTEAL", "CRIT"]
+    groupTags: ["ABSTRACTION", "MELEE"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
+  - name: "card_void_whisperer"
+    manaCost: 4
+    baseAttack: 6
+    baseHealth: 7
+    rarity: "LEGENDARY"
     effectTags: ["BUFF", "MASS_HEAL"]
     groupTags: ["ABSTRACTION", "MAGE"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_world_tree_avatar"
-    manaCost: 8
-    baseAttack: 6
-    baseHealth: 14
+    manaCost: 7
+    baseAttack: 5
+    baseHealth: 13
     rarity: "LEGENDARY"
     effectTags: ["TAUNT", "BUFF", "MASS_HEAL"]
     groupTags: ["ELEMENTAL", "MELEE"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_plague_lord"
-    manaCost: 7
-    baseAttack: 9
-    baseHealth: 10
+    manaCost: 6
+    baseAttack: 8
+    baseHealth: 9
     rarity: "LEGENDARY"
     effectTags: ["SPLASH", "POISON", "IMMUNE_POISON"]
     groupTags: ["UNDEAD", "MAGE"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_phoenix_of_ashes"
-    manaCost: 7
-    baseAttack: 10
-    baseHealth: 9
+    manaCost: 6
+    baseAttack: 9
+    baseHealth: 8
     rarity: "LEGENDARY"
     effectTags: ["RUSH", "LIFESTEAL", "BURN", "IMMUNE_BURN"]
     groupTags: ["ELEMENTAL", "MELEE"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_chrono_construct"
-    manaCost: 6
-    baseAttack: 8
-    baseHealth: 10
+    manaCost: 5
+    baseAttack: 7
+    baseHealth: 9
     rarity: "LEGENDARY"
     effectTags: ["STUN", "IMMUNE_STUN"]
     groupTags: ["MECHANICAL", "MELEE"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
 
   - name: "card_leviathan_awakened"
-    manaCost: 9
-    baseAttack: 13
-    baseHealth: 16
+    manaCost: 7
+    baseAttack: 11
+    baseHealth: 14
     rarity: "MYTHIC"
     effectTags: ["TAUNT", "SPLASH", "STUN"]
     groupTags: ["BEAST", "MELEE"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_infinite_stormlord"
-    manaCost: 10
-    baseAttack: 14
-    baseHealth: 14
+    manaCost: 8
+    baseAttack: 12
+    baseHealth: 12
     rarity: "MYTHIC"
     effectTags: ["SPLASH", "STUN", "IMMUNE_STUN"]
     groupTags: ["ELEMENTAL", "MAGE"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_blood_eternal"
-    manaCost: 8
-    baseAttack: 15
-    baseHealth: 12
+    manaCost: 7
+    baseAttack: 13
+    baseHealth: 11
     rarity: "MYTHIC"
     effectTags: ["LIFESTEAL", "RUSH", "BLEED", "CRIT"]
     groupTags: ["UNDEAD", "MELEE"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_mother_fungus"
-    manaCost: 9
-    baseAttack: 8
-    baseHealth: 20
+    manaCost: 8
+    baseAttack: 7
+    baseHealth: 18
     rarity: "MYTHIC"
     effectTags: ["TAUNT", "BUFF", "POISON", "MASS_HEAL"]
     groupTags: ["ELEMENTAL", "MELEE"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_dream_eater"
-    manaCost: 8
-    baseAttack: 12
-    baseHealth: 13
+    manaCost: 7
+    baseAttack: 10
+    baseHealth: 11
     rarity: "MYTHIC"
     effectTags: ["FREEZE"]
     groupTags: ["ABSTRACTION", "RANGER"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_celestial_kraken"
-    manaCost: 10
-    baseAttack: 16
-    baseHealth: 18
+    manaCost: 9
+    baseAttack: 14
+    baseHealth: 16
     rarity: "MYTHIC"
     effectTags: ["SPLASH", "TAUNT", "RETRIBUTION"]
     groupTags: ["BEAST", "MELEE"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
 
   - name: "card_meadow_fairy"
     manaCost: 1
@@ -831,12 +1421,22 @@ cards:
     rarity: "COMMON"
     effectTags: ["HEAL"]
     groupTags: ["ELEMENTAL", "MAGE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_sunbeam_sprite"
     manaCost: 2
     baseAttack: 2
     baseHealth: 2
     rarity: "COMMON"
     groupTags: ["ELEMENTAL", "MAGE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_river_warden"
     manaCost: 2
     baseAttack: 2
@@ -844,12 +1444,22 @@ cards:
     rarity: "COMMON"
     effectTags: ["TAUNT"]
     groupTags: ["HUMAN", "MELEE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_kindling_spirit"
     manaCost: 2
     baseAttack: 3
     baseHealth: 2
     rarity: "COMMON"
     groupTags: ["ELEMENTAL", "MAGE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_healing_blossom"
     manaCost: 2
     baseAttack: 1
@@ -857,12 +1467,22 @@ cards:
     rarity: "COMMON"
     effectTags: ["HEAL"]
     groupTags: ["ELEMENTAL", "MAGE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_gentle_wind_dancer"
     manaCost: 1
     baseAttack: 2
     baseHealth: 2
     rarity: "COMMON"
     groupTags: ["HUMAN", "MAGE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_forest_keeper"
     manaCost: 3
     baseAttack: 2
@@ -870,18 +1490,33 @@ cards:
     rarity: "COMMON"
     effectTags: ["TAUNT"]
     groupTags: ["HUMAN", "MELEE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_shining_page"
     manaCost: 2
     baseAttack: 2
     baseHealth: 3
     rarity: "COMMON"
     groupTags: ["HUMAN", "MAGE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_dawn_singer"
     manaCost: 2
     baseAttack: 3
     baseHealth: 2
     rarity: "COMMON"
     groupTags: ["HUMAN", "MAGE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_loyal_hound"
     manaCost: 2
     baseAttack: 3
@@ -889,6 +1524,11 @@ cards:
     rarity: "COMMON"
     effectTags: ["RUSH"]
     groupTags: ["BEAST", "MELEE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
 
   - name: "card_silverwing_angel"
     manaCost: 4
@@ -897,6 +1537,11 @@ cards:
     rarity: "RARE"
     effectTags: ["BUFF", "MASS_HEAL"]
     groupTags: ["ABSTRACTION", "MAGE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_ancient_oak_druid"
     manaCost: 4
     baseAttack: 3
@@ -904,6 +1549,11 @@ cards:
     rarity: "RARE"
     effectTags: ["TAUNT", "HEAL"]
     groupTags: ["HUMAN", "MELEE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_crystal_healer"
     manaCost: 3
     baseAttack: 3
@@ -911,6 +1561,11 @@ cards:
     rarity: "RARE"
     effectTags: ["HEAL"]
     groupTags: ["HUMAN", "MAGE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_hopebringer_paladin"
     manaCost: 4
     baseAttack: 5
@@ -918,12 +1573,22 @@ cards:
     rarity: "RARE"
     effectTags: ["TAUNT", "RETRIBUTION"]
     groupTags: ["HUMAN", "MELEE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_moonlit_mermaid"
     manaCost: 4
     baseAttack: 4
     baseHealth: 5
     rarity: "RARE"
     groupTags: ["ABSTRACTION", "MAGE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_wise_celestial_owl"
     manaCost: 3
     baseAttack: 3
@@ -931,6 +1596,11 @@ cards:
     rarity: "RARE"
     effectTags: ["BUFF", "MASS_HEAL"]
     groupTags: ["BEAST", "MAGE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_serenity_spirit"
     manaCost: 4
     baseAttack: 2
@@ -938,12 +1608,22 @@ cards:
     rarity: "RARE"
     effectTags: ["HEAL", "IMMUNE_STUN"]
     groupTags: ["ELEMENTAL", "MAGE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_golden_harvest_druid"
     manaCost: 4
     baseAttack: 4
     baseHealth: 6
     rarity: "RARE"
     groupTags: ["HUMAN", "MAGE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_lightsworn_squire"
     manaCost: 3
     baseAttack: 4
@@ -951,6 +1631,11 @@ cards:
     rarity: "RARE"
     effectTags: ["RUSH", "CRIT"]
     groupTags: ["HUMAN", "MELEE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_benevolent_unicorn"
     manaCost: 5
     baseAttack: 4
@@ -958,166 +1643,286 @@ cards:
     rarity: "RARE"
     effectTags: ["HEAL", "MASS_HEAL"]
     groupTags: ["BEAST", "MAGE"]
+    deckLimit: 2
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
 
   - name: "card_archangel_of_mercy"
-    manaCost: 5
-    baseAttack: 5
-    baseHealth: 9
+    manaCost: 4
+    baseAttack: 4
+    baseHealth: 8
     rarity: "EPIC"
     effectTags: ["HEAL", "MASS_HEAL"]
     groupTags: ["ABSTRACTION", "MAGE"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_starlight_guardian"
-    manaCost: 6
-    baseAttack: 6
-    baseHealth: 8
+    manaCost: 5
+    baseAttack: 5
+    baseHealth: 7
     rarity: "EPIC"
     effectTags: ["TAUNT", "RETRIBUTION"]
     groupTags: ["ABSTRACTION", "MELEE"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_heart_of_the_forest"
-    manaCost: 5
-    baseAttack: 4
-    baseHealth: 10
+    manaCost: 4
+    baseAttack: 3
+    baseHealth: 9
     rarity: "EPIC"
     effectTags: ["TAUNT", "HEAL", "MASS_HEAL"]
     groupTags: ["ELEMENTAL", "MELEE"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_radiant_saint"
-    manaCost: 5
-    baseAttack: 7
-    baseHealth: 7
+    manaCost: 4
+    baseAttack: 6
+    baseHealth: 6
     rarity: "EPIC"
     effectTags: ["BUFF", "MASS_HEAL"]
     groupTags: ["HUMAN", "MAGE"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_luminous_phoenix"
-    manaCost: 6
-    baseAttack: 6
-    baseHealth: 8
+    manaCost: 5
+    baseAttack: 5
+    baseHealth: 7
     rarity: "EPIC"
     effectTags: ["RUSH", "BURN", "IMMUNE_BURN"]
     groupTags: ["ELEMENTAL", "MELEE"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_tide_mother"
-    manaCost: 6
-    baseAttack: 5
-    baseHealth: 9
+    manaCost: 5
+    baseAttack: 4
+    baseHealth: 8
     rarity: "EPIC"
     effectTags: ["HEAL", "MASS_HEAL"]
     groupTags: ["ELEMENTAL", "MAGE"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_song_of_hope"
-    manaCost: 5
-    baseAttack: 5
-    baseHealth: 8
+    manaCost: 4
+    baseAttack: 4
+    baseHealth: 7
     rarity: "EPIC"
     effectTags: ["BUFF", "MASS_HEAL"]
     groupTags: ["ABSTRACTION", "MAGE"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_ember_of_kindness"
+    manaCost: 4
+    baseAttack: 5
+    baseHealth: 6
+    rarity: "EPIC"
+    groupTags: ["ELEMENTAL", "MAGE"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
+  - name: "card_celestial_lion"
     manaCost: 5
     baseAttack: 6
     baseHealth: 7
     rarity: "EPIC"
-    groupTags: ["ELEMENTAL", "MAGE"]
-  - name: "card_celestial_lion"
-    manaCost: 6
-    baseAttack: 7
-    baseHealth: 8
-    rarity: "EPIC"
     effectTags: ["TAUNT", "CRIT"]
     groupTags: ["BEAST", "MELEE"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
 
   - name: "card_high_seraph"
-    manaCost: 7
-    baseAttack: 8
-    baseHealth: 11
+    manaCost: 6
+    baseAttack: 7
+    baseHealth: 10
     rarity: "LEGENDARY"
     effectTags: ["BUFF", "MASS_HEAL", "IMMUNE_CRIT"]
     groupTags: ["ABSTRACTION", "MAGE"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_world_healer"
+    manaCost: 6
+    baseAttack: 5
+    baseHealth: 12
+    rarity: "LEGENDARY"
+    effectTags: ["TAUNT", "MASS_HEAL", "HEAL"]
+    groupTags: ["ELEMENTAL", "MELEE"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
+  - name: "card_sunfather"
+    manaCost: 5
+    baseAttack: 8
+    baseHealth: 9
+    rarity: "LEGENDARY"
+    effectTags: ["BUFF", "MASS_HEAL"]
+    groupTags: ["ABSTRACTION", "MAGE"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
+  - name: "card_eternal_guardian"
     manaCost: 7
     baseAttack: 6
     baseHealth: 13
     rarity: "LEGENDARY"
-    effectTags: ["TAUNT", "MASS_HEAL", "HEAL"]
-    groupTags: ["ELEMENTAL", "MELEE"]
-  - name: "card_sunfather"
-    manaCost: 6
-    baseAttack: 9
-    baseHealth: 10
-    rarity: "LEGENDARY"
-    effectTags: ["BUFF", "MASS_HEAL"]
-    groupTags: ["ABSTRACTION", "MAGE"]
-  - name: "card_eternal_guardian"
-    manaCost: 8
-    baseAttack: 7
-    baseHealth: 14
-    rarity: "LEGENDARY"
     effectTags: ["TAUNT", "RETRIBUTION", "IMMUNE_STUN"]
     groupTags: ["MECHANICAL", "MELEE"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_lady_of_the_morning"
-    manaCost: 6
-    baseAttack: 8
-    baseHealth: 9
+    manaCost: 5
+    baseAttack: 7
+    baseHealth: 8
     rarity: "LEGENDARY"
     effectTags: ["HEAL", "MASS_HEAL"]
     groupTags: ["ABSTRACTION", "MAGE"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_tree_of_life_avatar"
-    manaCost: 8
-    baseAttack: 5
-    baseHealth: 15
+    manaCost: 7
+    baseAttack: 4
+    baseHealth: 14
     rarity: "LEGENDARY"
     effectTags: ["TAUNT", "HEAL", "MASS_HEAL"]
     groupTags: ["ELEMENTAL", "MELEE"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_purelight_valkyrie"
-    manaCost: 7
-    baseAttack: 10
-    baseHealth: 9
+    manaCost: 6
+    baseAttack: 9
+    baseHealth: 8
     rarity: "LEGENDARY"
     effectTags: ["RUSH", "CRIT"]
     groupTags: ["ABSTRACTION", "MELEE"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_harmony_dragon"
-    manaCost: 7
-    baseAttack: 8
-    baseHealth: 12
+    manaCost: 6
+    baseAttack: 7
+    baseHealth: 11
     rarity: "LEGENDARY"
     effectTags: ["BUFF", "MASS_HEAL", "CRIT"]
     groupTags: ["DRAGON", "MAGE"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
 
   - name: "card_emanation_of_light"
-    manaCost: 9
-    baseAttack: 10
-    baseHealth: 18
+    manaCost: 8
+    baseAttack: 9
+    baseHealth: 16
     rarity: "MYTHIC"
     effectTags: ["BUFF", "MASS_HEAL", "HEAL"]
     groupTags: ["ABSTRACTION", "MAGE"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_goddess_of_compassion"
-    manaCost: 10
-    baseAttack: 9
-    baseHealth: 20
+    manaCost: 9
+    baseAttack: 8
+    baseHealth: 18
     rarity: "MYTHIC"
     effectTags: ["TAUNT", "MASS_HEAL", "HEAL", "IMMUNE_CRIT"]
     groupTags: ["ABSTRACTION", "MAGE"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_eternal_spring_spirit"
-    manaCost: 9
-    baseAttack: 8
-    baseHealth: 19
+    manaCost: 8
+    baseAttack: 7
+    baseHealth: 17
     rarity: "MYTHIC"
     effectTags: ["HEAL", "MASS_HEAL", "IMMUNE_STUN", "IMMUNE_FREEZE"]
     groupTags: ["ELEMENTAL", "MAGE"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_crown_of_hope"
-    manaCost: 8
-    baseAttack: 12
-    baseHealth: 15
+    manaCost: 7
+    baseAttack: 11
+    baseHealth: 14
     rarity: "MYTHIC"
     effectTags: ["BUFF", "MASS_HEAL", "CRIT"]
     groupTags: ["ABSTRACTION", "MAGE"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_astral_unicorn_queen"
-    manaCost: 9
-    baseAttack: 11
-    baseHealth: 16
+    manaCost: 8
+    baseAttack: 10
+    baseHealth: 15
     rarity: "MYTHIC"
     effectTags: ["HEAL", "RUSH", "CRIT", "IMMUNE_POISON"]
     groupTags: ["BEAST", "MELEE"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
   - name: "card_lord_of_dawn"
-    manaCost: 10
-    baseAttack: 14
-    baseHealth: 17
+    manaCost: 9
+    baseAttack: 13
+    baseHealth: 16
     rarity: "MYTHIC"
     effectTags: ["BUFF", "MASS_HEAL", "CRIT", "IMMUNE_STUN", "IMMUNE_FREEZE", "IMMUNE_BURN", "IMMUNE_BLEED", "IMMUNE_POISON"]
     groupTags: ["ABSTRACTION", "MAGE"]
+    deckLimit: 1
+    deathSound: "card_death"
+    playSound: "card_place"
+    attackSound: "attack"
+    quotes: []
