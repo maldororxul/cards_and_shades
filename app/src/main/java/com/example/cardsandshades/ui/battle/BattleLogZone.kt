@@ -7,14 +7,19 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.res.stringResource
@@ -24,11 +29,13 @@ import com.example.cardsandshades.model.LogType
 import com.example.cardsandshades.ui.components.GameDialog
 import com.example.cardsandshades.ui.components.GameText
 import com.example.cardsandshades.utils.getStringResourceByName
+import java.util.Locale
 
 @Composable
 fun BattleLogZone(
     battleLog: String,
-    history: List<LogEntry> = emptyList()
+    history: List<LogEntry> = emptyList(),
+    onCardClick: (String) -> Unit = {}
 ) {
     var showDetailedLog by remember { mutableStateOf(false) }
     val context = LocalContext.current
@@ -48,7 +55,7 @@ fun BattleLogZone(
         val cleanLog = formatLogMessage(context, battleLog)
         
         GameText(
-            text = cleanLog,
+            text = cleanLog.text,
             color = if (battleLog.contains("❌")) Color.Red else Color(0xFFFFEB3B),
             fontSize = 15.sp,
             fontWeight = FontWeight.Bold,
@@ -59,6 +66,7 @@ fun BattleLogZone(
     if (showDetailedLog) {
         DetailedBattleLogDialog(
             history = history,
+            onCardClick = onCardClick,
             onDismiss = { showDetailedLog = false }
         )
     }
@@ -67,12 +75,12 @@ fun BattleLogZone(
 @Composable
 fun DetailedBattleLogDialog(
     history: List<LogEntry>,
+    onCardClick: (String) -> Unit,
     onDismiss: () -> Unit
 ) {
     val context = LocalContext.current
     val listState = rememberLazyListState()
 
-    // Скролл вниз при открытии
     LaunchedEffect(history.size) {
         if (history.isNotEmpty()) {
             listState.scrollToItem(history.size - 1)
@@ -106,13 +114,21 @@ fun DetailedBattleLogDialog(
                                 .background(color.copy(alpha = 0.1f), RoundedCornerShape(4.dp))
                                 .padding(8.dp)
                         ) {
-                            GameText(
-                                text = formatLogMessage(context, entry.message),
-                                color = color,
-                                fontSize = 14.sp,
-                                fontWeight = fontWeight,
-                                textAlign = textAlign,
-                                modifier = Modifier.fillMaxWidth()
+                            val annotated = formatLogMessage(context, entry.message)
+                            ClickableText(
+                                text = annotated,
+                                style = androidx.compose.ui.text.TextStyle(
+                                    color = color,
+                                    fontSize = 14.sp,
+                                    fontWeight = fontWeight,
+                                    textAlign = textAlign
+                                ),
+                                onClick = { offset ->
+                                    annotated.getStringAnnotations(tag = "CARD", start = offset, end = offset)
+                                        .firstOrNull()?.let { annotation ->
+                                            onCardClick(annotation.item)
+                                        }
+                                }
                             )
                         }
                     }
@@ -122,43 +138,47 @@ fun DetailedBattleLogDialog(
     )
 }
 
-/**
- * Formats a log message string. If it contains pipes (|), the first part is a template key
- * and subsequent parts are arguments.
- */
-private fun formatLogMessage(context: android.content.Context, message: String): String {
+@Composable
+private fun formatLogMessage(context: android.content.Context, message: String): AnnotatedString {
     if (message.contains("|")) {
         val parts = message.split("|")
         val templateName = parts[0]
-        val args = parts.drop(1).map { arg ->
-            when {
-                arg.startsWith("card_") -> getStringResourceByName(context, arg)
-                arg == "player" -> context.getString(R.string.player)
-                arg == "opponent" -> context.getString(R.string.opponent)
-                else -> arg.toIntOrNull() ?: arg
-            }
-        }
+        val args = parts.drop(1)
         
         val template = getStringResourceByName(context, templateName)
-        return try {
-            // String.format requires an Array<Any?> for varargs
-            val formatArgs = args.toTypedArray()
-            String.format(template, *formatArgs)
-        } catch (e: Exception) {
-            template + " " + args.joinToString(" ")
+        
+        // Split template by format specifiers %1$s, %2$s, etc.
+        val regex = Regex("%[0-9]\\\$[sd]")
+        val textParts = template.split(regex)
+        val specifiers = regex.findAll(template).map { it.value }.toList()
+
+        return buildAnnotatedString {
+            textParts.forEachIndexed { index, text ->
+                append(text)
+                if (index < specifiers.size) {
+                    val argIndex = specifiers[index][1].digitToInt() - 1
+                    val argValue = args.getOrNull(argIndex) ?: ""
+                    
+                    if (argValue.startsWith("card_")) {
+                        val cardName = getStringResourceByName(context, argValue)
+                        withStyle(style = SpanStyle(color = Color(0xFFFF9800), fontWeight = FontWeight.Bold)) {
+                            pushStringAnnotation(tag = "CARD", annotation = argValue)
+                            append(cardName)
+                            pop()
+                        }
+                    } else if (argValue == "player") {
+                        append(stringResource(R.string.player))
+                    } else if (argValue == "opponent") {
+                        append(stringResource(R.string.opponent))
+                    } else {
+                        append(argValue)
+                    }
+                }
+            }
         }
     }
 
-    // Regex to find and replace card keys like card_shadow_recruit
-    val cardRegex = Regex("card_[a-zA-Z0-9_]+")
-    var result = message
-    
-    cardRegex.findAll(message).forEach { match ->
-        val localizedName = getStringResourceByName(context, match.value)
-        result = result.replace(match.value, localizedName)
+    return buildAnnotatedString {
+        append(message)
     }
-    
-    if (result == "draw") return context.getString(R.string.draw)
-    
-    return result
 }

@@ -8,6 +8,8 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -25,20 +27,22 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.cardsandshades.catalog.*
 import com.example.cardsandshades.model.UserProfile
+import com.example.cardsandshades.model.MissionManager
 import com.example.cardsandshades.sound.SoundManager
 import com.example.cardsandshades.ui.booster.BoosterScreen
-import com.example.cardsandshades.ui.campaign.CampaignScreen
+import com.example.cardsandshades.ui.battle_menu.ToBattleScreen
 import com.example.cardsandshades.ui.collection.CollectionScreen
 import com.example.cardsandshades.ui.components.GameText
 import com.example.cardsandshades.ui.components.GameBackground
 import com.example.cardsandshades.ui.forge.ForgeScreen
 import com.example.cardsandshades.ui.game.GameScreen
 import com.example.cardsandshades.ui.game.GameViewModel
-import com.example.cardsandshades.ui.missions.MissionScreen
 import com.example.cardsandshades.ui.rewards.RewardsScreen
 import com.example.cardsandshades.ui.settings.SettingsScreen
 import com.example.cardsandshades.ui.theme.CardsAndShadesTheme
 import com.example.cardsandshades.utils.LocaleHelper
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
 
@@ -50,7 +54,6 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         hideSystemUI()
         
-        // Load language first
         LocaleHelper.setLocale(this, LocaleHelper.getLanguage(this))
 
         CardCatalog.init(this)
@@ -70,7 +73,14 @@ class MainActivity : ComponentActivity() {
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route
 
-                // Handle music transitions
+                // GLOBAL PLAYTIME TIMER
+                LaunchedEffect(Unit) {
+                    while (true) {
+                        delay(1000)
+                        MissionManager.tickPlaytime(1)
+                    }
+                }
+
                 LaunchedEffect(currentRoute) {
                     if (currentRoute != "battle" && currentRoute != null) {
                         SoundManager.startMusic(this@MainActivity)
@@ -78,80 +88,15 @@ class MainActivity : ComponentActivity() {
                 }
 
                 Scaffold(
-                    modifier = Modifier.fillMaxSize(),
-                    bottomBar = {
-                        if (currentRoute != "battle") {
-                            BottomNavBar(
-                                currentRoute = currentRoute ?: "campaign",
-                                onNavigate = { route ->
-                                    navController.navigate(route) {
-                                        popUpTo(navController.graph.startDestinationId)
-                                        launchSingleTop = true
-                                    }
-                                }
-                            )
-                        }
-                    }
+                    modifier = Modifier.fillMaxSize()
                 ) { innerPadding ->
                     NavHost(
                         navController = navController,
-                        startDestination = "campaign",
+                        startDestination = "main_menu",
                         modifier = Modifier.fillMaxSize()
                     ) {
-                        composable("campaign") { 
-                            GameBackground(screenId = "campaign") {
-                                CampaignScreen(
-                                    onLevelSelect = { level ->
-                                        gameViewModel.startNewGame(level)
-                                        navController.navigate("battle")
-                                    },
-                                    modifier = Modifier.padding(top = innerPadding.calculateTopPadding())
-                                )
-                            }
-                        }
-                        composable("collection") { 
-                            GameBackground(screenId = "collection") {
-                                CollectionScreen(
-                                    modifier = Modifier.padding(top = innerPadding.calculateTopPadding())
-                                ) 
-                            }
-                        }
-                        composable("shop") { 
-                            GameBackground(screenId = "shop") {
-                                BoosterScreen(
-                                    modifier = Modifier.padding(top = innerPadding.calculateTopPadding())
-                                ) 
-                            }
-                        }
-                        composable("rewards") { 
-                            GameBackground(screenId = "rewards") {
-                                RewardsScreen(
-                                    modifier = Modifier.padding(top = innerPadding.calculateTopPadding())
-                                ) 
-                            }
-                        }
-                        composable("missions") { 
-                            GameBackground(screenId = "missions") {
-                                MissionScreen(
-                                    modifier = Modifier.padding(top = innerPadding.calculateTopPadding())
-                                ) 
-                            }
-                        }
-                        composable("forge") { 
-                            GameBackground(screenId = "forge") {
-                                ForgeScreen(
-                                    modifier = Modifier.padding(top = innerPadding.calculateTopPadding())
-                                ) 
-                            }
-                        }
-                        composable("settings") { 
-                            GameBackground(screenId = "settings") {
-                                SettingsScreen(
-                                    onBack = { navController.popBackStack() },
-                                    viewModel = gameViewModel,
-                                    modifier = Modifier.padding(top = innerPadding.calculateTopPadding())
-                                ) 
-                            }
+                        composable("main_menu") {
+                            MainMenuPager(navController, gameViewModel)
                         }
                         composable("battle") { 
                             GameScreen(
@@ -184,7 +129,63 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun BottomNavBar(currentRoute: String, onNavigate: (String) -> Unit, modifier: Modifier = Modifier) {
+fun MainMenuPager(navController: androidx.navigation.NavController, gameViewModel: GameViewModel) {
+    val pagerState = rememberPagerState(pageCount = { 6 })
+    val scope = rememberCoroutineScope()
+
+    Scaffold(
+        bottomBar = {
+            BottomNavBar(
+                currentIndex = pagerState.currentPage,
+                onNavigate = { index ->
+                    scope.launch {
+                        pagerState.animateScrollToPage(index)
+                    }
+                }
+            )
+        }
+    ) { innerPadding ->
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier.fillMaxSize(),
+            userScrollEnabled = true
+        ) { page ->
+            when (page) {
+                0 -> GameBackground(screenId = "campaign") {
+                    ToBattleScreen(
+                        onLevelSelect = { level ->
+                            gameViewModel.startNewGame(level)
+                            navController.navigate("battle")
+                        },
+                        modifier = Modifier.padding(top = innerPadding.calculateTopPadding())
+                    )
+                }
+                1 -> GameBackground(screenId = "collection") {
+                    CollectionScreen(modifier = Modifier.padding(top = innerPadding.calculateTopPadding()))
+                }
+                2 -> GameBackground(screenId = "shop") {
+                    BoosterScreen(modifier = Modifier.padding(top = innerPadding.calculateTopPadding()))
+                }
+                3 -> GameBackground(screenId = "forge") {
+                    ForgeScreen(modifier = Modifier.padding(top = innerPadding.calculateTopPadding()))
+                }
+                4 -> GameBackground(screenId = "rewards") {
+                    RewardsScreen(modifier = Modifier.padding(top = innerPadding.calculateTopPadding()))
+                }
+                5 -> GameBackground(screenId = "settings") {
+                    SettingsScreen(
+                        onBack = { /* Handled by system back */ },
+                        viewModel = gameViewModel,
+                        modifier = Modifier.padding(top = innerPadding.calculateTopPadding())
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun BottomNavBar(currentIndex: Int, onNavigate: (Int) -> Unit, modifier: Modifier = Modifier) {
     Surface(
         modifier = modifier
             .fillMaxWidth()
@@ -198,22 +199,21 @@ fun BottomNavBar(currentRoute: String, onNavigate: (String) -> Unit, modifier: M
             horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            NavIcon("campaign", "🗺️", "Campaign", currentRoute == "campaign", onNavigate)
-            NavIcon("collection", "🃏", "Cards", currentRoute == "collection", onNavigate)
-            NavIcon("missions", "🎯", "Missions", currentRoute == "missions", onNavigate)
-            NavIcon("shop", "🛍️", "Shop", currentRoute == "shop", onNavigate)
-            NavIcon("forge", "⚒️", "Forge", currentRoute == "forge", onNavigate)
-            NavIcon("rewards", "🎁", "Daily", currentRoute == "rewards", onNavigate)
-            NavIcon("settings", "⚙️", "Settings", currentRoute == "settings", onNavigate)
+            NavIcon(0, "⚔️", "Battle", currentIndex == 0, onNavigate)
+            NavIcon(1, "🃏", "Cards", currentIndex == 1, onNavigate)
+            NavIcon(2, "🛍️", "Shop", currentIndex == 2, onNavigate)
+            NavIcon(3, "⚒️", "Forge", currentIndex == 3, onNavigate)
+            NavIcon(4, "🎁", "Daily", currentIndex == 4, onNavigate)
+            NavIcon(5, "⚙️", "Settings", currentIndex == 5, onNavigate)
         }
     }
 }
 
 @Composable
-fun NavIcon(route: String, icon: String, label: String, isSelected: Boolean, onNavigate: (String) -> Unit) {
+fun NavIcon(index: Int, icon: String, label: String, isSelected: Boolean, onNavigate: (Int) -> Unit) {
     Column(
         modifier = Modifier
-            .clickable { onNavigate(route) }
+            .clickable { onNavigate(index) }
             .padding(4.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {

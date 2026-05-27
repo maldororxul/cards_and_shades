@@ -9,7 +9,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -25,61 +24,35 @@ import com.example.cardsandshades.catalog.MissionCatalog
 import com.example.cardsandshades.model.*
 import com.example.cardsandshades.ui.components.GameButton
 import com.example.cardsandshades.ui.components.GameText
+import com.example.cardsandshades.ui.components.GameDialog
 import com.example.cardsandshades.utils.getStringResourceByName
 import com.example.cardsandshades.sound.SoundManager
+import kotlinx.coroutines.delay
+import java.util.Locale
 
 @Composable
 fun MissionScreen(
     modifier: Modifier = Modifier,
+    isWeekly: Boolean = false
 ) {
-    var selectedTab by remember { mutableIntStateOf(0) }
-    val tabs = listOf(stringResource(R.string.daily_tab), stringResource(R.string.weekly_tab))
+    val missions = if (isWeekly) MissionCatalog.weeklyMissions else MissionCatalog.dailyMissions
+    val states = if (isWeekly) MissionManager.weeklyStates else MissionManager.dailyStates
 
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(horizontal = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        GameText(stringResource(R.string.missions_title), fontSize = 28.sp, fontWeight = FontWeight.Black)
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Playtime Progress Bar
-        PlaytimeProgressBar()
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        TabRow(
-            selectedTabIndex = selectedTab,
-            containerColor = Color.Transparent,
-            contentColor = Color.White,
-            indicator = { tabPositions ->
-                if (selectedTab < tabPositions.size) {
-                    TabRowDefaults.SecondaryIndicator(
-                        modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
-                        color = Color.Cyan
-                    )
-                }
-            }
-        ) {
-            tabs.forEachIndexed { index, title ->
-                Tab(
-                    selected = selectedTab == index,
-                    onClick = { selectedTab = index },
-                    text = { GameText(title, fontSize = 14.sp) }
-                )
-            }
+        if (!isWeekly) {
+            PlaytimeProgressBar()
+            Spacer(modifier = Modifier.height(16.dp))
         }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        val missions = if (selectedTab == 0) MissionCatalog.dailyMissions else MissionCatalog.weeklyMissions
-        val states = if (selectedTab == 0) MissionManager.dailyStates else MissionManager.weeklyStates
 
         LazyColumn(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(12.dp),
-            contentPadding = PaddingValues(bottom = 100.dp) // PADDING FOR BOTTOM NAV
+            contentPadding = PaddingValues(bottom = 100.dp)
         ) {
             items(missions) { mission ->
                 val state = states.getOrPut(mission.id) { MissionState(mission.id) }
@@ -91,18 +64,56 @@ fun MissionScreen(
 
 @Composable
 fun PlaytimeProgressBar() {
+    val context = LocalContext.current
     val totalSeconds = MissionManager.dailyPlaytimeSeconds
     val totalMinutes = (totalSeconds / 60).toInt()
+    
     val rewards = MissionCatalog.playtimeRewards
+    val nextReward = rewards.find { it.minutes > totalMinutes && !MissionManager.claimedPlaytimeRewards.contains(it.minutes) }
+
+    var tooltipMessage by remember { mutableStateOf<String?>(null) }
+    var claimDialogReward by remember { mutableStateOf<RewardSetModel?>(null) }
+
+    val playReqLabel = stringResource(R.string.playtime_requirement)
+
+    LaunchedEffect(tooltipMessage) {
+        if (tooltipMessage != null) {
+            delay(2000)
+            tooltipMessage = null
+        }
+    }
 
     Column(modifier = Modifier.fillMaxWidth()) {
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            GameText(stringResource(R.string.daily_playtime), fontSize = 12.sp, color = Color.Gray)
-            GameText(stringResource(R.string.playtime_format, totalMinutes, 60), fontSize = 12.sp, color = Color.Cyan)
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            Column {
+                GameText(stringResource(R.string.daily_playtime), fontSize = 12.sp, color = Color.Gray)
+                GameText(stringResource(R.string.playtime_format, totalMinutes, 60), fontSize = 14.sp, color = Color.Cyan, fontWeight = FontWeight.Bold)
+            }
+            
+            if (nextReward != null) {
+                val remainingTotalSecs = (nextReward.minutes.toLong() * 60L) - totalSeconds
+                val remMins = (remainingTotalSecs / 60).toInt().coerceAtLeast(0)
+                val remSecs = (remainingTotalSecs % 60).toInt().coerceAtLeast(0)
+                
+                Column(horizontalAlignment = Alignment.End) {
+                    GameText(stringResource(R.string.next_reward_in), fontSize = 10.sp, color = Color.Gray)
+                    GameText(
+                        text = String.format(Locale.US, "%02d:%02d", remMins, remSecs),
+                        fontSize = 16.sp,
+                        color = Color.Yellow,
+                        fontWeight = FontWeight.Black
+                    )
+                }
+            }
         }
+        
+        if (tooltipMessage != null) {
+            GameText(tooltipMessage!!, color = Color.Cyan, fontSize = 12.sp, modifier = Modifier.padding(top = 4.dp))
+        }
+
         Spacer(modifier = Modifier.height(8.dp))
         
-        Box(modifier = Modifier.fillMaxWidth().height(36.dp), contentAlignment = Alignment.CenterStart) {
+        Box(modifier = Modifier.fillMaxWidth().height(48.dp), contentAlignment = Alignment.CenterStart) {
             LinearProgressIndicator(
                 progress = { (totalMinutes.toFloat() / 60f).coerceAtMost(1f) },
                 modifier = Modifier.fillMaxWidth().height(12.dp).clip(RoundedCornerShape(6.dp)),
@@ -110,7 +121,6 @@ fun PlaytimeProgressBar() {
                 trackColor = Color.DarkGray
             )
             
-            // Chest markers
             rewards.forEach { reward ->
                 val pos = (reward.minutes.toFloat() / 60f).coerceAtMost(1f)
                 val isClaimed = MissionManager.claimedPlaytimeRewards.contains(reward.minutes)
@@ -123,24 +133,52 @@ fun PlaytimeProgressBar() {
                 ) {
                     Box(
                         modifier = Modifier
-                            .offset(x = 16.dp) // Half of chest size to center it on the point
-                            .size(32.dp)
+                            .offset(x = 18.dp)
+                            .size(36.dp)
                             .clip(CircleShape)
-                            .background(if (isClaimed) Color.Gray else if (isAvailable) Color.Yellow else Color.Black.copy(alpha = 0.5f))
-                            .border(1.dp, if (isAvailable) Color.White else Color.Transparent, CircleShape)
-                            .clickable(enabled = isAvailable) {
-                                UserProfile.applyReward(reward.reward)
-                                MissionManager.claimedPlaytimeRewards.add(reward.minutes)
-                                UserProfile.save()
+                            .background(if (isClaimed) Color.Gray else if (isAvailable) Color.Green else Color.Black.copy(alpha = 0.5f))
+                            .border(2.dp, if (isAvailable) Color.White else Color.Transparent, CircleShape)
+                            .clickable {
+                                if (isAvailable) {
+                                    UserProfile.applyReward(reward.reward)
+                                    MissionManager.claimedPlaytimeRewards.add(reward.minutes)
+                                    UserProfile.save()
+                                    claimDialogReward = reward.reward
+                                    SoundManager.playSoundByName(context, "victory")
+                                } else {
+                                    tooltipMessage = playReqLabel.format(reward.minutes) + ": " + formatReward(reward.reward)
+                                }
                             },
                         contentAlignment = Alignment.Center
                     ) {
-                        GameText(if (isClaimed) "✔" else "🎁", fontSize = 14.sp)
+                        GameText(if (isClaimed) "✔" else "🎁", fontSize = 16.sp)
                     }
                 }
             }
         }
     }
+
+    if (claimDialogReward != null) {
+        GameDialog(
+            onDismiss = { claimDialogReward = null },
+            title = stringResource(R.string.reward_claimed_title),
+            content = {
+                GameText(stringResource(R.string.reward_claimed_msg, formatReward(claimDialogReward!!)), color = Color.Green, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+            },
+            confirmButton = { onAction ->
+                GameButton(text = "OK", onClick = { onAction(); claimDialogReward = null })
+            }
+        )
+    }
+}
+
+private fun formatReward(reward: RewardSetModel): String {
+    val parts = mutableListOf<String>()
+    if (reward.gold > 0) parts.add("${reward.gold} Gold")
+    if (reward.crystals > 0) parts.add("${reward.crystals} Crystals")
+    if (reward.dustCommon > 0) parts.add("${reward.dustCommon} Dust")
+    reward.cardName?.let { parts.add("Card") }
+    return parts.joinToString(", ")
 }
 
 @Composable
@@ -164,7 +202,7 @@ fun MissionItem(mission: MissionModel, state: MissionState) {
             Spacer(modifier = Modifier.height(4.dp))
             LinearProgressIndicator(
                 progress = { (progress.toFloat() / goal.toFloat()).coerceAtMost(1f) },
-                modifier = Modifier.fillMaxWidth().height(6.dp).clip(CircleShape),
+                modifier = Modifier.fillMaxWidth().height(6.6.dp).clip(CircleShape),
                 color = if (isComplete) Color.Green else Color.Cyan,
                 trackColor = Color.DarkGray
             )

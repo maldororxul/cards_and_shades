@@ -14,6 +14,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
@@ -47,7 +48,7 @@ fun HealthOrb(
             .size(size)
             .clip(CircleShape)
             .background(Color.Black.copy(alpha = 0.5f))
-            .border(2.dp, Color.White.copy(alpha = 0.3f), CircleShape),
+            .border(2.dp, Color.White.copy(alpha = 0.15f), CircleShape),
         contentAlignment = Alignment.Center
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {
@@ -59,22 +60,18 @@ fun HealthOrb(
             }
             
             clipPath(circlePath) {
-                // Background of the orb (dark/empty)
-                drawRect(Color(0xFF1A1A1A))
+                drawRect(Color(0xFF121212))
                 
-                // Liquid level
                 val fillHeight = height * (1f - animatedHp)
+                val waveAmplitude = size.toPx() * 0.04f
+                val waveLength = width
                 
                 val wavePath = Path().apply {
                     moveTo(0f, fillHeight)
-                    val waveAmplitude = size.toPx() * 0.05f
-                    val waveLength = width
-                    
                     for (x in 0..width.toInt()) {
                         val y = fillHeight + waveAmplitude * sin((x / waveLength) * 2 * Math.PI.toFloat() + waveOffset)
                         lineTo(x.toFloat(), y)
                     }
-                    
                     lineTo(width, height)
                     lineTo(0f, height)
                     close()
@@ -83,58 +80,54 @@ fun HealthOrb(
                 drawPath(
                     path = wavePath,
                     brush = Brush.verticalGradient(
-                        colors = listOf(liquidColor.copy(alpha = 0.7f), liquidColor)
+                        colors = listOf(liquidColor.copy(alpha = 0.6f), liquidColor),
+                        startY = fillHeight,
+                        endY = height
                     )
                 )
 
-                // --- 3D EFFECT REFINEMENT ---
-                
-                // 1. HIGHLIGHT (Gloss)
-                drawOval(
+                drawCircle(
                     brush = Brush.radialGradient(
-                        colors = listOf(Color.White.copy(alpha = 0.5f), Color.Transparent),
-                        center = androidx.compose.ui.geometry.Offset(width * 0.3f, height * 0.25f),
-                        radius = width * 0.35f
-                    ),
-                    topLeft = androidx.compose.ui.geometry.Offset(width * 0.15f, height * 0.15f),
-                    size = androidx.compose.ui.geometry.Size(width * 0.3f, height * 0.3f)
+                        colors = listOf(liquidColor.copy(alpha = 0.3f), Color.Transparent),
+                        center = androidx.compose.ui.geometry.Offset(width * 0.5f, height * (1f - animatedHp/2f)),
+                        radius = width * 0.4f
+                    )
                 )
 
-                // 2. INNER SHADOW (Depth)
+                drawOval(
+                    color = Color.White.copy(alpha = 0.12f),
+                    topLeft = androidx.compose.ui.geometry.Offset(width * 0.2f, height * 0.15f),
+                    size = androidx.compose.ui.geometry.Size(width * 0.4f, height * 0.25f)
+                )
+
                 drawPath(
                     path = circlePath,
                     brush = Brush.radialGradient(
-                        colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.4f)),
-                        center = androidx.compose.ui.geometry.Offset(width * 0.5f, height * 0.5f),
-                        radius = width * 0.5f
+                        colors = listOf(Color.Transparent, Color.White.copy(alpha = 0.08f)),
+                        center = androidx.compose.ui.geometry.Offset(width * 0.5f, height * 1.1f),
+                        radius = width * 0.6f
                     )
                 )
 
-                // 3. BOTTOM REFLECTION (3D Sphere feeling)
-                drawOval(
-                    brush = Brush.radialGradient(
-                        colors = listOf(Color.White.copy(alpha = 0.2f), Color.Transparent),
-                        center = androidx.compose.ui.geometry.Offset(width * 0.5f, height * 0.85f),
-                        radius = width * 0.3f
-                    ),
-                    topLeft = androidx.compose.ui.geometry.Offset(width * 0.35f, height * 0.75f),
-                    size = androidx.compose.ui.geometry.Size(width * 0.3f, height * 0.2f)
+                drawPath(
+                    path = circlePath,
+                    color = Color.White.copy(alpha = 0.1f),
+                    style = Stroke(width = 1.dp.toPx())
                 )
             }
         }
         
-        // HP Text overlay
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             GameText(
                 text = currentHp.toString(),
-                fontSize = (size.value * 0.3).sp,
+                fontSize = (size.value * 0.28).sp,
                 fontWeight = FontWeight.Black,
                 color = Color.White
             )
             GameText(
                 text = "/ $maxHp",
-                fontSize = (size.value * 0.15).sp,
-                color = Color.White.copy(alpha = 0.7f)
+                fontSize = (size.value * 0.14).sp,
+                color = Color.White.copy(alpha = 0.6f)
             )
         }
     }

@@ -27,6 +27,7 @@
     <string name="fusion_success">Fusion complete: %s created!</string>
     <string name="fusion_cost">Requires:</string>
     <string name="fusion_result">Result:</string>
+    <string name="disenchant">Disenchant</string>
 
     <string name="battle_start_msg">The battle has begun!</string>
     <string name="battle_your_turn">Your Turn</string>
@@ -462,4 +463,11 @@
     <string name="stat_health">Health</string>
     <string name="close">Close</string>
     <string name="battle_history">Battle History</string>
+    <string name="disenchant_desc">disenchant_desc</string>
+    <string name="dust_extras_found">dust_extras_found</string>
+    <string name="disenchant_all">disenchant_all</string>
+    <string name="no_extras">no_extras</string>
+    <string name="playtime_requirement">playtime_requirement</string>
+    <string name="next_reward_in">next_reward_in</string>
+    <string name="reward_claimed_title">reward_claimed_title</string>
 </resources>

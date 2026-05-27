@@ -35,6 +35,7 @@ import com.example.cardsandshades.R
 import com.example.cardsandshades.utils.getStringResourceByName
 import com.example.cardsandshades.ui.components.GameBackground
 import androidx.compose.material3.CircularProgressIndicator
+import com.example.cardsandshades.catalog.CardCatalog
 
 @Composable
 fun GameScreen(
@@ -72,7 +73,6 @@ private fun GameScreenContent(
 
     var showExitDialog by remember { mutableStateOf(false) }
 
-    // Обработка кнопки Назад
     BackHandler {
         showExitDialog = true
     }
@@ -85,7 +85,6 @@ private fun GameScreenContent(
     var playerHeroOffset by remember { mutableStateOf(Offset.Zero) }
     var enemyHeroOffset by remember { mutableStateOf(Offset.Zero) }
 
-    // ТРЕКИНГ ПАЛЬЦА ДЛЯ СТРЕЛКИ
     var fingerOffset by remember { mutableStateOf(Offset.Zero) }
 
     val battleStartMsg = stringResource(R.string.battle_start_msg)
@@ -131,7 +130,6 @@ private fun GameScreenContent(
                             val change = event.changes.firstOrNull()
                             if (change != null && selectedCardForAttack != null) {
                                 fingerOffset = change.position
-                                // Show arrow if finger is far enough from the start point
                                 val dist = (fingerOffset - startArrowOffset).getDistance()
                                 isDrawingArrow = dist > 40f
                             }
@@ -143,6 +141,7 @@ private fun GameScreenContent(
                 modifier = Modifier.fillMaxSize().padding(12.dp),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
+                val playerTag = stringResource(R.string.player)
                 val attackHeroMsg = stringResource(R.string.battle_attack_hero)
                 val attackHeroFailMsg = stringResource(R.string.battle_attack_hero_fail)
                 
@@ -155,7 +154,7 @@ private fun GameScreenContent(
                         selectedCardForAttack?.let { attacker ->
                             if (state.opponent.board.all { it == null }) {
                                 viewModel.attackEnemyHero(attacker)
-                                battleLog = attackHeroMsg.format(attacker.currentAttack)
+                                battleLog = attackHeroMsg.format(playerTag, attacker.currentAttack)
                                 selectedCardForAttack = null
                                 isDrawingArrow = false
                                 fingerOffset = Offset.Zero
@@ -174,12 +173,13 @@ private fun GameScreenContent(
                         if (selectedCardForAttack != null) {
                             val attacker = selectedCardForAttack!!
                             viewModel.attackEnemyCard(attacker, enemyCard)
-                            battleLog = cardAttackMsg.format(getStringResourceByName(context, attacker.name), getStringResourceByName(context, enemyCard.name))
+                            val attackerName = getStringResourceByName(context, attacker.name)
+                            val targetName = getStringResourceByName(context, enemyCard.name)
+                            battleLog = cardAttackMsg.format(playerTag, attackerName, targetName, attacker.currentAttack)
                             selectedCardForAttack = null
                             isDrawingArrow = false
                             fingerOffset = Offset.Zero
                         } else {
-                            // Клик по карте врага без выделенного атакующего - инспекция
                             val allBoardCards = (state.opponent.board.filterNotNull() + state.player.board.filterNotNull())
                             inspectedCardsList = allBoardCards
                             initialInspectedIndex = allBoardCards.indexOfFirst { it.id == enemyCard.id }.coerceAtLeast(0)
@@ -194,7 +194,15 @@ private fun GameScreenContent(
 
                 BattleLogZone(
                     battleLog = battleLog,
-                    history = state.logHistory
+                    history = state.logHistory,
+                    onCardClick = { cardName ->
+                        val template = CardCatalog.templates.find { it.name == cardName }
+                        if (template != null) {
+                            val card = CardCatalog.createCardInstance(cardName)!!
+                            inspectedCardsList = listOf(card)
+                            initialInspectedIndex = 0
+                        }
+                    }
                 )
 
                 val cardPlayedMsg = stringResource(R.string.battle_card_played)
@@ -218,19 +226,17 @@ private fun GameScreenContent(
                                 if (canAttack) {
                                     selectedCardForAttack = card
                                     startArrowOffset = offset
-                                    isDrawingArrow = false // Don't show immediately
+                                    isDrawingArrow = false
                                     fingerOffset = Offset.Zero
                                     val cardName = getStringResourceByName(context, card.name)
                                     battleLog = selectedHint.format(cardName)
                                 } else {
-                                    // Инспекция если не может атаковать
                                     val allBoardCards = (state.opponent.board.filterNotNull() + state.player.board.filterNotNull())
                                     inspectedCardsList = allBoardCards
                                     initialInspectedIndex = allBoardCards.indexOfFirst { it.id == card.id }.coerceAtLeast(0)
                                 }
                             }
                         } else {
-                            // Инспекция если не ваш ход
                             val allBoardCards = (state.opponent.board.filterNotNull() + state.player.board.filterNotNull())
                             inspectedCardsList = allBoardCards
                             initialInspectedIndex = allBoardCards.indexOfFirst { it.id == card.id }.coerceAtLeast(0)
@@ -243,7 +249,7 @@ private fun GameScreenContent(
                     },
                     onCardDroppedInSlot = { droppedCard, slotIndex ->
                         val success = viewModel.playCard(droppedCard, slotIndex)
-                        battleLog = if (success) cardPlayedMsg.format(getStringResourceByName(context, droppedCard.name))
+                        battleLog = if (success) cardPlayedMsg.format(playerTag, getStringResourceByName(context, droppedCard.name))
                         else playFailMsg
                     }
                 )
@@ -255,7 +261,6 @@ private fun GameScreenContent(
                     damageValue = viewModel.playerHeroDamageValue,
                     onPlayerHeroPositioned = { playerHeroOffset = it },
                     onCardLongClick = { card ->
-                        // Свайп по руке
                         inspectedCardsList = state.player.hand
                         initialInspectedIndex = state.player.hand.indexOfFirst { it.id == card.id }.coerceAtLeast(0)
                     },
@@ -277,15 +282,12 @@ private fun GameScreenContent(
                 playerHeroOffset = playerHeroOffset
             )
 
-            val unlockedLevel by UserProfile.maxUnlockedLevel.collectAsState()
-            val isFirstTimeWin = (viewModel.currentLevel?.id ?: 0) >= unlockedLevel
-            val rewards = if (isFirstTimeWin) viewModel.currentLevel?.firstTimeReward else viewModel.currentLevel?.repeatReward
-
             GameOverOverlay(
                 isGameOver = state.isGameOver,
                 winnerName = state.winnerName,
                 playerName = state.player.name,
-                rewards = rewards,
+                rewards = if ((viewModel.currentLevel?.id ?: 0) >= UserProfile.maxUnlockedLevel.collectAsState().value) viewModel.currentLevel?.firstTimeReward else viewModel.currentLevel?.repeatReward,
+                history = state.logHistory,
                 onExitClick = { isPlayerWin ->
                     viewModel.claimRewardsAndExit(isPlayerWin)
                     UserProfile.save(context)

@@ -13,6 +13,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
@@ -42,6 +43,12 @@ data class FilterState(
     val selectedMana: Int? = null
 )
 
+data class SortState(
+    val sortByRarity: Boolean = true,
+    val ascending: Boolean = false
+)
+
+@OptIn(ExperimentalLayoutApi::class)
 @SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 fun CollectionScreen(
@@ -53,143 +60,100 @@ fun CollectionScreen(
 
     val currentDeck = remember { mutableStateListOf<CardModel>() }
     var isInitialized by remember { mutableStateOf(false) }
-    
-    if (!isInitialized && userDeck.isNotEmpty()) {
+    if (!isInitialized) {
         currentDeck.clear()
         currentDeck.addAll(userDeck)
         isInitialized = true
     }
 
-    val deckCountLabel = stringResource(R.string.deck_count, currentDeck.size)
-    var statusMessage by remember { mutableStateOf(deckCountLabel) }
-    
-    LaunchedEffect(currentDeck.size) {
-        if (!statusMessage.contains("✅") && !statusMessage.contains("❌")) {
-            statusMessage = context.getString(R.string.deck_count, currentDeck.size)
-        }
+    LaunchedEffect(currentDeck.size, currentDeck.toList()) {
+        userDeck.clear()
+        userDeck.addAll(currentDeck)
+        UserProfile.save()
     }
-
-    val dustC by UserProfile.dustCommon.collectAsState()
-    val dustU by UserProfile.dustUncommon.collectAsState()
-    val dustR by UserProfile.dustRare.collectAsState()
-    val dustE by UserProfile.dustEpic.collectAsState()
-    val dustL by UserProfile.dustLegendary.collectAsState()
-    val dustM by UserProfile.dustMythic.collectAsState()
 
     var filterState by remember { mutableStateOf(FilterState()) }
     var filtersExpanded by remember { mutableStateOf(false) }
-
-    // ГРУППИРОВКА ВСЕХ ШАБЛОНОВ С УЧЕТОМ ФИЛЬТРОВ
-    val allTemplates = CardCatalog.templates
-    val filteredTemplates = remember(filterState, userCards.size) {
-        allTemplates.filter { t ->
-            val owned = userCards.any { it.name == t.name }
-            val passesOwned = !filterState.showOwnedOnly || owned
-            val passesRarity = filterState.selectedRarity == null || t.rarity == filterState.selectedRarity
-            val passesGroup = filterState.selectedGroup == null || t.groupTags.contains(filterState.selectedGroup)
-            val passesEffect = filterState.selectedEffect == null || t.effectTags.contains(filterState.selectedEffect)
-            val passesMana = filterState.selectedMana == null || t.manaCost == filterState.selectedMana
-            
-            passesOwned && passesRarity && passesGroup && passesEffect && passesMana
-        }
-    }
-
-    val templatesByRarity = remember(filteredTemplates) {
-        Rarity.entries.associateWith { rarity -> 
-            filteredTemplates.filter { it.rarity == rarity }
-        }
-    }
-
-    var inspectedCardsList by remember { mutableStateOf<List<CardModel>>(emptyList()) }
-    var initialInspectedIndex by remember { mutableIntStateOf(0) }
+    
+    var sortState by remember { mutableStateOf(SortState()) }
+    var sortExpanded by remember { mutableStateOf(false) }
+    
+    var myDeckExpanded by remember { mutableStateOf(true) } // OPEN BY DEFAULT
 
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .padding(horizontal = 16.dp)
     ) {
-        // ВЕРХНЯЯ ПАНЕЛЬ: КНОПКИ ДЕЙСТВИЙ
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            GameButton(
-                text = stringResource(R.string.save),
-                onClick = {
-                    if (currentDeck.isNotEmpty()) {
-                        userDeck.clear()
-                        userDeck.addAll(currentDeck)
-                        UserProfile.save()
-                        statusMessage = context.getString(R.string.deck_saved)
-                    } else {
-                        statusMessage = context.getString(R.string.deck_error)
-                    }
-                },
-                containerColor = if (currentDeck.isNotEmpty()) Color(0xFF388E3C) else Color.Gray,
-                modifier = Modifier.weight(1f)
-            )
-
-            GameButton(
-                text = stringResource(R.string.auto_deck),
-                onClick = {
-                    val autoDeck = generateAutoDeck(userCards)
-                    if (autoDeck.isNotEmpty()) {
-                        currentDeck.clear()
-                        currentDeck.addAll(autoDeck)
-                        // No status message as requested
-                    } else {
-                        statusMessage = context.getString(R.string.auto_deck_fail)
-                    }
-                },
-                containerColor = Color(0xFF673AB7),
-                modifier = Modifier.weight(1f)
-            )
-
-            GameButton(
-                text = stringResource(R.string.clear),
-                onClick = {
-                    currentDeck.clear()
-                    statusMessage = context.getString(R.string.deck_count, 0)
-                },
-                containerColor = Color(0xFFD32F2F),
-                modifier = Modifier.weight(0.7f)
-            )
-        }
-
         Spacer(modifier = Modifier.height(8.dp))
         
-        GameText(
-            text = statusMessage,
-            color = if (statusMessage.contains("❌")) Color.Red else Color.Yellow,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Medium,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth()
-        )
-        
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // ФИЛЬТРЫ (Аккордеон)
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color.Black.copy(alpha = 0.5f), RoundedCornerShape(12.dp))
-                .border(1.dp, Color.Gray.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
-                .padding(8.dp)
+        // MY DECK ACCORDION
+        Accordion(
+            title = "My Deck (${currentDeck.size}/20)",
+            isExpanded = myDeckExpanded,
+            onToggle = { myDeckExpanded = !myDeckExpanded }
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth().clickable { filtersExpanded = !filtersExpanded },
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                GameText(stringResource(R.string.filters), fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                GameText(if (filtersExpanded) "▲" else "▼", color = Color.Gray)
-            }
+            Column {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    GameButton(
+                        text = stringResource(R.string.auto_deck),
+                        onClick = {
+                            val autoDeck = generateAutoDeck(userCards)
+                            if (autoDeck.isNotEmpty()) {
+                                currentDeck.clear()
+                                currentDeck.addAll(autoDeck)
+                            }
+                        },
+                        containerColor = Color(0xFF673AB7),
+                        modifier = Modifier.weight(1f)
+                    )
 
-            if (filtersExpanded) {
+                    GameButton(
+                        text = stringResource(R.string.clear),
+                        onClick = { currentDeck.clear() },
+                        containerColor = Color(0xFFD32F2F),
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+                
                 Spacer(modifier = Modifier.height(12.dp))
                 
+                // FULL VISUALS IN DECK
+                val deckRows = currentDeck.chunked(3)
+                deckRows.forEach { row ->
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        row.forEach { card ->
+                            Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    CardComponent(
+                                        card = card,
+                                        isPreview = true,
+                                        modifier = Modifier.size(90.dp, 125.dp),
+                                        onClick = { currentDeck.remove(card) }
+                                    )
+                                    GameText("- Remove", fontSize = 8.sp, color = Color.Red, modifier = Modifier.clickable { currentDeck.remove(card) })
+                                }
+                            }
+                        }
+                        repeat(3 - row.size) { Spacer(modifier = Modifier.weight(1f)) }
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // FILTERS ACCORDION
+        Accordion(
+            title = stringResource(R.string.filters),
+            isExpanded = filtersExpanded,
+            onToggle = { filtersExpanded = !filtersExpanded }
+        ) {
+            Column {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Checkbox(
                         checked = filterState.showOwnedOnly,
@@ -198,11 +162,8 @@ fun CollectionScreen(
                     )
                     GameText(stringResource(R.string.owned_only), fontSize = 14.sp)
                 }
-
                 Spacer(modifier = Modifier.height(8.dp))
-                
                 FilterDropdownRow(filterState, onFilterChange = { filterState = it })
-
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                     TextButton(onClick = { filterState = FilterState() }) {
                         GameText(stringResource(R.string.reset_filters), color = Color.Cyan, fontSize = 12.sp)
@@ -212,76 +173,131 @@ fun CollectionScreen(
         }
 
         Spacer(modifier = Modifier.height(12.dp))
-        
-        // ПАНЕЛЬ ПЫЛИ
-        Row(
-            modifier = Modifier.fillMaxWidth().background(Color.Black.copy(alpha = 0.3f), RoundedCornerShape(8.dp)).padding(8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+
+        // SORTING ACCORDION
+        Accordion(
+            title = "Sorting",
+            isExpanded = sortExpanded,
+            onToggle = { sortExpanded = !sortExpanded }
         ) {
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                DustInfo(Color.White, dustC)
-                DustInfo(Color.Green, dustU)
-                DustInfo(Color(0xFF2196F3), dustR)
-                DustInfo(Color(0xFF9C27B0), dustE)
-                DustInfo(Color.Yellow, dustL)
-                DustInfo(Color.Red, dustM)
+            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    RadioButton(
+                        selected = sortState.ascending,
+                        onClick = { sortState = sortState.copy(ascending = true) },
+                        colors = RadioButtonDefaults.colors(selectedColor = Color.Cyan)
+                    )
+                    GameText("Ascending", fontSize = 12.sp)
+                    Spacer(modifier = Modifier.width(16.dp))
+                    RadioButton(
+                        selected = !sortState.ascending,
+                        onClick = { sortState = sortState.copy(ascending = false) },
+                        colors = RadioButtonDefaults.colors(selectedColor = Color.Cyan)
+                    )
+                    GameText("Descending", fontSize = 12.sp)
+                }
             }
-            
-            GameButton(
-                text = stringResource(R.string.dust_extras, userCards.groupBy { it.name }.values.sumOf { if (it.size > 2) it.size - 2 else 0 }),
-                onClick = { UserProfile.dustExtras() },
-                containerColor = Color(0xFF5D4037),
-                fontSize = 10.sp
-            )
         }
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // СПИСОК КАРТ С АККОРДЕОНАМИ ПО РЕДКОСТИ
+        // LIST OF CARDS
+        val allTemplates = CardCatalog.templates
+        val filteredTemplates = remember(filterState, userCards.size) {
+            allTemplates.filter { t ->
+                val owned = userCards.any { it.name == t.name }
+                val passesOwned = !filterState.showOwnedOnly || owned
+                val passesRarity = filterState.selectedRarity == null || t.rarity == filterState.selectedRarity
+                val passesGroup = filterState.selectedGroup == null || t.groupTags.contains(filterState.selectedGroup)
+                val passesEffect = filterState.selectedEffect == null || t.effectTags.contains(filterState.selectedEffect)
+                val passesMana = filterState.selectedMana == null || t.manaCost == filterState.selectedMana
+                passesOwned && passesRarity && passesGroup && passesEffect && passesMana
+            }
+        }
+        
+        val sortedTemplates = remember(filteredTemplates, sortState) {
+            if (sortState.ascending) filteredTemplates.sortedBy { it.rarity.ordinal }
+            else filteredTemplates.sortedByDescending { it.rarity.ordinal }
+        }
+
+        val templatesByRarity = remember(sortedTemplates) {
+            sortedTemplates.groupBy { it.rarity }
+        }
+
+        var inspectedCardsList by remember { mutableStateOf<List<CardModel>>(emptyList()) }
+        var initialInspectedIndex by remember { mutableIntStateOf(0) }
+
         LazyColumn(
             modifier = Modifier.weight(1f).fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(bottom = 100.dp) // PADDING FOR BOTTOM NAV
+            contentPadding = PaddingValues(bottom = 100.dp)
         ) {
             templatesByRarity.forEach { (rarity, templates) ->
-                if (templates.isNotEmpty()) {
-                    item {
-                        RaritySection(
-                            rarity = rarity,
-                            templates = templates,
-                            userCards = userCards,
-                            currentDeck = currentDeck,
-                            onCardClick = { card ->
-                                inspectedCardsList = filteredTemplates.map { t ->
-                                    userCards.find { it.name == t.name } ?: CardCatalog.createCardInstance(t.name)!!
-                                }
-                                initialInspectedIndex = filteredTemplates.indexOfFirst { it.name == card.name }
-                            },
-                            onDeckAdd = { card -> 
-                                val template = CardCatalog.templates.find { it.name == card.name }
-                                val limit = template?.deckLimit ?: 3
-                                if (currentDeck.size < 20 && currentDeck.count { it.name == card.name } < limit) {
-                                    currentDeck.add(card.copy(id = java.util.UUID.randomUUID().toString()))
-                                }
-                            },
-                            onDeckRemove = { cardName ->
-                                val toRemove = currentDeck.find { it.name == cardName }
-                                if (toRemove != null) currentDeck.remove(toRemove)
+                item {
+                    RaritySection(
+                        rarity = rarity,
+                        templates = templates,
+                        userCards = userCards,
+                        currentDeck = currentDeck,
+                        onCardClick = { card ->
+                            // FIX: Use the ACTUAL sorted/filtered list of instances for paging
+                            inspectedCardsList = sortedTemplates.map { t ->
+                                userCards.find { it.name == t.name } ?: CardCatalog.createCardInstance(t.name)!!
                             }
-                        )
-                    }
+                            initialInspectedIndex = sortedTemplates.indexOfFirst { it.name == card.name }.coerceAtLeast(0)
+                        },
+                        onDeckAdd = { card -> 
+                            val template = CardCatalog.templates.find { it.name == card.name }
+                            val limit = template?.deckLimit ?: 3
+                            if (currentDeck.size < 20 && currentDeck.count { it.name == card.name } < limit) {
+                                currentDeck.add(card.copy(id = java.util.UUID.randomUUID().toString()))
+                            }
+                        },
+                        onDeckRemove = { cardName ->
+                            val toRemove = currentDeck.find { it.name == cardName }
+                            if (toRemove != null) currentDeck.remove(toRemove)
+                        }
+                    )
                 }
             }
         }
+        
+        if (inspectedCardsList.isNotEmpty()) {
+            CardInspectionDialog(
+                cards = inspectedCardsList,
+                initialIndex = initialInspectedIndex,
+                onDismiss = { inspectedCardsList = emptyList() }
+            )
+        }
     }
+}
 
-    if (inspectedCardsList.isNotEmpty()) {
-        CardInspectionDialog(
-            cards = inspectedCardsList,
-            initialIndex = initialInspectedIndex,
-            onDismiss = { inspectedCardsList = emptyList() }
-        )
+@Composable
+private fun Accordion(
+    title: String,
+    isExpanded: Boolean,
+    onToggle: () -> Unit,
+    content: @Composable () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color.Black.copy(alpha = 0.5f), RoundedCornerShape(12.dp))
+            .border(1.dp, Color.Gray.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
+            .padding(8.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().clickable { onToggle() },
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            GameText(title, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            GameText(if (isExpanded) "▲" else "▼", color = Color.Gray)
+        }
+        if (isExpanded) {
+            Spacer(modifier = Modifier.height(12.dp))
+            content()
+        }
     }
 }
 
@@ -290,7 +306,6 @@ private fun FilterDropdownRow(state: FilterState, onFilterChange: (FilterState) 
     val allText = stringResource(R.string.all)
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            // Rarity
             FilterDropdown(
                 label = stringResource(R.string.filter_rarity),
                 selected = state.selectedRarity?.name ?: allText,
@@ -300,7 +315,6 @@ private fun FilterDropdownRow(state: FilterState, onFilterChange: (FilterState) 
                 },
                 modifier = Modifier.weight(1f)
             )
-            // Group
             FilterDropdown(
                 label = stringResource(R.string.filter_tag),
                 selected = state.selectedGroup?.name ?: allText,
@@ -312,7 +326,6 @@ private fun FilterDropdownRow(state: FilterState, onFilterChange: (FilterState) 
             )
         }
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-             // Effect
              FilterDropdown(
                  label = stringResource(R.string.filter_effect),
                  selected = state.selectedEffect?.name ?: allText,
@@ -322,7 +335,6 @@ private fun FilterDropdownRow(state: FilterState, onFilterChange: (FilterState) 
                  },
                  modifier = Modifier.weight(1f)
              )
-             // Mana
              FilterDropdown(
                  label = stringResource(R.string.filter_mana),
                  selected = state.selectedMana?.toString() ?: allText,
@@ -345,7 +357,6 @@ private fun FilterDropdown(
     modifier: Modifier = Modifier
 ) {
     var expanded by remember { mutableStateOf(false) }
-    
     Box(modifier = modifier) {
         Column {
             GameText(label, fontSize = 10.sp, color = Color.Gray)
@@ -360,7 +371,6 @@ private fun FilterDropdown(
                 GameText(selected, fontSize = 12.sp, maxLines = 1)
             }
         }
-        
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
@@ -381,13 +391,8 @@ private fun FilterDropdown(
 
 private fun generateAutoDeck(userCards: List<CardModel>): List<CardModel> {
     if (userCards.isEmpty()) return emptyList()
-
     val deck = mutableListOf<CardModel>()
-    
-    // Группируем карты по именам для контроля лимита
     val availableGroups = userCards.groupBy { it.name }.mapValues { it.value.toMutableList() }
-    
-    // Сортируем все уникальные карты по "ценности"
     val sortedTemplates = CardCatalog.templates
         .filter { t -> userCards.any { it.name == t.name } }
         .sortedByDescending { t ->
@@ -395,13 +400,10 @@ private fun generateAutoDeck(userCards: List<CardModel>): List<CardModel> {
             val statVal = t.baseAttack + t.baseHealth
             rarityVal + statVal
         }
-
     for (template in sortedTemplates) {
         if (deck.size >= 20) break
-        
         val limit = template.deckLimit
         val ownedInstances = availableGroups[template.name] ?: continue
-        
         repeat(limit) {
             if (deck.size < 20 && ownedInstances.isNotEmpty()) {
                 val card = ownedInstances.removeAt(0)
@@ -410,7 +412,6 @@ private fun generateAutoDeck(userCards: List<CardModel>): List<CardModel> {
             }
         }
     }
-    
     return deck
 }
 
@@ -424,8 +425,7 @@ private fun RaritySection(
     onDeckAdd: (CardModel) -> Unit,
     onDeckRemove: (String) -> Unit
 ) {
-    var expanded by remember { mutableStateOf(rarity == Rarity.COMMON) } 
-
+    var expanded by remember { mutableStateOf(false) } // DEFAULT CLOSED
     val rarityColor = when (rarity) {
         Rarity.COMMON -> Color.White
         Rarity.UNCOMMON -> Color.Green
@@ -434,10 +434,8 @@ private fun RaritySection(
         Rarity.LEGENDARY -> Color.Yellow
         Rarity.MYTHIC -> Color.Red
     }
-
     val ownedCountInRarity = templates.count { t -> userCards.any { it.name == t.name } }
     val totalInRarity = templates.size
-
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier
@@ -453,7 +451,6 @@ private fun RaritySection(
             Spacer(modifier = Modifier.weight(1f))
             GameText(if (expanded) "▲" else "▼", color = rarityColor)
         }
-
         if (expanded) {
             Spacer(modifier = Modifier.height(8.dp))
             val rows = templates.chunked(3) 
@@ -464,11 +461,8 @@ private fun RaritySection(
                         val ownedCount = ownedCards.size
                         val inDeckCount = currentDeck.count { it.name == template.name }
                         val isOwned = ownedCount > 0
-                        
                         val limit = template.deckLimit
-                        
                         val displayCard = ownedCards.firstOrNull() ?: CardCatalog.createCardInstance(template.name)!!
-
                         Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Box(contentAlignment = Alignment.BottomCenter) {
@@ -487,8 +481,6 @@ private fun RaritySection(
                                             Box(modifier = Modifier.matchParentSize().background(Color.Black.copy(alpha = 0.4f)))
                                         }
                                     }
-                                    
-                                    // СТАТИСТИКА ВЛАДЕНИЯ И КОЛОДЫ
                                     Column(
                                         modifier = Modifier.padding(bottom = 2.dp).background(Color.Black.copy(alpha = 0.8f), RoundedCornerShape(4.dp)).padding(horizontal = 4.dp),
                                         horizontalAlignment = Alignment.CenterHorizontally
@@ -497,7 +489,6 @@ private fun RaritySection(
                                         GameText("Deck: ${inDeckCount}/$limit", fontSize = 9.sp, color = Color.White, fontWeight = FontWeight.Bold)
                                     }
                                 }
-                                
                                 if (isOwned) {
                                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
                                         if (inDeckCount > 0) {
@@ -520,14 +511,5 @@ private fun RaritySection(
                 Spacer(modifier = Modifier.height(8.dp))
             }
         }
-    }
-}
-
-@Composable
-private fun DustInfo(color: Color, amount: Int) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Box(modifier = Modifier.size(6.dp).background(color, CircleShape))
-        Spacer(modifier = Modifier.width(3.dp))
-        GameText(text = amount.toString(), fontSize = 11.sp, color = color, fontWeight = FontWeight.Bold)
     }
 }

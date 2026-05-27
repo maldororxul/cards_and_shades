@@ -70,14 +70,6 @@ class GameViewModel : ViewModel() {
 
     init {
         _gameState.value = null
-        
-        // Таймер времени в игре
-        viewModelScope.launch {
-            while (true) {
-                delay(5000) // Раз в 5 сек
-                MissionManager.tickPlaytime(5)
-            }
-        }
     }
 
     fun startNewGame(level: LevelModel) {
@@ -152,7 +144,6 @@ class GameViewModel : ViewModel() {
     fun claimRewardsAndExit(isPlayerWin: Boolean) {
         autoTurnJob?.cancel()
         
-        // Count participation only when battle is finished (win or loss)
         MissionManager.updateProgress("daily_battles", 1, false)
         MissionManager.updateProgress("weekly_battles", 1, true)
 
@@ -183,18 +174,26 @@ class GameViewModel : ViewModel() {
 
     fun playCard(card: CardModel, slotIndex: Int): Boolean {
         var isPlayed = false
-        _gameState.update { currentState ->
-            currentState?.deepCopy()?.apply {
-                if (currentTurn == Turn.PLAYER) {
-                    val cardInHand = player.hand.find { it.id == card.id }
-                    if (cardInHand != null && player.currentMana >= cardInHand.manaCost && player.board[slotIndex] == null) {
-                        GameEngine.playCard(this, cardInHand, slotIndex)
-                        SoundManager.playSoundByName(null, cardInHand.playSound)
-                        logHistory.add(LogEntry("battle_card_played|player|card_${cardInHand.name}", LogType.PLAYER, turnNumber))
-                        isPlayed = true
+        val currentState = _gameState.value ?: return false
+        
+        if (currentState.currentTurn == Turn.PLAYER) {
+            val cardInHand = currentState.player.hand.find { it.id == card.id }
+            if (cardInHand != null && currentState.player.currentMana >= cardInHand.manaCost && currentState.player.board[slotIndex] == null) {
+                
+                // CRASH FIX: Update the state carefully
+                _gameState.update { s ->
+                    val next = s?.deepCopy()
+                    if (next != null) {
+                        val success = GameEngine.playCard(next, cardInHand, slotIndex)
+                        if (success) {
+                            SoundManager.playSoundByName(null, cardInHand.playSound)
+                            next.logHistory.add(LogEntry("battle_card_played|player|card_${cardInHand.name}", LogType.PLAYER, next.turnNumber))
+                            isPlayed = true
+                        }
                     }
+                    next ?: s
                 }
-            } ?: currentState
+            }
         }
         return isPlayed
     }
@@ -236,7 +235,7 @@ class GameViewModel : ViewModel() {
                     }
                 }
                 
-                delay(getDelay(400)) // Время на показ ударов
+                delay(getDelay(400)) 
 
                 _gameState.update { currentState ->
                     currentState?.deepCopy()?.apply {
@@ -257,7 +256,6 @@ class GameViewModel : ViewModel() {
                             if (card.currentHealth <= 0) {
                                 card.isDying = true
                                 SoundManager.playSoundByName(null, card.deathSound)
-                                // Log card death
                                 logHistory.add(LogEntry("battle_card_died|player|card_${card.name}", LogType.PLAYER, turnNumber))
                             }
                         }
@@ -266,7 +264,6 @@ class GameViewModel : ViewModel() {
                             if (card.currentHealth <= 0) {
                                 card.isDying = true
                                 SoundManager.playSoundByName(null, card.deathSound)
-                                // Log card death
                                 logHistory.add(LogEntry("battle_card_died|opponent|card_${card.name}", LogType.OPPONENT, turnNumber))
                             }
                         }
@@ -497,7 +494,6 @@ class GameViewModel : ViewModel() {
                             if (card.currentHealth <= 0) {
                                 card.isDying = true
                                 SoundManager.playSoundByName(null, card.deathSound)
-                                // Log card death
                                 logHistory.add(LogEntry("battle_card_died|player|card_${card.name}", LogType.PLAYER, turnNumber))
                             }
                         }
@@ -506,7 +502,6 @@ class GameViewModel : ViewModel() {
                             if (card.currentHealth <= 0) {
                                 card.isDying = true
                                 SoundManager.playSoundByName(null, card.deathSound)
-                                // Log card death
                                 logHistory.add(LogEntry("battle_card_died|opponent|card_${card.name}", LogType.OPPONENT, turnNumber))
                             }
                         }

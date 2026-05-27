@@ -4,14 +4,8 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -20,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.res.stringResource
 import com.example.cardsandshades.R
+import com.example.cardsandshades.model.LogEntry
 import com.example.cardsandshades.model.RewardSetModel
 import com.example.cardsandshades.ui.components.GameButton
 import com.example.cardsandshades.ui.components.GameText
@@ -31,9 +26,12 @@ fun GameOverOverlay(
     winnerName: String?,
     playerName: String?,
     rewards: RewardSetModel?,
+    history: List<LogEntry>,
     onExitClick: (Boolean) -> Unit,
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
+    var showDetailedLog by remember { mutableStateOf(false) }
+
     AnimatedVisibility(visible = isGameOver, enter = fadeIn(), exit = fadeOut()) {
         Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.9f)), contentAlignment = Alignment.Center) {
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(24.dp)) {
@@ -62,7 +60,6 @@ fun GameOverOverlay(
                     fontWeight = FontWeight.Bold
                 )
 
-                // ВИЗУАЛИЗАЦИЯ НАГРАДЫ ИГРОКА
                 if (isPlayerWin && (rewards != null) && !rewards.isEmpty) {
                     Spacer(modifier = Modifier.height(24.dp))
                     GameText(stringResource(R.string.rewards_label), color = Color.Gray, fontSize = 14.sp)
@@ -85,14 +82,32 @@ fun GameOverOverlay(
                 }
 
                 Spacer(modifier = Modifier.height(32.dp))
-                GameButton(
-                    text = stringResource(R.string.collect_loot),
-                    onClick = { onExitClick(isPlayerWin) },
-                    containerColor = Color(0xFF388E3C),
-                    modifier = Modifier.width(240.dp)
-                )
+
+                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    GameButton(
+                        text = stringResource(R.string.battle_history),
+                        onClick = { showDetailedLog = true },
+                        containerColor = Color.DarkGray,
+                        modifier = Modifier.width(150.dp)
+                    )
+
+                    GameButton(
+                        text = stringResource(R.string.collect_loot),
+                        onClick = { onExitClick(isPlayerWin) },
+                        containerColor = Color(0xFF388E3C),
+                        modifier = Modifier.width(150.dp)
+                    )
+                }
             }
         }
+    }
+
+    if (showDetailedLog) {
+        DetailedBattleLogDialog(
+            history = history,
+            onCardClick = { /* No-op or handle if needed */ },
+            onDismiss = { showDetailedLog = false }
+        )
     }
 }
 

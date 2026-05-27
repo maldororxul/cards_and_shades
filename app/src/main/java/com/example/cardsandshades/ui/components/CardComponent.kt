@@ -134,8 +134,9 @@ fun CardComponent(
         }
     }
     
-    val finalBorderThickness = if (card.hasTaunt && isPreview) borderThickness + 1.dp else borderThickness
-    val finalBorderColor = if (card.hasTaunt && isPreview) Color(0xFFFF9800) else borderColor
+    // FIXED: Common cards should NEVER have orange borders/labels (no special taunt highlights for them)
+    val finalBorderThickness = if (card.hasTaunt && isPreview && card.rarity != Rarity.COMMON) borderThickness + 1.dp else borderThickness
+    val finalBorderColor = if (card.hasTaunt && isPreview && card.rarity != Rarity.COMMON) Color(0xFFFF9800) else borderColor
 
     val cardAlpha = if ((card.isSleeping || card.hasAttackedThisTurn) && isPreview) 0.6f else 1f
 
@@ -233,7 +234,10 @@ private fun BoxScope.CardContent(card: CardModel, borderColor: Color) {
             Rarity.LEGENDARY -> stringResource(R.string.rarity_legendary)
             Rarity.MYTHIC -> stringResource(R.string.rarity_mythic)
         }
-        GameText(text = rarityLabel, color = borderColor, fontSize = 8.sp, fontWeight = FontWeight.Bold)
+        
+        // FIXED: Use the correct rarity color even for taunts if it's common
+        val labelColor = if (card.rarity == Rarity.COMMON) Color.White else borderColor
+        GameText(text = rarityLabel, color = labelColor, fontSize = 8.sp, fontWeight = FontWeight.Bold)
 
         if (card.activeTags.isNotEmpty()) {
             GameText(
